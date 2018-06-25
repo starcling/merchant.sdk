@@ -1,1 +1,0 @@
-export {MerchantSDK} from './MerchantSDKClass';

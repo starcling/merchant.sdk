@@ -14,30 +14,13 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "@core/*": [
-        "./src/core/*"
-      ],
-      "@connectors/*": [
-        "./src/connectors/*"
-      ],
-      "@api/*": [
-        "./src/api/*"
-      ],
       "@utils/*": [
-        "./src/utils/*"
-      ],
-      "@src/*": [
-        "./src/*"
-      ],
-      "@resources/*": [
-        "./resources/*"
+        "./utils/*"
       ]
     }
   },
   "include": [
-    "src/**/*",
-    "test/**/*",
-    "sdk_core/**/*"
+    "**/*.ts"
   ],
   "exclude": [
     "node_modules"

@@ -1,4 +1,4 @@
-import { HTTPRequestFactory } from '../utils/web/HTTPRequestFactory';
+import { HTTPRequestFactory } from '@utils/web/HTTPRequestFactory';
 
 export class AuthenticationController {
     public constructor(private apiUrl: string) {
@@ -21,7 +21,8 @@ export class AuthenticationController {
         try {
             const httpResponse = await httpRequest.getResponse();
             if (httpResponse.isSuccessfulRequest()) {
-                return JSON.parse(httpResponse.body);
+                const token = JSON.parse(httpResponse.body).token
+                return token;
             } else {
                 return null;
             }

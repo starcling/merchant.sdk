@@ -1,14 +1,17 @@
 import { AuthenticationController } from './authentication';
 import { IResponseMessage } from './utils/web/HTTPResponseHandler';
+
+const defaultAPIUrl = 'http://localhost:8081/api/v1';
 interface MerchantSDKParam {
     apiUrl: string;
 }
+
 export class MerchantSDK {
     private apiUrl: string;
     private pmaUserToken: string;
     private pmaApiKey: string;
     public constructor(param: MerchantSDKParam) {
-        this.apiUrl = param.apiUrl;
+        this.apiUrl = param.apiUrl || defaultAPIUrl;
     }
     /**
     * @description Authenticate to api with username and password
@@ -22,6 +25,7 @@ export class MerchantSDK {
     */
 
     public async authenticate(username: string, password: string): Promise<any> {
-        return await new AuthenticationController(this.apiUrl).getPMAUserToken(username, password);
+        this.pmaUserToken = await new AuthenticationController(this.apiUrl).getPMAUserToken(username, password);
+        return this.pmaUserToken;
     }
 }
