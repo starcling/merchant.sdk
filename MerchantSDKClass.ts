@@ -11,7 +11,7 @@ export class MerchantSDK {
     private pmaUserToken: string;
     private pmaApiKey: string;
     public constructor(param: MerchantSDKParam) {
-        this.apiUrl = param.apiUrl || defaultAPIUrl;
+        this.apiUrl = (param && param.apiUrl) || defaultAPIUrl;
     }
     /**
     * @description Authenticate to api with username and password
