@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "declaration": false,
+    "removeComments": true,
+    "sourceMap": true,
+    "noLib": false,
+    "outDir": "dist",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictNullChecks": false,
+    "noUnusedLocals": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@core/*": [
+        "./src/core/*"
+      ],
+      "@connectors/*": [
+        "./src/connectors/*"
+      ],
+      "@api/*": [
+        "./src/api/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@src/*": [
+        "./src/*"
+      ],
+      "@resources/*": [
+        "./resources/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "sdk_core/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

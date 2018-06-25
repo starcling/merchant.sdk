@@ -7,7 +7,7 @@
         "node": "~6.11.2"
     },
     "scripts": {
-        "start": "node --max-old-space-size=16384 index.js"
+        "start": "node --max-old-space-size=16384 test.js"
     },
     "dependencies": {
         "@types/node": "^9.6.2",
