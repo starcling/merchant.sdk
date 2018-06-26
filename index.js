@@ -8,6 +8,6 @@ tsConfigPaths.register({
     paths: tsConfig.compilerOptions.paths
 });
 
-const {MerchantSDK} = require('./MerchantSDKClass');
+const {MerchantSDK} = require('./src/MerchantSDKClass');
 
 module.exports.default = MerchantSDK;

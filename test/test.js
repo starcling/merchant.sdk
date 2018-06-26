@@ -1,4 +1,4 @@
-const MerchantSDK = require('./index').default;
+const MerchantSDK = require('../index').default;
 
 // Assume you created new merchant already with this cred {'test_user1200', 'pass0wrd'} using Postman
 

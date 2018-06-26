@@ -15,10 +15,10 @@
     "baseUrl": ".",
     "paths": {
       "@utils/*": [
-        "./utils/*"
+        "./src/utils/*"
       ],
       "@config/*": [
-        "./config/*"
+        "./src/config/*"
       ]
     }
   },
