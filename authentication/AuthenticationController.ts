@@ -1,8 +1,7 @@
 import { HTTPRequestFactory } from '@utils/web/HTTPRequestFactory';
 
 export class AuthenticationController {
-    public constructor(private apiUrl: string) {
-    }
+    public constructor(private apiUrl: string) {}
 
     /**
     * @description return pma-user-token
