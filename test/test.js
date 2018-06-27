@@ -1,6 +1,9 @@
 const MerchantSDK = require('../index').default;
 
-// Assume you created new merchant already with this cred {'test_user1200', 'pass0wrd'} using Postman
+// Assume you created new merchant already 
+// with this cred {'test_user1200', 'pass0wrd'} using Postman
+// and api server is running on localhost:8081/api/v1
+
 
 // when request without apikey
 const merchantWithoutApiKey = new MerchantSDK({apiUrl: 'http://localhost:8081/api/v1/'});
