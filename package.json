@@ -7,7 +7,8 @@
         "node": "~6.11.2"
     },
     "scripts": {
-        "start": "node --max-old-space-size=16384 ./test/test.js"
+        "start": "node --max-old-space-size=16384 ./test/test.js",
+        "test": "mocha --timeout 15000 -r ts-node/register test/unit/**/*.ts"
     },
     "dependencies": {
         "@types/node": "^9.6.2",
@@ -15,6 +16,10 @@
         "request-promise": "^4.2.2"
     },
     "devDependencies": {
+        "@types/mocha": "^5.2.3",
+        "chai": "^4.1.2",
+        "chai-as-promised": "^7.1.1",
+        "mocha": "^5.2.0",
         "nodemon": "^1.17.3",
         "ts-node": "~4.1.0",
         "tsconfig-paths": "^3.4.0",
