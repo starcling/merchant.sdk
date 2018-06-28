@@ -11,7 +11,7 @@ export class AuthenticationController {
     * @code <b>400</b>: If the login fails i.e. username/password is incorrect.
     * @code <b>404</b>: If the username specified does not exists.
 	* @code <b>500</b>: When internal error while processing request.
-	* @response pma-user-token {String}
+	* @response token, merchant {token:String, merchant:String}
     */
     public async getPMAUserToken(username: string, password: string): Promise<any> {
         const httpRequest = new HTTPRequestFactory()
@@ -21,8 +21,7 @@ export class AuthenticationController {
         try {
             const httpResponse = await httpRequest.getResponse();
             if (httpResponse.isSuccessfulRequest()) {
-                const token = JSON.parse(httpResponse.body).token
-                return token;
+                return {token: JSON.parse(httpResponse.body).token, merchant: JSON.parse(httpResponse.body).data};
             } else {
                 return null;
             }
