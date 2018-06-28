@@ -1,4 +1,5 @@
 import { HTTPRequestFactory } from '@utils/web/HTTPRequestFactory';
+import { DefaultConfig } from '@config/default.config';
 
 export class AuthenticationController {
     public constructor(private apiUrl: string) {}
@@ -15,7 +16,7 @@ export class AuthenticationController {
     */
     public async getPMAUserToken(username: string, password: string): Promise<any> {
         const httpRequest = new HTTPRequestFactory()
-            .create(`${this.apiUrl}/login`, {
+            .create(`${this.apiUrl}${DefaultConfig.settings.loginUrl}`, {
                 'Content-Type': 'application/json'
             }, 'POST', {username, password});
         try {
@@ -40,7 +41,7 @@ export class AuthenticationController {
     */
     public async getPMAApiKey(pmaUserToken: string): Promise<any> {
         const httpRequest = new HTTPRequestFactory()
-            .create(`${this.apiUrl}/auth/generate-api-key`, {
+            .create(`${this.apiUrl}${DefaultConfig.settings.generateApiKeyUrl}`, {
                 'Content-Type': 'application/json',
                 'pma-user-token': pmaUserToken
             }, 'GET');
@@ -68,7 +69,7 @@ export class AuthenticationController {
     */
     public async getPMAAccessToken(pmaApiKey: string, pmaUserToken: string, requestQuery: object): Promise<any> {
         const httpRequest = new HTTPRequestFactory()
-            .create(`${this.apiUrl}/auth/token/generate`, {
+            .create(`${this.apiUrl}${DefaultConfig.settings.generateAccessTokenUrl}`, {
                 'Content-Type': 'application/json',
                 'pma-api-key': pmaApiKey,
                 'pma-user-token': pmaUserToken
