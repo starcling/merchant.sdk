@@ -8,12 +8,12 @@ interface MerchantSDKParam {
 }
 
 interface QRCodeDetails {
-    merchantAddress: string
+    merchantAddress: string;
     currency: string; //e.g. (USD, EUR, etc)
     amount: number;
     maxAmount: number;
     frequency: number;
-    nonce: number
+    nonce: number;
     startTime: number;
     endTime: number;
     callbackURL: string;
@@ -48,18 +48,22 @@ export class MerchantSDK {
 	* @response pma-user-token, pma-api-key {Object}
     */
     public async authenticate(username: string, password: string): Promise<any> {
-        const {token, merchant} = await new AuthenticationController(this.apiUrl)
-            .getPMAUserToken(username, password);
-        this.pmaUserToken = token;
-        this.merchantDetail = merchant;
+        try {
+            const {token, merchant} = await new AuthenticationController(this.apiUrl)
+                .getPMAUserToken(username, password);
+            this.pmaUserToken = token;
+            this.merchantDetail = merchant;
 
-        if (!this.pmaUserToken) {
-            return Promise.reject('Authentication Failed!');
+            if (!this.pmaUserToken) {
+                return Promise.reject('Authentication Failed!');
+            }
+            if (!this.pmaApiKey) {
+                this.pmaApiKey = await new AuthenticationController(this.apiUrl).getPMAApiKey(this.pmaUserToken);
+            }
+            return {pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey}
+        } catch (err) {
+            return Promise.reject(new Error('Authentication Failed!'));
         }
-        if (!this.pmaApiKey) {
-            this.pmaApiKey = await new AuthenticationController(this.apiUrl).getPMAApiKey(this.pmaUserToken);
-        }
-        return {pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey}
     }
 
     /**
