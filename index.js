@@ -1,13 +1,4 @@
-require('ts-node').register({project: __dirname});
-const tsConfig = require('./tsconfig.json');
-const tsConfigPaths = require('tsconfig-paths');
+'use strict';
+const {MerchantSDK} = require('./dist/src/MerchantSDKClass');
 
-tsConfigPaths.register({
-    rootDir: '.',
-    baseUrl: '.',
-    paths: tsConfig.compilerOptions.paths
-});
-
-const {MerchantSDK} = require('./src/MerchantSDKClass');
-
-module.exports.default = MerchantSDK;
+module.exports = MerchantSDK;

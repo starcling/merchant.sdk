@@ -23,7 +23,7 @@ export class MerchantSDK {
     private apiUrl: string;
     private pmaUserToken: string;
     private pmaApiKey: string;
-    private merchantDetail: object;
+    // private merchantDetail: object;
     public constructor(param: MerchantSDKParam) {
         this.apiUrl = ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '');
         this.pmaApiKey = (param && param.apiKey) || null;
@@ -49,10 +49,10 @@ export class MerchantSDK {
     */
     public async authenticate(username: string, password: string): Promise<any> {
         try {
-            const {token, merchant} = await new AuthenticationController(this.apiUrl)
+            const {token} = await new AuthenticationController(this.apiUrl)
                 .getPMAUserToken(username, password);
             this.pmaUserToken = token;
-            this.merchantDetail = merchant;
+            // this.merchantDetail = merchant;
 
             if (!this.pmaUserToken) {
                 return Promise.reject('Authentication Failed!');

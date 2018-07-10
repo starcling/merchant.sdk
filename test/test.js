@@ -1,4 +1,14 @@
-const MerchantSDK = require('../index').default;
+require('ts-node').register({project: __dirname});
+const tsConfig = require('../tsconfig.json');
+const tsConfigPaths = require('tsconfig-paths');
+
+tsConfigPaths.register({
+    rootDir: '.',
+    baseUrl: '.',
+    paths: tsConfig.compilerOptions.paths
+});
+
+const {MerchantSDK} = require('../src/MerchantSDKClass');
 
 // Assume you created new merchant already 
 // with this cred {'test_user1200', 'pass0wrd'} using Postman
