@@ -37,8 +37,7 @@ class MerchantSDK {
                 return { pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey };
             }
             catch (err) {
-                console.debug(err);
-                return Promise.reject(new Error('Authentication Failed!'));
+                return Promise.reject(err);
             }
         });
     }

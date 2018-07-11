@@ -21,10 +21,7 @@ class AuthenticationController {
                 'Content-Type': 'application/json'
             }, 'POST', { username, password });
             try {
-                console.debug('getPMAUserToken');
                 const httpResponse = yield httpRequest.getResponse();
-                console.debug('getPMAUserToken1');
-                console.debug('httpResponse', httpResponse);
                 if (httpResponse.isSuccessfulRequest()) {
                     return { token: JSON.parse(httpResponse.body).token, merchant: JSON.parse(httpResponse.body).data };
                 }
@@ -33,7 +30,6 @@ class AuthenticationController {
                 }
             }
             catch (err) {
-                console.log(err);
                 return null;
             }
         });
