@@ -1,6 +1,6 @@
 import { IncomingMessage } from 'http';
 import { HTTPResponse } from './HTTPResponse';
-import * as request from 'request';
+import request from 'request';
 
 export class HTTPRequest {
     private url: string;

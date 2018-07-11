@@ -1,14 +1,5 @@
-require('ts-node').register({project: __dirname});
-const tsConfig = require('../tsconfig.json');
-const tsConfigPaths = require('tsconfig-paths');
-
-tsConfigPaths.register({
-    rootDir: '.',
-    baseUrl: '.',
-    paths: tsConfig.compilerOptions.paths
-});
-
-const {MerchantSDK} = require('../src/MerchantSDKClass');
+require('ts-node').register({project: './'});
+const {MerchantSDK} = require('./../src/MerchantSDKClass');
 
 // Assume you created new merchant already 
 // with this cred {'test_user1200', 'pass0wrd'} using Postman
@@ -30,7 +21,7 @@ merchantWithoutApiKey.generateQRCodeURL({
     callbackURL: 'localhost:8081/api/v1/test'
 }).then(url => console.log(url));
 
-merchantWithoutApiKey.authenticate('test_user1200', 'pass0wrd').then(res => {
+merchantWithoutApiKey.authenticate('user', 'password').then(res => {
     merchantWithoutApiKey.getRequest('/exchange/global').then(res => 
         console.debug('getRequest', res)
     );
@@ -54,7 +45,7 @@ merchantWithoutApiKey.authenticate('test_user1200', 'pass0wrd').then(res => {
     );
 }).catch(err => console.debug('getRequest error', err));
 
-// // when request with apikey
+// // when request with apikey; Test this with correct apiKey
 // const merchantWithApiKey = new MerchantSDK({
 //     apiUrl: 'http://localhost:8081/api/v1',
 //     apiKey: '170ca4231ad5cda7f9fb5a8319eab0058de55f908e8c5784b879cedbd3f86e3acbf0aa4b31a3e689ee740c5d36b1b11e687c19b7de7d79e723ca16a63c6ef9bf' //valid api key

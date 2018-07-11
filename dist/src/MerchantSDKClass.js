@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const AuthenticationController_1 = require("./authentication/AuthenticationController");
-const HTTPRequestFactory_1 = require("@utils/web/HTTPRequestFactory");
-const default_config_1 = require("@config/default.config");
+const HTTPRequestFactory_1 = require("./utils/web/HTTPRequestFactory");
+const default_config_1 = require("./config/default.config");
 class MerchantSDK {
     constructor(param) {
         this.apiUrl = ((param && param.apiUrl) || default_config_1.DefaultConfig.settings.apiUrl).replace(/\/$/g, '');
@@ -37,6 +37,7 @@ class MerchantSDK {
                 return { pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey };
             }
             catch (err) {
+                console.debug(err);
                 return Promise.reject(new Error('Authentication Failed!'));
             }
         });

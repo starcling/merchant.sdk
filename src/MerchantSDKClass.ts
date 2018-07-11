@@ -1,6 +1,6 @@
 import { AuthenticationController } from './authentication/AuthenticationController';
-import { HTTPRequestFactory } from '@utils/web/HTTPRequestFactory';
-import { DefaultConfig } from '@config/default.config';
+import { HTTPRequestFactory } from './utils/web/HTTPRequestFactory';
+import { DefaultConfig } from './config/default.config';
 
 interface MerchantSDKParam {
     apiUrl?: string;
@@ -62,6 +62,7 @@ export class MerchantSDK {
             }
             return {pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey}
         } catch (err) {
+            console.debug(err);
             return Promise.reject(new Error('Authentication Failed!'));
         }
     }

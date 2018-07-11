@@ -1,15 +1,5 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-
-
-import * as tsConfigPaths from 'tsconfig-paths';
-const tsConfig = require('../../tsconfig.json');
-
-tsConfigPaths.register({
-    baseUrl: '.',
-    paths: tsConfig.compilerOptions.paths
-});
-
 import { MerchantSDK } from '../../src/MerchantSDKClass';
 
 chai.use(chaiAsPromised);

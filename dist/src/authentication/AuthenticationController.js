@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const HTTPRequestFactory_1 = require("@utils/web/HTTPRequestFactory");
-const default_config_1 = require("@config/default.config");
+const HTTPRequestFactory_1 = require("./../utils/web/HTTPRequestFactory");
+const default_config_1 = require("./../config/default.config");
 class AuthenticationController {
     constructor(apiUrl) {
         this.apiUrl = apiUrl;
@@ -21,7 +21,10 @@ class AuthenticationController {
                 'Content-Type': 'application/json'
             }, 'POST', { username, password });
             try {
+                console.debug('getPMAUserToken');
                 const httpResponse = yield httpRequest.getResponse();
+                console.debug('getPMAUserToken1');
+                console.debug('httpResponse', httpResponse);
                 if (httpResponse.isSuccessfulRequest()) {
                     return { token: JSON.parse(httpResponse.body).token, merchant: JSON.parse(httpResponse.body).data };
                 }
@@ -30,6 +33,7 @@ class AuthenticationController {
                 }
             }
             catch (err) {
+                console.log(err);
                 return null;
             }
         });

@@ -1,5 +1,5 @@
-import { HTTPRequestFactory } from '@utils/web/HTTPRequestFactory';
-import { DefaultConfig } from '@config/default.config';
+import { HTTPRequestFactory } from './../utils/web/HTTPRequestFactory';
+import { DefaultConfig } from './../config/default.config';
 
 export class AuthenticationController {
     public constructor(private apiUrl: string) {}
@@ -20,13 +20,17 @@ export class AuthenticationController {
                 'Content-Type': 'application/json'
             }, 'POST', {username, password});
         try {
+            console.debug('getPMAUserToken');
             const httpResponse = await httpRequest.getResponse();
+            console.debug('getPMAUserToken1');
+            console.debug('httpResponse', httpResponse);
             if (httpResponse.isSuccessfulRequest()) {
                 return {token: JSON.parse(httpResponse.body).token, merchant: JSON.parse(httpResponse.body).data};
             } else {
                 return null;
             }
         } catch (err) {
+            console.log(err)
             return null;
         }
     }
