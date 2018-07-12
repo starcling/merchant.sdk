@@ -6,11 +6,12 @@
     "removeComments": true,
     "sourceMap": true,
     "noLib": false,
-    "outDir": "dist",
+    "outDir": "./dist",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strictNullChecks": false,
     "noUnusedLocals": true,
+    "esModuleInterop": true,
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
