@@ -9,6 +9,7 @@
     "scripts": {
         "start": "node --max-old-space-size=16384 ./test/test.js",
         "test": "mocha --timeout 15000 -r ts-node/register test/unit/**/*.ts",
+        "pack-local": "tsc && npm link",
         "build": "tsc"
     },
     "dependencies": {
