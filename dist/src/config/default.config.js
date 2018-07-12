@@ -1,5 +1,7 @@
-export class DefaultConfig {
-    public static get settings() {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+class DefaultConfig {
+    static get settings() {
         return {
             apiUrl: 'http://localhost:8081/api/v1',
             generateQRApiUrl: '/qr/url',
@@ -9,3 +11,5 @@ export class DefaultConfig {
         };
     }
 }
+exports.DefaultConfig = DefaultConfig;
+//# sourceMappingURL=default.config.js.map

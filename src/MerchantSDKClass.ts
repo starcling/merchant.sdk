@@ -1,19 +1,40 @@
 import { AuthenticationController } from './authentication/AuthenticationController';
-import { HTTPRequestFactory } from '@utils/web/HTTPRequestFactory';
-import { DefaultConfig } from '@config/default.config';
+import { HTTPRequestFactory } from './utils/web/HTTPRequestFactory';
+import { DefaultConfig } from './config/default.config';
 
 interface MerchantSDKParam {
     apiUrl?: string;
     apiKey?: string;
 }
 
+interface QRCodeDetails {
+    merchantAddress: string;
+    currency: string; //e.g. (USD, EUR, etc)
+    amount: number;
+    maxAmount: number;
+    frequency: number;
+    nonce: number;
+    startTime: number;
+    endTime: number;
+    callbackURL: string;
+}
+
 export class MerchantSDK {
     private apiUrl: string;
     private pmaUserToken: string;
     private pmaApiKey: string;
+    // private merchantDetail: object;
     public constructor(param: MerchantSDKParam) {
         this.apiUrl = ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '');
         this.pmaApiKey = (param && param.apiKey) || null;
+    }
+
+    private getApiNameFromEndpoint(endpoint: string): string {
+        return endpoint.replace(/^\//g, '').split('/')[0]
+    }
+
+    private getFullUrl(apiUrl: string, endpoint: string): string {
+        return `${apiUrl}/${endpoint.replace(/^\//g, '')}`
     }
 
     /**
@@ -27,14 +48,22 @@ export class MerchantSDK {
 	* @response pma-user-token, pma-api-key {Object}
     */
     public async authenticate(username: string, password: string): Promise<any> {
-        this.pmaUserToken = await new AuthenticationController(this.apiUrl).getPMAUserToken(username, password);
-        if (!this.pmaUserToken) {
-            return Promise.reject('Authentication Failed!');
+        try {
+            const {token} = await new AuthenticationController(this.apiUrl)
+                .getPMAUserToken(username, password);
+            this.pmaUserToken = token;
+            // this.merchantDetail = merchant;
+
+            if (!this.pmaUserToken) {
+                return Promise.reject('Authentication Failed!');
+            }
+            if (!this.pmaApiKey) {
+                this.pmaApiKey = await new AuthenticationController(this.apiUrl).getPMAApiKey(this.pmaUserToken);
+            }
+            return {pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey}
+        } catch (err) {
+            return Promise.reject(err);
         }
-        if (!this.pmaApiKey) {
-            this.pmaApiKey = await new AuthenticationController(this.apiUrl).getPMAApiKey(this.pmaUserToken);
-        }
-        return {pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey}
     }
 
     /**
@@ -53,8 +82,8 @@ export class MerchantSDK {
         if (!this.pmaUserToken) {
             return {error: 'No provided User Token!'}
         }
-        const apiName = await this.getApiNameFromEndpoint(endpoint);
-        const requestUrl = await this.getFullUrl(this.apiUrl, endpoint);
+        const apiName = this.getApiNameFromEndpoint(endpoint);
+        const requestUrl = this.getFullUrl(this.apiUrl, endpoint);
         const pmaAccessKey = await new AuthenticationController(this.apiUrl)
             .getPMAAccessToken(this.pmaApiKey, this.pmaUserToken, {
                 "apiName": apiName,
@@ -101,8 +130,8 @@ export class MerchantSDK {
         if (!this.pmaUserToken) {
             return {error: 'No provided User Token!'}
         }
-        const apiName = await this.getApiNameFromEndpoint(endpoint);
-        const requestUrl = await this.getFullUrl(this.apiUrl, endpoint);
+        const apiName = this.getApiNameFromEndpoint(endpoint);
+        const requestUrl = this.getFullUrl(this.apiUrl, endpoint);
         const pmaAccessKey = await new AuthenticationController(this.apiUrl)
             .getPMAAccessToken(this.pmaApiKey, this.pmaUserToken, {
                 "apiName": apiName,
@@ -134,11 +163,21 @@ export class MerchantSDK {
         }
     }
 
-    private async getApiNameFromEndpoint(endpoint: string): Promise<any> {
-        return endpoint.replace(/^\//g, '').split('/')[0]
-    }
-
-    private async getFullUrl(apiUrl: string, endpoint: string): Promise<any> {
-        return `${apiUrl.replace(/\/$/g, '')}/${endpoint.replace(/^\//g, '')}`
+    /**
+    * @description generate QR Code Url
+    * @param {QRCodeDetails} qrCodeDetails: QRCodeDetails
+	* @code <b>200</b>: Return QR Code Url.
+	* @code <b>500</b>: When internal error while processing request.
+	* @response QRCodeDetails {string}
+    */
+    public async generateQRCodeURL(qrCodeDetails: QRCodeDetails) {
+        let urlParams = "";
+        for (let key in qrCodeDetails) {
+            if (urlParams != "") {
+                urlParams += "&";
+            }
+            urlParams += key + "=" + encodeURIComponent(qrCodeDetails[key]);
+        }
+        return `${this.getFullUrl(this.apiUrl, DefaultConfig.settings.generateQRApiUrl)}?${urlParams}`
     }
 }
