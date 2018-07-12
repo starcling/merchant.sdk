@@ -2,7 +2,7 @@ import { HTTPRequestFactory } from './../utils/web/HTTPRequestFactory';
 import { DefaultConfig } from './../config/default.config';
 
 export class AuthenticationController {
-    public constructor(private apiUrl: string) {}
+    public constructor(private apiUrl: string) { }
 
     /**
     * @description return pma-user-token
@@ -18,11 +18,11 @@ export class AuthenticationController {
         const httpRequest = new HTTPRequestFactory()
             .create(`${this.apiUrl}${DefaultConfig.settings.loginUrl}`, {
                 'Content-Type': 'application/json'
-            }, 'POST', {username, password});
+            }, 'POST', { username, password });
         try {
             const httpResponse = await httpRequest.getResponse();
             if (httpResponse.isSuccessfulRequest()) {
-                return {token: JSON.parse(httpResponse.body).token, merchant: JSON.parse(httpResponse.body).data};
+                return { token: JSON.parse(httpResponse.body).token, merchant: JSON.parse(httpResponse.body).data };
             } else {
                 return null;
             }

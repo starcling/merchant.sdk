@@ -49,7 +49,7 @@ export class MerchantSDK {
     */
     public async authenticate(username: string, password: string): Promise<any> {
         try {
-            const {token} = await new AuthenticationController(this.apiUrl)
+            const { token } = await new AuthenticationController(this.apiUrl)
                 .getPMAUserToken(username, password);
             this.pmaUserToken = token;
             // this.merchantDetail = merchant;
@@ -60,7 +60,7 @@ export class MerchantSDK {
             if (!this.pmaApiKey) {
                 this.pmaApiKey = await new AuthenticationController(this.apiUrl).getPMAApiKey(this.pmaUserToken);
             }
-            return {pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey}
+            return { pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey }
         } catch (err) {
             return Promise.reject(err);
         }
@@ -77,10 +77,10 @@ export class MerchantSDK {
     */
     public async postRequest(endpoint: string, payload: object): Promise<any> {
         if (!this.pmaApiKey) {
-            return {error: 'No provided ApiKey!'}
+            return { error: 'No provided ApiKey!' }
         }
         if (!this.pmaUserToken) {
-            return {error: 'No provided User Token!'}
+            return { error: 'No provided User Token!' }
         }
         const apiName = this.getApiNameFromEndpoint(endpoint);
         const requestUrl = this.getFullUrl(this.apiUrl, endpoint);
@@ -91,7 +91,7 @@ export class MerchantSDK {
                 "body": payload
             });
         if (!pmaAccessKey) {
-            return {error: 'Invalid ApiKey or UserToken provided!'}
+            return { error: 'Invalid ApiKey or UserToken provided!' }
         }
         const httpRequest = new HTTPRequestFactory()
             .create(requestUrl, {
@@ -107,7 +107,7 @@ export class MerchantSDK {
                 try {
                     return JSON.parse(httpResponse.body)
                 } catch (e) {
-                    return {error: httpResponse.body};
+                    return { error: httpResponse.body };
                 }
             }
         } catch (err) {
@@ -125,10 +125,10 @@ export class MerchantSDK {
     */
     public async getRequest(endpoint: string): Promise<any> {
         if (!this.pmaApiKey) {
-            return {error: 'No provided ApiKey!'}
+            return { error: 'No provided ApiKey!' }
         }
         if (!this.pmaUserToken) {
-            return {error: 'No provided User Token!'}
+            return { error: 'No provided User Token!' }
         }
         const apiName = this.getApiNameFromEndpoint(endpoint);
         const requestUrl = this.getFullUrl(this.apiUrl, endpoint);
@@ -139,7 +139,7 @@ export class MerchantSDK {
                 "body": {}
             });
         if (!pmaAccessKey) {
-            return {error: 'Invalid ApiKey or UserToken provided!'}
+            return { error: 'Invalid ApiKey or UserToken provided!' }
         }
         const httpRequest = new HTTPRequestFactory()
             .create(requestUrl, {
@@ -155,7 +155,7 @@ export class MerchantSDK {
                 try {
                     return JSON.parse(httpResponse.body)
                 } catch (e) {
-                    return {error: httpResponse.body};
+                    return { error: httpResponse.body };
                 }
             }
         } catch (err) {
