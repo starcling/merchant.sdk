@@ -1,5 +1,5 @@
 {
-    "name": "puma-merchant-sdk",
+    "name": "puma_sdk_core",
     "version": "0.0.1",
     "private": true,
     "engines": {
