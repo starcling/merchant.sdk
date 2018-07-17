@@ -158,7 +158,18 @@ export class MerchantSDK {
 	* @code <b>500</b>: When internal error while processing request.
 	* @response qrURL {string}
     */
+   public generateQRCodeURL(paymentID: string) {
+    return `${this.apiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}`;
+}
+
+    /**
+    * @description generate QR Code Url
+    * @param {string} paymentID: ID of the specific payment
+	* @code <b>200</b>: Return QR Code Url.
+	* @code <b>500</b>: When internal error while processing request.
+	* @response qrURL {string}
+    */
     public generateQRCode(paymentID: string) {
-        return `${this.apiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}`;
+        return {url: this.generateQRCodeURL(paymentID)};
     }
 }
