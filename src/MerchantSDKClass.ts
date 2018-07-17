@@ -7,18 +7,6 @@ interface MerchantSDKParam {
     apiKey?: string;
 }
 
-interface QRCodeDetails {
-    merchantAddress: string;
-    currency: string; //e.g. (USD, EUR, etc)
-    amount: number;
-    maxAmount: number;
-    frequency: number;
-    nonce: number;
-    startTime: number;
-    endTime: number;
-    callbackURL: string;
-}
-
 export class MerchantSDK {
     private apiUrl: string;
     private pmaUserToken: string;
@@ -165,19 +153,12 @@ export class MerchantSDK {
 
     /**
     * @description generate QR Code Url
-    * @param {QRCodeDetails} qrCodeDetails: QRCodeDetails
+    * @param {string} paymentID: ID of the specific payment
 	* @code <b>200</b>: Return QR Code Url.
 	* @code <b>500</b>: When internal error while processing request.
-	* @response QRCodeDetails {string}
+	* @response qrURL {string}
     */
-    public async generateQRCodeURL(qrCodeDetails: QRCodeDetails) {
-        let urlParams = "";
-        for (let key in qrCodeDetails) {
-            if (urlParams != "") {
-                urlParams += "&";
-            }
-            urlParams += key + "=" + encodeURIComponent(qrCodeDetails[key]);
-        }
-        return `${this.getFullUrl(this.apiUrl, DefaultConfig.settings.generateQRApiUrl)}?${urlParams}`
+    public generateQRCode(paymentID: string) {
+        return `${this.apiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}`;
     }
 }
