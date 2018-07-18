@@ -26,6 +26,17 @@ export class MerchantSDK {
     }
 
     /**
+     * @description Method used to build the SDK with with new parameters
+     * @param {MerchantSDKParam} param Parameters to be build
+     */
+    public build(param: MerchantSDKParam): MerchantSDK {
+        this.apiUrl = ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '');
+        this.pmaApiKey = (param && param.apiKey) || null;
+
+        return this;
+    }
+
+    /**
     * @description Authenticate to api with username and password
     * @param {string} username: Username
     * @param {string} password: Password
