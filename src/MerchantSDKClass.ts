@@ -28,6 +28,7 @@ export class MerchantSDK {
     /**
      * @description Method used to build the SDK with with new parameters
      * @param {MerchantSDKParam} param Parameters to be build
+     * @returns {MerchantSDK} MerchantSDK object - this
      */
     public build(param: MerchantSDKParam): MerchantSDK {
         this.apiUrl = ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '');
