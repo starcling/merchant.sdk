@@ -1,38 +1,29 @@
-import { AuthenticationController } from './authentication/AuthenticationController';
-import { HTTPRequestFactory } from './utils/web/HTTPRequestFactory';
+import { AuthenticationController } from './core/authentication/AuthenticationController';
 import { DefaultConfig } from './config/default.config';
-
-interface MerchantSDKParam {
-    apiUrl?: string;
-    apiKey?: string;
-}
+import { QrCode } from './core/qr/QrCode';
+import { MerchantSDKSettings } from './models/MerchantSDK';
+import { HTTPHelper } from './utils/web/HTTPHelper';
 
 export class MerchantSDK {
-    private apiUrl: string;
-    private pmaUserToken: string;
-    private pmaApiKey: string;
-    // private merchantDetail: object;
-    public constructor(param: MerchantSDKParam) {
-        this.apiUrl = ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '');
-        this.pmaApiKey = (param && param.apiKey) || null;
-    }
+    private http: HTTPHelper;
+    private authenticationController: AuthenticationController;
 
-    private getApiNameFromEndpoint(endpoint: string): string {
-        return endpoint.replace(/^\//g, '').split('/')[0]
-    }
+    public constructor(param: MerchantSDKSettings) {
+        DefaultConfig.settings = { apiUrl: ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '') };
+        DefaultConfig.settings = { pmaApiKey: (param && param.apiKey) || null};
 
-    private getFullUrl(apiUrl: string, endpoint: string): string {
-        return `${apiUrl}/${endpoint.replace(/^\//g, '')}`
+        this.http = new HTTPHelper();
+        this.authenticationController = new AuthenticationController();
     }
 
     /**
      * @description Method used to build the SDK with with new parameters
-     * @param {MerchantSDKParam} param Parameters to be build
+     * @param {MerchantSDKSettings} param Parameters to be build
      * @returns {MerchantSDK} MerchantSDK object - this
      */
-    public build(param: MerchantSDKParam): MerchantSDK {
-        this.apiUrl = ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '');
-        this.pmaApiKey = (param && param.apiKey) || null;
+    public build(param: MerchantSDKSettings): MerchantSDK {
+        DefaultConfig.settings = { apiUrl: ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '') };
+        DefaultConfig.settings = { pmaApiKey: (param && param.apiKey) || null};
 
         return this;
     }
@@ -48,22 +39,7 @@ export class MerchantSDK {
 	* @response pma-user-token, pma-api-key {Object}
     */
     public async authenticate(username: string, password: string): Promise<any> {
-        try {
-            const { token } = await new AuthenticationController(this.apiUrl)
-                .getPMAUserToken(username, password);
-            this.pmaUserToken = token;
-            // this.merchantDetail = merchant;
-
-            if (!this.pmaUserToken) {
-                return Promise.reject('Authentication Failed!');
-            }
-            if (!this.pmaApiKey) {
-                this.pmaApiKey = await new AuthenticationController(this.apiUrl).getPMAApiKey(this.pmaUserToken);
-            }
-            return { pmaUserToken: this.pmaUserToken, pmaApiKey: this.pmaApiKey }
-        } catch (err) {
-            return Promise.reject(err);
-        }
+        this.authenticationController.authenticate(username, password);
     }
 
     /**
@@ -76,43 +52,7 @@ export class MerchantSDK {
 	* @response {any}
     */
     public async postRequest(endpoint: string, payload: object): Promise<any> {
-        if (!this.pmaApiKey) {
-            return { error: 'No provided ApiKey!' }
-        }
-        if (!this.pmaUserToken) {
-            return { error: 'No provided User Token!' }
-        }
-        const apiName = this.getApiNameFromEndpoint(endpoint);
-        const requestUrl = this.getFullUrl(this.apiUrl, endpoint);
-        const pmaAccessKey = await new AuthenticationController(this.apiUrl)
-            .getPMAAccessToken(this.pmaApiKey, this.pmaUserToken, {
-                "apiName": apiName,
-                "query": requestUrl,
-                "body": payload
-            });
-        if (!pmaAccessKey) {
-            return { error: 'Invalid ApiKey or UserToken provided!' }
-        }
-        const httpRequest = new HTTPRequestFactory()
-            .create(requestUrl, {
-                'Content-Type': 'application/json',
-                'pma-api-key': this.pmaApiKey,
-                'pma-access-token': pmaAccessKey
-            }, 'POST', payload);
-        try {
-            const httpResponse = await httpRequest.getResponse();
-            if (httpResponse.isSuccessfulRequest()) {
-                return JSON.parse(httpResponse.body);
-            } else {
-                try {
-                    return JSON.parse(httpResponse.body)
-                } catch (e) {
-                    return { error: httpResponse.body };
-                }
-            }
-        } catch (err) {
-            return err;
-        }
+        return this.http.postRequest(endpoint, payload);
     }
 
     /**
@@ -124,64 +64,16 @@ export class MerchantSDK {
 	* @response {any}
     */
     public async getRequest(endpoint: string): Promise<any> {
-        if (!this.pmaApiKey) {
-            return { error: 'No provided ApiKey!' }
-        }
-        if (!this.pmaUserToken) {
-            return { error: 'No provided User Token!' }
-        }
-        const apiName = this.getApiNameFromEndpoint(endpoint);
-        const requestUrl = this.getFullUrl(this.apiUrl, endpoint);
-        const pmaAccessKey = await new AuthenticationController(this.apiUrl)
-            .getPMAAccessToken(this.pmaApiKey, this.pmaUserToken, {
-                "apiName": apiName,
-                "query": requestUrl,
-                "body": {}
-            });
-        if (!pmaAccessKey) {
-            return { error: 'Invalid ApiKey or UserToken provided!' }
-        }
-        const httpRequest = new HTTPRequestFactory()
-            .create(requestUrl, {
-                'Content-Type': 'application/json',
-                'pma-api-key': this.pmaApiKey,
-                'pma-access-token': pmaAccessKey
-            }, 'GET');
-        try {
-            const httpResponse = await httpRequest.getResponse();
-            if (httpResponse.isSuccessfulRequest()) {
-                return JSON.parse(httpResponse.body);
-            } else {
-                try {
-                    return JSON.parse(httpResponse.body)
-                } catch (e) {
-                    return { error: httpResponse.body };
-                }
-            }
-        } catch (err) {
-            return err;
-        }
+        return this.http.getRequest(endpoint);
     }
 
-    /**
-    * @description generate QR Code Url
-    * @param {string} paymentID: ID of the specific payment
-	* @code <b>200</b>: Return QR Code Url.
-	* @code <b>500</b>: When internal error while processing request.
-	* @response qrURL {string}
-    */
-   public generateQRCodeURL(paymentID: string) {
-    return `${this.apiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}`;
-}
 
     /**
-    * @description generate QR Code Url
-    * @param {string} paymentID: ID of the specific payment
-	* @code <b>200</b>: Return QR Code Url.
-	* @code <b>500</b>: When internal error while processing request.
-	* @response qrURL {string}
-    */
+   * @description generate QR Code object
+   * @param {string} paymentID: ID of the specific payment
+   * @returns {object} QR code object
+   */
     public generateQRCode(paymentID: string) {
-        return {url: this.generateQRCodeURL(paymentID)};
+        return { url: new QrCode().generate(paymentID) };
     }
 }
