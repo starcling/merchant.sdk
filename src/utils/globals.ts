@@ -12,7 +12,7 @@ export class Globals {
      * @description Method for getting merchant backend api url 
      * @returns {string} url
      */
-    public static MERCHANT_API_URL(): string {
+    public static GET_MERCHANT_API_URL(): string {
         return 'http://merchant:3000/api/v1';
     }
 
@@ -20,7 +20,7 @@ export class Globals {
      * @description Method for getting generate qr api url 
      * @returns {string} url
      */
-    public static GENERATE_QR_API_URL(): string {
+    public static GET_GENERATE_QR_API_URL(): string {
         return '/qr/url/';
     }
 
@@ -28,7 +28,7 @@ export class Globals {
      * @description Method for getting payment api url 
      * @returns {string} url
      */
-    public static PAYMENT_URL(): string {
+    public static GET_PAYMENT_URL(): string {
         return '/payments';
     }
 
@@ -36,7 +36,7 @@ export class Globals {
      * @description Method for getting login api url 
      * @returns {string} url
      */
-    public static LOGIN_URL(): string {
+    public static GET_LOGIN_URL(): string {
         return '/login';
     }
 
@@ -44,7 +44,7 @@ export class Globals {
      * @description Method for getting generate api key url 
      * @returns {string} url
      */
-    public static GENERATE_API_KEY_URL(): string {
+    public static GET_GENERATE_API_KEY_URL(): string {
         return '/auth/generate-api-key';
     }
 
@@ -52,7 +52,23 @@ export class Globals {
      * @description Method for getting access token url 
      * @returns {string} url
      */
-    public static GENERATE_ACCESS_TOKEN_URL(): string {
+    public static GET_GENERATE_ACCESS_TOKEN_URL(): string {
         return '/auth/token/generate';
+    }
+
+    /**
+     * @description Method for getting access token url 
+     * @returns {string} url
+     */
+    public static GET_NETWORK(): string {
+        return 'ropsten';
+    }
+
+    /**
+     * @description Method for getting access token url 
+     * @returns {string} url
+     */
+    public static GET_TX_STATUS_INTERVAL(): string {
+        return 'ropsten';
     }
 }
