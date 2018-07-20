@@ -10,5 +10,5 @@ export interface MerchantSDKSettings {
     generateApiKeyUrl?: string;
     generateAccessTokenUrl?: string;
     network?: string;
-    txStatusInterval?: string;
+    txStatusInterval?: number;
 }

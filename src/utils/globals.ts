@@ -57,7 +57,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting access token url 
+     * @description Method for getting network used
      * @returns {string} url
      */
     public static GET_NETWORK(): string {
@@ -65,10 +65,14 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting access token url 
-     * @returns {string} url
+     * @description Method for getting tx status interval
+     * @returns {number} interval
      */
-    public static GET_TX_STATUS_INTERVAL(): string {
-        return 'ropsten';
+    public static GET_TX_STATUS_INTERVAL(): number {
+        return 5000;
+    }
+
+    public static GET_LOCAL_ETHNODE_URL(): string {
+        return 'http://127.0.0.1:7545';
     }
 }

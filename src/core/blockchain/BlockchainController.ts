@@ -6,7 +6,7 @@ export class BlockchainController {
     private provider: any;
 
     constructor() {
-        this.provider = ethers.providers.getDefaultProvider([DefaultConfig.settings.network]);
+        this.provider = new ethers.providers.JsonRpcProvider(`https://${DefaultConfig.settings.network}.infura.io/ZDNEJN22wNXziclTLijw`, DefaultConfig.settings.network);
     }
 
     /**
@@ -16,27 +16,34 @@ export class BlockchainController {
     */
     protected monitorTransaction(txHash: string) {
 
-        const sub = setInterval(() => {
-            const receipt = this.getTransactionStatus(txHash);
-            if (receipt) {
-                clearInterval(sub);
-                //TODO: do something with receipt, update payment DB or something...
-                console.log(receipt);
-            }
-        }, DefaultConfig.settings.txStatusInterval);
-
-        return true;
+        try {
+            const sub = setInterval(() => {
+                this.provider.getTransactionReceipt(txHash, (error, result) => {
+                    if(!error) {
+                        console.log(result);
+                        clearInterval(sub);
+                        return 'asd';
+                    } 
+                    console.log(error);
+                    return 'asfas';
+                });
+            }, DefaultConfig.settings.txStatusInterval);
+    
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 
     /**
     * @description Method for actuall execution of pull payment
     * @returns {object} null
     */
-    private executePullPayment() {
+    protected executePullPayment() {
         return null;
     }
 
-    private getTransactionStatus(txHash: string) {
-        return this.provider.getTransactionReceipt(txHash);
-    }
+    // private getTransactionStatus(txHash: string, callback?: any) {
+    //     return this.provider.getTransactionReceipt(txHash, callback);
+    // }
 }

@@ -13,9 +13,10 @@
         "build": "tsc"
     },
     "dependencies": {
+        "ethers": "^3.0.25",
         "request": "^2.87.0",
         "request-promise": "^4.2.2",
-        "ethers": "^3.0.25"
+        "web3": "^1.0.0-beta.34"
     },
     "devDependencies": {
         "@types/mocha": "^5.2.3",
