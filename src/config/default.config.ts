@@ -1,12 +1,12 @@
 import { Globals } from "../utils/globals";
-import { MerchantSDKSettings } from "../models/MerchantSDK";
+import { MerchantSDKSettings, MerchantSDKBuild } from "../models/MerchantSDK";
 
 export class DefaultConfig {
 
     private static _settings: MerchantSDKSettings = {};
 
-    public static set settings(_settings: MerchantSDKSettings) {
-        Object.assign(this._settings, _settings);
+    public static set settings(buildParams: MerchantSDKSettings) {
+        Object.assign<MerchantSDKSettings, MerchantSDKBuild>(this._settings, buildParams);
     }
 
     public static get settings() {
