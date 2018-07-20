@@ -1,7 +1,7 @@
 import { AuthenticationController } from './core/authentication/AuthenticationController';
 import { DefaultConfig } from './config/default.config';
 import { QrCode } from './core/qr/QrCode';
-import { MerchantSDKBuild } from './models/MerchantSDK';
+import { MerchantSDKBuild, MerchantSDKSettings } from './models/MerchantSDK';
 import { HTTPHelper } from './utils/web/HTTPHelper';
 import { BlockchainController } from './core/blockchain/BlockchainController';
 import { MultipleInheritance } from './utils/MultipleInheritance/MultipleInheritance';
@@ -18,9 +18,9 @@ export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, Blockch
      * @param {MerchantSDKBuild} buildParams Parameters to be build
      * @returns {MerchantSDK} MerchantSDK object - this
      */
-    public build(buildParams: MerchantSDKBuild) {
-        // DefaultConfig.settings = new MerchantSDKBuild(buildParams);
+    public build(buildParams: MerchantSDKBuild): MerchantSDK {
+        DefaultConfig.settings = <MerchantSDKSettings>new MerchantSDKBuild(buildParams);
 
-        return DefaultConfig.settings;
+        return this;
     }
 }

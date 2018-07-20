@@ -16,8 +16,11 @@ export class MerchantSDKBuild {
     network?: string;
 
     public constructor(buildParams: MerchantSDKBuild) {
-        this.merchantApiUrl = buildParams.merchantApiUrl;
-        this.network = buildParams.network;
+        if (buildParams) {
+            this.merchantApiUrl = buildParams.merchantApiUrl ? buildParams.merchantApiUrl : null;
+            this.network = buildParams.network ? buildParams.network : null;
+        }
+        
     }
     
 }

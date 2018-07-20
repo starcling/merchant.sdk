@@ -1,5 +1,7 @@
 import * as ethers from 'ethers';
 import { DefaultConfig } from '../../config/default.config';
+import { HTTPHelper } from '../../utils/web/HTTPHelper';
+import { Globals } from '../../utils/globals';
 
 export class BlockchainController {
 
@@ -12,20 +14,20 @@ export class BlockchainController {
     /**
     * @description Method for registering an event for monitoring transaction on the blockchain
     * @param {string} txHash: Hash of the transaction that needs to be monitored
+    * @param {string} paymentID: ID of the payment which status is to be updated
     * @returns {boolean} success/fail response
     */
-    protected monitorTransaction(txHash: string) {
-
+    protected monitorTransaction(txHash: string, paymentID: string) {
+        const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}?status=454`;
+                        new HTTPHelper().request(requestURL, 'PATCH');
         try {
             const sub = setInterval(() => {
                 this.provider.getTransactionReceipt(txHash, (error, result) => {
                     if(!error) {
-                        console.log(result);
+                        const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}?status=${Globals.GET_TRANSACTION_STATUS_ENUM().success}`;
+                        new HTTPHelper().request(requestURL, 'PATCH');
                         clearInterval(sub);
-                        return 'asd';
-                    } 
-                    console.log(error);
-                    return 'asfas';
+                    }
                 });
             }, DefaultConfig.settings.txStatusInterval);
     

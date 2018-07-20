@@ -75,4 +75,16 @@ export class Globals {
     public static GET_LOCAL_ETHNODE_URL(): string {
         return 'http://127.0.0.1:7545';
     }
+
+    public static GET_TRANSACTION_STATUS_ENUM(): any {
+        return TransactionStatusEnum;
+    }
+}
+
+enum TransactionStatusEnum {
+    failed = 0,
+    initial = 1,
+    scaned = 2,
+    pending = 3,
+    success = 4
 }
