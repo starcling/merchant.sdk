@@ -1,17 +1,17 @@
-import * as ethers from 'ethers';
 import { DefaultConfig } from '../../config/default.config';
 import { HTTPHelper } from '../../utils/web/HTTPHelper';
 import { Globals } from '../../utils/globals';
-// const Web3 = require('web3');
+import { SmartContractReader } from './SmartContractReader';
+import { BlockchainHelper } from './BlockchainHelper';
+import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerializer';
 
 export class BlockchainController {
+    private debitAddress: string = '0x15f79A4247cD2e9898dD45485683a0B26855b646';
 
-    private provider: any;
-    // private web3: any;
+    private blockchainHelper: BlockchainHelper;
 
     constructor() {
-        this.provider = new ethers.providers.JsonRpcProvider(`https://${DefaultConfig.settings.network}.infura.io/ZDNEJN22wNXziclTLijw`, DefaultConfig.settings.network);
-        // this.web3 = new Web3(new Web3.providers.HttpProvider(Globals.GET_SPECIFIC_INFURA_URL()));
+        this.blockchainHelper = new BlockchainHelper();
     }
 
     /**
@@ -24,10 +24,11 @@ export class BlockchainController {
         const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=${Globals.GET_TRANSACTION_STATUS_ENUM().success}`;
         try {
             const sub = setInterval( async () => {
-                const result = await this.provider.getTransactionReceipt(txHash);
+                const result = await this.blockchainHelper.getProvider().getTransactionReceipt(txHash);
                 if(result && result.status === 1) {
                     clearInterval(sub);
                     new HTTPHelper().request(requestURL, 'PATCH');
+                    this.executePullPayment();
                 }
             }, DefaultConfig.settings.txStatusInterval);
     
@@ -41,11 +42,13 @@ export class BlockchainController {
     * @description Method for actuall execution of pull payment
     * @returns {object} null
     */
-    protected executePullPayment() {
-        return null;
-    }
+    private async executePullPayment(debitAddress?: string) {
+        const contract = await new SmartContractReader('DebitAccount').readContract(this.debitAddress);
+        const ownerAddress = await contract.methods.owner().call();
+        const txCount = await this.blockchainHelper.getTxCount(ownerAddress);
+        const data = contract.methods.executePullPayment().encodeABI();
+        const serializedTx = await new RawTransactionSerializer(data, this.debitAddress, txCount).getSerializedTx();
 
-    // private getTransactionStatus(txHash: string, callback?: any) {
-    //     return this.provider.getTransactionReceipt(txHash, callback);
-    // }
+        return this.blockchainHelper.executeSignedTransaction(serializedTx);
+    }
 }

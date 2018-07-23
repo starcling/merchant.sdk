@@ -72,6 +72,10 @@ export class Globals {
         return 2000;
     }
 
+    public static GET_SOLIDITY_FILE(): string {
+        return `${__dirname}/src/core/blockchain/smartContracts/unified.sol`;
+    }
+
     public static GET_LOCAL_ETHNODE_URL(): string {
         return 'http://127.0.0.1:7545';
     }
@@ -82,6 +86,10 @@ export class Globals {
 
     public static GET_TRANSACTION_STATUS_ENUM(): any {
         return TransactionStatusEnum;
+    }
+
+    public static GET_MERCHANT_PRIVATE_KEY(): string {
+        return '3f455a331a4fdd97f14fe8025cdb6722ac7dffea2b98c5bca5087e26d7ab862c';
     }
 }
 
