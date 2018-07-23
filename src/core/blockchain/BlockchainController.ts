@@ -18,16 +18,16 @@ export class BlockchainController {
     * @returns {boolean} success/fail response
     */
     protected monitorTransaction(txHash: string, paymentID: string) {
-        const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}?status=454`;
-                        new HTTPHelper().request(requestURL, 'PATCH');
+        const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=${Globals.GET_TRANSACTION_STATUS_ENUM().success}`;
+        new HTTPHelper().request(requestURL, 'PATCH');
         try {
             const sub = setInterval(() => {
                 this.provider.getTransactionReceipt(txHash, (error, result) => {
                     if(!error) {
-                        const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}?status=${Globals.GET_TRANSACTION_STATUS_ENUM().success}`;
                         new HTTPHelper().request(requestURL, 'PATCH');
                         clearInterval(sub);
                     }
+                    // requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=${error}`;
                 });
             }, DefaultConfig.settings.txStatusInterval);
     
