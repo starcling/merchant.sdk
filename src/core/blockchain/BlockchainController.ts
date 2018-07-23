@@ -2,13 +2,16 @@ import * as ethers from 'ethers';
 import { DefaultConfig } from '../../config/default.config';
 import { HTTPHelper } from '../../utils/web/HTTPHelper';
 import { Globals } from '../../utils/globals';
+// const Web3 = require('web3');
 
 export class BlockchainController {
 
     private provider: any;
+    // private web3: any;
 
     constructor() {
         this.provider = new ethers.providers.JsonRpcProvider(`https://${DefaultConfig.settings.network}.infura.io/ZDNEJN22wNXziclTLijw`, DefaultConfig.settings.network);
+        // this.web3 = new Web3(new Web3.providers.HttpProvider(Globals.GET_SPECIFIC_INFURA_URL()));
     }
 
     /**
@@ -19,16 +22,13 @@ export class BlockchainController {
     */
     protected monitorTransaction(txHash: string, paymentID: string) {
         const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=${Globals.GET_TRANSACTION_STATUS_ENUM().success}`;
-        new HTTPHelper().request(requestURL, 'PATCH');
         try {
-            const sub = setInterval(() => {
-                this.provider.getTransactionReceipt(txHash, (error, result) => {
-                    if(!error) {
-                        new HTTPHelper().request(requestURL, 'PATCH');
-                        clearInterval(sub);
-                    }
-                    // requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=${error}`;
-                });
+            const sub = setInterval( async () => {
+                const result = await this.provider.getTransactionReceipt(txHash);
+                if(result && result.status === 1) {
+                    clearInterval(sub);
+                    new HTTPHelper().request(requestURL, 'PATCH');
+                }
             }, DefaultConfig.settings.txStatusInterval);
     
             return true;

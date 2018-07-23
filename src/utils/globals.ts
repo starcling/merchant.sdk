@@ -69,11 +69,15 @@ export class Globals {
      * @returns {number} interval
      */
     public static GET_TX_STATUS_INTERVAL(): number {
-        return 5000;
+        return 2000;
     }
 
     public static GET_LOCAL_ETHNODE_URL(): string {
         return 'http://127.0.0.1:7545';
+    }
+
+    public static GET_SPECIFIC_INFURA_URL(): string {
+        return 'https://ropsten.infura.io/ZDNEJN22wNXziclTLijw';
     }
 
     public static GET_TRANSACTION_STATUS_ENUM(): any {
