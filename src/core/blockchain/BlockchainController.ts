@@ -8,12 +8,6 @@ import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerial
 export class BlockchainController {
     private debitAddress: string = '0x15f79A4247cD2e9898dD45485683a0B26855b646';
 
-    private blockchainHelper: BlockchainHelper;
-
-    constructor() {
-        this.blockchainHelper = new BlockchainHelper();
-    }
-
     /**
     * @description Method for registering an event for monitoring transaction on the blockchain
     * @param {string} txHash: Hash of the transaction that needs to be monitored
@@ -22,13 +16,14 @@ export class BlockchainController {
     */
     protected monitorTransaction(txHash: string, paymentID: string) {
         const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=${Globals.GET_TRANSACTION_STATUS_ENUM().success}`;
+
         try {
             const sub = setInterval( async () => {
-                const result = await this.blockchainHelper.getProvider().getTransactionReceipt(txHash);
-                if(result && result.status === 1) {
+                const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
+                if(result && result.status) {
                     clearInterval(sub);
                     new HTTPHelper().request(requestURL, 'PATCH');
-                    this.executePullPayment();
+                    this.executePullPayment(this.debitAddress);
                 }
             }, DefaultConfig.settings.txStatusInterval);
     
@@ -43,12 +38,13 @@ export class BlockchainController {
     * @returns {object} null
     */
     private async executePullPayment(debitAddress?: string) {
-        const contract = await new SmartContractReader('DebitAccount').readContract(this.debitAddress);
+        const blockchainHelper = new BlockchainHelper();
+        const contract = await new SmartContractReader('DebitAccount').readContract(debitAddress);
         const ownerAddress = await contract.methods.owner().call();
-        const txCount = await this.blockchainHelper.getTxCount(ownerAddress);
+        const txCount = await blockchainHelper.getTxCount(ownerAddress);
         const data = contract.methods.executePullPayment().encodeABI();
-        const serializedTx = await new RawTransactionSerializer(data, this.debitAddress, txCount).getSerializedTx();
+        const serializedTx = await new RawTransactionSerializer(data, debitAddress, txCount).getSerializedTx();
 
-        return this.blockchainHelper.executeSignedTransaction(serializedTx);
+        return blockchainHelper.executeSignedTransaction(serializedTx);
     }
 }

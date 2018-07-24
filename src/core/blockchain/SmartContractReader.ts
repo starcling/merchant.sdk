@@ -12,11 +12,9 @@ import { BlockchainHelper } from './BlockchainHelper';
  * */
 export class SmartContractReader {
     private readonly smartContractPath: string;
-    private blockchainHelper: BlockchainHelper;
 
     public constructor(private smartContractName: string) {
         this.smartContractPath = Globals.GET_SOLIDITY_FILE();
-        this.blockchainHelper = new BlockchainHelper();
     }
 
     /**
@@ -36,9 +34,8 @@ export class SmartContractReader {
      * @returns {any} Returns the smart contract instance on that address
      * */
     public readContract(address: string): Promise<any> {
-        const provider = this.blockchainHelper.getProvider();
         const contractABI = this.readABI();
 
-        return new provider.Contract(contractABI, address);
+        return new (new BlockchainHelper().getProvider()).Contract(contractABI, address);
     }
 }

@@ -5,7 +5,7 @@ export class BlockchainHelper {
     private provider: any;
 
     public constructor() {
-        this.provider = new ethers.providers.JsonRpcProvider(`https://${DefaultConfig.settings.network}.infura.io/ZDNEJN22wNXziclTLijw`, DefaultConfig.settings.network);
+        this.provider = DefaultConfig.settings.web3;
     }
 
     /**
@@ -14,7 +14,7 @@ export class BlockchainHelper {
      * @returns {Promise<number>} Returns the transaction count (nonce) of an ethereum address
      * */
     public getTxCount(address: string): Promise<number> {
-        return this.provider.getTransactionCount(address);
+        return this.getProvider().getTransactionCount(address);
     }
 
     /**
@@ -22,11 +22,12 @@ export class BlockchainHelper {
      * @returns {Promise<any>} Returns the PromiEvent from the ethereum network
      * */
     public executeSignedTransaction(serializedTx: string, callback?: any): Promise<any> {
-        return this.provider.sendSignedTransaction(serializedTx, callback);
+        return this.getProvider().sendSignedTransaction(serializedTx, callback);
     }
 
     public getProvider(url?: string, network: string = 'ropsten') {
         if (url) this.provider = new ethers.providers.JsonRpcProvider(url, network);
-        return this.provider;
+        return this.provider.eth ? this.provider.eth : this.provider;
     }
+
 }

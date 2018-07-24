@@ -11,6 +11,7 @@ export class DefaultConfig {
 
     public static get settings() {
         return {
+            web3: this._settings.web3,
             apiUrl: this._settings.apiUrl ? this._settings.apiUrl : Globals.GET_CORE_API_URL(),
             merchantApiUrl: this._settings.merchantApiUrl ? this._settings.merchantApiUrl : Globals.GET_MERCHANT_API_URL(),
             generateQRApiUrl: this._settings.generateQRApiUrl ? this._settings.generateQRApiUrl : Globals.GET_GENERATE_QR_API_URL(),

@@ -73,7 +73,7 @@ export class Globals {
     }
 
     public static GET_SOLIDITY_FILE(): string {
-        return `${__dirname}/src/core/blockchain/smartContracts/unified.sol`;
+        return `${__dirname.substring(0, __dirname.length - 15)}/src/core/blockchain/smartContracts/unified.sol`;
     }
 
     public static GET_LOCAL_ETHNODE_URL(): string {

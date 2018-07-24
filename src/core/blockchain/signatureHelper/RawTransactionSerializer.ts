@@ -1,5 +1,5 @@
 import {Globals} from '../../../utils/globals';
-import * as ethers from 'ethers';
+import { DefaultConfig } from '../../../config/default.config';
 const TX = require('ethereumjs-tx');
 
 /**
@@ -22,7 +22,7 @@ export class RawTransactionSerializer {
     public getSerializedTx(): string {
         const rawTx = {
             gasPrice: '0x3b9aca00',
-            gasLimit: ethers.utils.toHex(210000),
+            gasLimit: DefaultConfig.settings.web3.utils.toHex(210000),
             to: this.contractAddress,
             value: '0x00',
             data: this.data,
