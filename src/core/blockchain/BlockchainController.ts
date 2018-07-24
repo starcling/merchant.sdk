@@ -7,6 +7,7 @@ import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerial
 
 export class BlockchainController {
     private debitAddress: string = '0x15f79A4247cD2e9898dD45485683a0B26855b646';
+    private merchantAddress: string = '0x9d11DDd84198B30E56E31Aa89227344Cdb645e34';
 
     /**
     * @description Method for registering an event for monitoring transaction on the blockchain
@@ -15,15 +16,19 @@ export class BlockchainController {
     * @returns {boolean} success/fail response
     */
     protected monitorTransaction(txHash: string, paymentID: string) {
-        const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=${Globals.GET_TRANSACTION_STATUS_ENUM().success}`;
+        const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=`;
 
         try {
             const sub = setInterval( async () => {
                 const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
-                if(result && result.status) {
+                if(result) {
                     clearInterval(sub);
-                    new HTTPHelper().request(requestURL, 'PATCH');
-                    this.executePullPayment(this.debitAddress);
+                    if (result.status === 1 || result.status === true) {
+                        new HTTPHelper().request(requestURL + Globals.GET_TRANSACTION_STATUS_ENUM().success, 'PATCH');
+                        this.executePullPayment(this.debitAddress, paymentID);
+                    } else {
+                        new HTTPHelper().request(requestURL + Globals.GET_TRANSACTION_STATUS_ENUM().fail, 'PATCH');
+                    }
                 }
             }, DefaultConfig.settings.txStatusInterval);
     
@@ -37,14 +42,21 @@ export class BlockchainController {
     * @description Method for actuall execution of pull payment
     * @returns {object} null
     */
-    private async executePullPayment(debitAddress?: string) {
+    public async executePullPayment(debitAddress?: string, paymentID?: string) {
+        // const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=`;
         const blockchainHelper = new BlockchainHelper();
         const contract = await new SmartContractReader('DebitAccount').readContract(debitAddress);
-        const ownerAddress = await contract.methods.owner().call();
-        const txCount = await blockchainHelper.getTxCount(ownerAddress);
+        const txCount = await blockchainHelper.getTxCount(this.merchantAddress);
         const data = contract.methods.executePullPayment().encodeABI();
         const serializedTx = await new RawTransactionSerializer(data, debitAddress, txCount).getSerializedTx();
 
-        return blockchainHelper.executeSignedTransaction(serializedTx);
+        return new Promise((resolve, reject) => {
+            blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => {
+                const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?promo=${hash}`;
+                new HTTPHelper().request(requestURL, 'PATCH');
+            }).on('receipt', (receipt) => {
+                resolve(receipt);
+            });
+        }); 
     }
 }

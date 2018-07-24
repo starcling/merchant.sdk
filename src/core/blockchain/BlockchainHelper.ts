@@ -1,5 +1,5 @@
-import * as ethers from 'ethers';
 import { DefaultConfig } from '../../config/default.config';
+import { PromiEvent } from 'web3/types';
 
 export class BlockchainHelper {
     private provider: any;
@@ -19,14 +19,13 @@ export class BlockchainHelper {
 
     /**
      * @description Executes a Singed Transaction using web3.eth.sendSignedTransaction()
-     * @returns {Promise<any>} Returns the PromiEvent from the ethereum network
+     * @returns {PromiEvent<any>} Returns the PromiEvent from the ethereum network
      * */
-    public executeSignedTransaction(serializedTx: string, callback?: any): Promise<any> {
+    public executeSignedTransaction(serializedTx: string, callback?: any): PromiEvent<any> {
         return this.getProvider().sendSignedTransaction(serializedTx, callback);
     }
 
-    public getProvider(url?: string, network: string = 'ropsten') {
-        if (url) this.provider = new ethers.providers.JsonRpcProvider(url, network);
+    public getProvider() {
         return this.provider.eth ? this.provider.eth : this.provider;
     }
 
