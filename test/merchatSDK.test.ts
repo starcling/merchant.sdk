@@ -10,7 +10,7 @@ chai.should();
 // and api server is running on localhost:8081/api/v1
 
 // when request without apikey
-const merchantWithoutApiKey = new MerchantSDK({ apiUrl: 'http://localhost:8081/api/v1/' });
+/* const merchantWithoutApiKey = new MerchantSDK({ apiUrl: 'http://localhost:8081/api/v1/' });
 
 describe('Connect Merchant Core API with username and password', () => {
     it('should return UserToken', async () => {
@@ -47,4 +47,7 @@ describe('Connect Merchant Core API with username and password', () => {
         response.should.have.property('status').that.is.equal(200);
         response.should.have.property('message').to.be.an('string');
     });
-});
+}); */
+
+
+

@@ -9,7 +9,7 @@ const {MerchantSDK} = require('./../src/MerchantSDKClass');
 // when request without apikey
 const merchantWithoutApiKey = new MerchantSDK({apiUrl: 'http://localhost:8081/api/v1/'});
 
-merchantWithoutApiKey.generateQRCodeURL({
+/* merchantWithoutApiKey.generateQRCodeURL({
     merchantAddress: "0123x",
     currency: "EUR",
     amount: 123,
@@ -19,7 +19,7 @@ merchantWithoutApiKey.generateQRCodeURL({
     startTime: 3,
     endTime: 4,
     callbackURL: 'localhost:8081/api/v1/test'
-}).then(url => console.log(url));
+}).then(url => console.log(url)); */
 
 merchantWithoutApiKey.authenticate('user', 'password').then(res => {
     merchantWithoutApiKey.getRequest('/exchange/global').then(res => 
