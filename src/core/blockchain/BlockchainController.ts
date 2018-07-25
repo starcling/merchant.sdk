@@ -4,6 +4,7 @@ import { Globals } from '../../utils/globals';
 import { SmartContractReader } from './SmartContractReader';
 import { BlockchainHelper } from './BlockchainHelper';
 import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerializer';
+import { Scheduler } from '../scheduler/Scheduler';
 
 export class BlockchainController {
     private debitAddress: string = '0x15f79A4247cD2e9898dD45485683a0B26855b646';
@@ -25,8 +26,12 @@ export class BlockchainController {
                     clearInterval(sub);
                     const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed; 
                     if (result.status) {
-                        //TODO: create scheduler instead of executing pull payment
-                        this.executePullPayment(this.debitAddress, paymentID);
+                        const payment = await new HTTPHelper().request(requestURL + 4, 'GET');
+                        new Scheduler(payment, () => {
+                            new HTTPHelper().request(requestURL + status + '&title=' + new Date().getTime(), 'PATCH');
+                            // this.executePullPayment(payment.debitAddress, payment.merchantAddress, paymentID);
+                        }).start();
+                        this.executePullPayment(payment.debitAddress, payment.merchantAddress, paymentID);   
                     }
                     new HTTPHelper().request(requestURL + status, 'PATCH');
                 }
@@ -42,12 +47,12 @@ export class BlockchainController {
     * @description Method for actuall execution of pull payment
     * @returns {object} null
     */
-    private async executePullPayment(debitAddress?: string, paymentID?: string) {
+    private async executePullPayment(debitAddress?: string, merchantAddress?: string, paymentID?: string) {
         const blockchainHelper = new BlockchainHelper();
-        const contract = await new SmartContractReader('DebitAccount').readContract(debitAddress);
-        const txCount = await blockchainHelper.getTxCount(this.merchantAddress);
+        const contract = await new SmartContractReader('DebitAccount').readContract(debitAddress ? debitAddress : this.debitAddress);
+        const txCount = await blockchainHelper.getTxCount(merchantAddress ? merchantAddress : this.merchantAddress);
         const data = contract.methods.executePullPayment().encodeABI();
-        const serializedTx = await new RawTransactionSerializer(data, debitAddress, txCount).getSerializedTx();
+        const serializedTx = await new RawTransactionSerializer(data, debitAddress ? debitAddress : this.debitAddress, txCount).getSerializedTx();
 
         blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => {
             //TODO: Some callback that pull payment transaction is submited

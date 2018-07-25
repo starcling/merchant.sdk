@@ -1,26 +1,29 @@
 import { SchedulerBuffer } from "./ScheduleBuffer";
-
 const schedule = require('node-schedule');
 
 export class Scheduler {
 
-    public constructor(private reccuringDetails: any) {
+    public constructor(private reccuringDetails: any, private callback: any) {
 
     }
 
     public start() {
-        const newScheduler = schedule.scheduleJob(this.reccuringDetails, {
-            
-        });
+        const rule = new schedule.RecurrenceRule();
+        rule.seconds = this.reccuringDetails.frequency
+        const newScheduler = schedule.scheduleJob({
+            start: new Date (Number(this.reccuringDetails.startTimestamp)),
+            end: new Date (Number(this.reccuringDetails.endTimestamp)),
+            rule: rule
+        }, this.callback);
 
         SchedulerBuffer.set(newScheduler);
     }
 
-    public stop(scheduler_id: string) {
+    public static stop(scheduler_id: string) {
         SchedulerBuffer.get(scheduler_id).stop();
     }
 
-    public restart(scheduler_id: string) {
-        SchedulerBuffer.get(scheduler_id).reschedule(this.reccuringDetails);
+    public static restart(scheduler_id: string, reccuringDetails: any) {
+        SchedulerBuffer.get(scheduler_id).reschedule(reccuringDetails);
     }
 }
