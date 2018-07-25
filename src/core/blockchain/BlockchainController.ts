@@ -1,18 +1,14 @@
-import * as ethers from 'ethers';
 import { DefaultConfig } from '../../config/default.config';
 import { HTTPHelper } from '../../utils/web/HTTPHelper';
 import { Globals } from '../../utils/globals';
-// const Web3 = require('web3');
+import { SmartContractReader } from './SmartContractReader';
+import { BlockchainHelper } from './BlockchainHelper';
+import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerializer';
 
 export class BlockchainController {
-
-    private provider: any;
-    // private web3: any;
-
-    constructor() {
-        this.provider = new ethers.providers.JsonRpcProvider(`https://${DefaultConfig.settings.network}.infura.io/ZDNEJN22wNXziclTLijw`, DefaultConfig.settings.network);
-        // this.web3 = new Web3(new Web3.providers.HttpProvider(Globals.GET_SPECIFIC_INFURA_URL()));
-    }
+    //TODO: add these addresses dynamically
+    private debitAddress: string = '0x15f79A4247cD2e9898dD45485683a0B26855b646';
+    private merchantAddress: string = '0x9d11DDd84198B30E56E31Aa89227344Cdb645e34';
 
     /**
     * @description Method for registering an event for monitoring transaction on the blockchain
@@ -21,13 +17,19 @@ export class BlockchainController {
     * @returns {boolean} success/fail response
     */
     protected monitorTransaction(txHash: string, paymentID: string) {
-        const requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}?status=${Globals.GET_TRANSACTION_STATUS_ENUM().success}`;
+        let requestURL = `${DefaultConfig.settings.merchantApiUrl}${DefaultConfig.settings.paymentsURL}/${paymentID}`;
+
         try {
             const sub = setInterval( async () => {
-                const result = await this.provider.getTransactionReceipt(txHash);
-                if(result && result.status === 1) {
+                const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
+                if(result) {
                     clearInterval(sub);
-                    new HTTPHelper().request(requestURL, 'PATCH');
+                    const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed; 
+                    new HTTPHelper().request(requestURL, 'PATCH', { status: status });
+                    if (result.status) {
+                        //TODO: create scheduler instead of executing pull payment
+                        this.executePullPayment(this.debitAddress, requestURL);
+                    }
                 }
             }, DefaultConfig.settings.txStatusInterval);
     
@@ -41,11 +43,19 @@ export class BlockchainController {
     * @description Method for actuall execution of pull payment
     * @returns {object} null
     */
-    protected executePullPayment() {
-        return null;
-    }
+    private async executePullPayment(debitAddress: string, requestURL: string) {
+        const blockchainHelper = new BlockchainHelper();
+        const contract = await new SmartContractReader('DebitAccount').readContract(debitAddress);
+        const txCount = await blockchainHelper.getTxCount(this.merchantAddress);
+        const data = contract.methods.executePullPayment().encodeABI();
+        const serializedTx = await new RawTransactionSerializer(data, debitAddress, txCount).getSerializedTx();
 
-    // private getTransactionStatus(txHash: string, callback?: any) {
-    //     return this.provider.getTransactionReceipt(txHash, callback);
-    // }
+        blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => {
+            const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;
+            new HTTPHelper().request(requestURL, 'PATCH', { executeTxHash: hash, executeTxStatus: status });
+        }).on('receipt', (receipt) => {
+            const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed; 
+            new HTTPHelper().request(requestURL, 'PATCH', { executeTxStatus: status })
+        });
+    }
 }
