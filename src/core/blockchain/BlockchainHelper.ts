@@ -25,8 +25,11 @@ export class BlockchainHelper {
         return this.getProvider().sendSignedTransaction(serializedTx, callback);
     }
 
+    /**
+     * @description Gets the provider that is used to communicate to the blockchain
+     * @returns {PromiEvent<any>} Returns the PromiEvent from the ethereum network
+     * */
     public getProvider() {
         return this.provider.eth ? this.provider.eth : this.provider;
     }
-
 }

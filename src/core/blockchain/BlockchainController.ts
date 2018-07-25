@@ -6,6 +6,7 @@ import { BlockchainHelper } from './BlockchainHelper';
 import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerializer';
 
 export class BlockchainController {
+    //TODO: add these addresses dynamically
     private debitAddress: string = '0x15f79A4247cD2e9898dD45485683a0B26855b646';
     private merchantAddress: string = '0x9d11DDd84198B30E56E31Aa89227344Cdb645e34';
 
