@@ -16,7 +16,7 @@ export class QrCode {
     * @param {string} paymentID: ID of the specific payment
     * @returns {object} QR code object
     */
-    public generate(paymentID: string) {
+    public generateQRCode(paymentID: string) {
         return { url: this.generateURL(paymentID) };
     }
 }

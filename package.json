@@ -16,8 +16,12 @@
     },
     "dependencies": {
         "pg": "^7.4.3",
+        "ethereumjs-tx": "^1.3.6",
+        "ethers": "^3.0.25",
         "request": "^2.87.0",
-        "request-promise": "^4.2.2"
+        "request-promise": "^4.2.2",
+        "solc": "^0.4.24",
+        "web3": "^1.0.0-beta.34"
     },
     "devDependencies": {
         "@types/mocha": "^5.2.3",

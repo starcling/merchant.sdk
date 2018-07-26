@@ -12,7 +12,7 @@ export class Globals {
      * @description Method for getting merchant backend api url 
      * @returns {string} url
      */
-    public static MERCHANT_API_URL(): string {
+    public static GET_MERCHANT_API_URL(): string {
         return 'http://merchant:3000/api/v1';
     }
 
@@ -20,7 +20,7 @@ export class Globals {
      * @description Method for getting generate qr api url 
      * @returns {string} url
      */
-    public static GENERATE_QR_API_URL(): string {
+    public static GET_QR_API_URL(): string {
         return '/qr/url/';
     }
 
@@ -28,7 +28,7 @@ export class Globals {
      * @description Method for getting payment api url 
      * @returns {string} url
      */
-    public static PAYMENT_URL(): string {
+    public static GET_PAYMENT_URL(): string {
         return '/payments';
     }
 
@@ -36,7 +36,7 @@ export class Globals {
      * @description Method for getting login api url 
      * @returns {string} url
      */
-    public static LOGIN_URL(): string {
+    public static GET_LOGIN_URL(): string {
         return '/login';
     }
 
@@ -44,7 +44,7 @@ export class Globals {
      * @description Method for getting generate api key url 
      * @returns {string} url
      */
-    public static GENERATE_API_KEY_URL(): string {
+    public static GET_API_KEY_URL(): string {
         return '/auth/generate-api-key';
     }
 
@@ -52,27 +52,71 @@ export class Globals {
      * @description Method for getting access token url 
      * @returns {string} url
      */
-    public static GENERATE_ACCESS_TOKEN_URL(): string {
+    public static GET_ACCESS_TOKEN_URL(): string {
         return '/auth/token/generate';
     }
     
-    public static GENERATE_PG_HOST(): string {
+    public static GET_PG_HOST(): string {
         return 'localhost';
     }
 
-    public static GENERATE_PG_USER(): string {
+    public static GET_PG_USER(): string {
         return 'local_user';
     }
 
-    public static GENERATE_PG_PASSWORD(): string {
+    public static GET_PG_PASSWORD(): string {
         return 'local_pass';
     }
 
-    public static GENERATE_PG_DATABASE(): string {
+    public static GET_PG_DATABASE(): string {
         return 'local_merchant_server';
     }
 
-    public static GENERATE_PG_PORT(): string {
+    public static GET_PG_PORT(): string {
         return '5431';
     }
+
+    /**
+     * @description Method for getting network used
+     * @returns {string} url
+     */
+    public static GET_NETWORK(): string {
+        return 'ropsten';
+    }
+
+    /**
+     * @description Method for getting tx status interval
+     * @returns {number} interval
+     */
+    public static GET_TX_STATUS_INTERVAL(): number {
+        return 2000;
+    }
+
+    public static GET_SOLIDITY_FILE(): string {
+        return `${__dirname.substring(0, __dirname.length - 15)}/src/core/blockchain/smartContracts/unified.sol`;
+    }
+
+    public static GET_LOCAL_ETHNODE_URL(): string {
+        return 'http://127.0.0.1:7545';
+    }
+
+    public static GET_SPECIFIC_INFURA_URL(): string {
+        return 'https://ropsten.infura.io/ZDNEJN22wNXziclTLijw';
+    }
+
+    public static GET_TRANSACTION_STATUS_ENUM(): any {
+        return TransactionStatusEnum;
+    }
+
+    public static GET_MERCHANT_PRIVATE_KEY(): string {
+        return '3f455a331a4fdd97f14fe8025cdb6722ac7dffea2b98c5bca5087e26d7ab862c';
+    }
+}
+
+enum TransactionStatusEnum {
+    failed = 0,
+    initial = 1,
+    scaned = 2,
+    pending = 3,
+    success = 4
 }
