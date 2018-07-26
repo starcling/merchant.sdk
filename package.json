@@ -8,11 +8,14 @@
     },
     "scripts": {
         "start": "node --max-old-space-size=16384 ./test/test.js",
-        "test": "mocha --timeout 15000 -r ts-node/register test/unit/**/*.ts",
         "pack-local": "tsc && npm link",
-        "build": "tsc"
+        "build": "tsc",
+        "test": "mocha --timeout 15000 -r ts-node/register test/unit/**/*.ts",
+        "test-e2e": "mocha --timeout 15000 -r ts-node/register test/e2e/**/*.ts",
+        "test-unit": "mocha --timeout 15000 -r ts-node/register test/unit/**/*.ts"
     },
     "dependencies": {
+        "pg": "^7.4.3",
         "ethereumjs-tx": "^1.3.6",
         "ethers": "^3.0.25",
         "node-schedule": "^1.3.0",

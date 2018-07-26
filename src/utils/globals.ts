@@ -20,7 +20,7 @@ export class Globals {
      * @description Method for getting generate qr api url 
      * @returns {string} url
      */
-    public static GET_GENERATE_QR_API_URL(): string {
+    public static GET_QR_API_URL(): string {
         return '/qr/url/';
     }
 
@@ -44,7 +44,7 @@ export class Globals {
      * @description Method for getting generate api key url 
      * @returns {string} url
      */
-    public static GET_GENERATE_API_KEY_URL(): string {
+    public static GET_API_KEY_URL(): string {
         return '/auth/generate-api-key';
     }
 
@@ -52,8 +52,28 @@ export class Globals {
      * @description Method for getting access token url 
      * @returns {string} url
      */
-    public static GET_GENERATE_ACCESS_TOKEN_URL(): string {
+    public static GET_ACCESS_TOKEN_URL(): string {
         return '/auth/token/generate';
+    }
+    
+    public static GET_PG_HOST(): string {
+        return 'localhost';
+    }
+
+    public static GET_PG_USER(): string {
+        return 'local_user';
+    }
+
+    public static GET_PG_PASSWORD(): string {
+        return 'local_pass';
+    }
+
+    public static GET_PG_DATABASE(): string {
+        return 'local_merchant_server';
+    }
+
+    public static GET_PG_PORT(): string {
+        return '5431';
     }
 
     /**
