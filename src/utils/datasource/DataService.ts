@@ -1,13 +1,9 @@
 import { Pool, PoolClient } from 'pg';
-//import { LoggerFactory } from '../logger/LoggerFactory';
-//import { Container } from 'typedi';
-//import { LoggerInstance } from 'winston';
 import { DbErrorHelper } from './helpers/dbErrorHelper';
 import { IResponseMessage } from '../web/HTTPResponseHandler';
 import { DefaultConfig } from '../../config/default.config';
 
 export class DataService {
-  //private logger: LoggerInstance = Container.get(LoggerFactory).getInstance('DataService');
   private pool: Pool;
 
   protected async executeQuery(sqlQuery: ISqlQuery): Promise<any> {
@@ -19,7 +15,6 @@ export class DataService {
       port: Number(DefaultConfig.settings.pgPort)
     });
     this.pool.on('error', (error: Error, client: PoolClient) => {
-      //this.logger.error(`Error On PG Pool. Reason: ${error}`);
       process.exit(-1);
     });
 
