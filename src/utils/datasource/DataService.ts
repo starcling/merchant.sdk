@@ -47,7 +47,7 @@ export class DataService {
           queryMessage.message = `SQL Insert Query completed successful.`;
           queryMessage.data = result.rows;
           resolve(queryMessage);
-        } else {
+        }else{
           queryMessage.success = true;
           queryMessage.status = 200;
           queryMessage.message = `SQL Query completed successful.`;
