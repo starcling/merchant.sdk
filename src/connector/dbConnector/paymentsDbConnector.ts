@@ -1,6 +1,5 @@
 import { ISqlQuery, DataService } from '../../utils/datasource/DataService';
 import { IPaymentInsertDetails, IPaymentUpdateDetails } from '../../core/payment/models';
-import { reject } from '../../../node_modules/@types/bluebird';
 
 export class PaymentDbConnector {
   public createPayment(insertDetails: IPaymentInsertDetails) {
