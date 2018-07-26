@@ -4,7 +4,6 @@
         "insertPayment": {
             "title": "string",
             "description": "string",
-            "status": 1,
             "amount": 43,
             "currency": "string",
             "startTimestamp": 10,
@@ -25,8 +24,11 @@
             "endTimestamp": 13,
             "type": 1,
             "frequency": 10,
-            "transactionHash":"string",
-            "debitAccount": "string"
+            "registerTxHash": "string",
+            "executeTxHash": "string",
+            "executeTxStatus": 1,
+            "debitAccount": "string",
+            "merchantAddress": "string"
         }
     }
 }
