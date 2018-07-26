@@ -11,8 +11,8 @@ export class Scheduler {
         const rule = new schedule.RecurrenceRule();
         rule.seconds = this.reccuringDetails.frequency
         const newScheduler = schedule.scheduleJob({
-            start: new Date (Number(this.reccuringDetails.startTimestamp)),
-            end: new Date (Number(this.reccuringDetails.endTimestamp)),
+            start: new Date (Number(this.reccuringDetails.startTimestamp  * 1000)),
+            end: new Date (Number(this.reccuringDetails.endTimestamp * 1000)),
             rule: rule
         }, this.callback);
 
