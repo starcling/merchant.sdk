@@ -101,7 +101,6 @@ export class AuthenticationController {
         try {
             const { token } = await this.getPMAUserToken(username, password);
             DefaultConfig.settings.pmaUserToken = token;
-            // this.merchantDetail = merchant;
 
             if (!DefaultConfig.settings.pmaUserToken) {
                 return Promise.reject('Authentication Failed!');
