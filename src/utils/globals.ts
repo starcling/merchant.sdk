@@ -55,4 +55,24 @@ export class Globals {
     public static GENERATE_ACCESS_TOKEN_URL(): string {
         return '/auth/token/generate';
     }
+    
+    public static GENERATE_PG_HOST(): string {
+        return 'localhost';
+    }
+
+    public static GENERATE_PG_USER(): string {
+        return 'local_user';
+    }
+
+    public static GENERATE_PG_PASSWORD(): string {
+        return 'local_pass';
+    }
+
+    public static GENERATE_PG_DATABASE(): string {
+        return 'local_merchant_server';
+    }
+
+    public static GENERATE_PG_PORT(): string {
+        return '5431';
+    }
 }

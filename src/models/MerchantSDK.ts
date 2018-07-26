@@ -7,4 +7,9 @@ export interface MerchantSDKSettings {
     loginUrl?: string;
     generateApiKeyUrl?: string;
     generateAccessTokenUrl?: string;
+    pgUser?: string;
+    pgHost?: string;
+    pgDatabase?: string;
+    pgPassword?: string;
+    pgPort?: string;
 }

@@ -3,10 +3,14 @@ import { DefaultConfig } from './config/default.config';
 import { QrCode } from './core/qr/QrCode';
 import { MerchantSDKSettings } from './models/MerchantSDK';
 import { HTTPHelper } from './utils/web/HTTPHelper';
+import { PaymentController } from './core/payment/PaymentController';
+import { IPaymentInsertDetails, IPaymentUpdateDetails } from './core/payment/models';
+
 
 export class MerchantSDK {
     private http: HTTPHelper;
     private authenticationController: AuthenticationController;
+    private paymentController: PaymentController;
 
     public constructor(param: MerchantSDKSettings) {
         DefaultConfig.settings = { apiUrl: ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '') };
@@ -14,6 +18,7 @@ export class MerchantSDK {
 
         this.http = new HTTPHelper();
         this.authenticationController = new AuthenticationController();
+        this.paymentController = new PaymentController();
     }
 
     /**
@@ -24,6 +29,11 @@ export class MerchantSDK {
     public build(param: MerchantSDKSettings): MerchantSDK {
         DefaultConfig.settings = { apiUrl: ((param && param.apiUrl) || DefaultConfig.settings.apiUrl).replace(/\/$/g, '') };
         DefaultConfig.settings = { pmaApiKey: (param && param.apiKey) || null};
+        DefaultConfig.settings = { pgUser: (param && param.pgUser) || null};
+        DefaultConfig.settings = { pgHost: (param && param.pgHost) || null};
+        DefaultConfig.settings = { pgDatabase: (param && param.pgDatabase) || null};
+        DefaultConfig.settings = { pgPassword: (param && param.pgPassword) || null};
+        DefaultConfig.settings = { pgPort: (param && param.pgPort) || null};
 
         return this;
     }
@@ -74,6 +84,51 @@ export class MerchantSDK {
    * @returns {object} QR code object
    */
     public generateQRCode(paymentID: string) {
-        return { url: new QrCode().generate(paymentID) };
+        return { url: new QrCode().generate(paymentID).url };
     }
+
+    /**
+     * @description Public method for creating a new payment DB record
+     * @param {IPaymentInsertDetails} payment payment object
+     * @returns {HTTPResponse} Returns success feedback
+     */
+    public createPayment(payment: IPaymentInsertDetails) {
+        return this.paymentController.createPayment(payment);
+    }
+
+    /**
+     * @description Get a single payment from DB0
+     * @param {string} paymentID ID of the payment
+     * @returns {HTTPResponse} Returns response with payment object in data
+     */
+    public getPayment(paymentID: string) {
+        return this.paymentController.getPayment(paymentID);
+    }
+
+    /**
+     * @description Updating a payment in DB
+     * @param {IPaymentUpdateDetails} payment payment object
+     * @returns {HTTPResponse} Returns success feedback
+     */
+    public updatePayment(payment: IPaymentUpdateDetails) {
+        return this.paymentController.updatePayment(payment);
+    }
+    
+    /**
+     * @description Get a single payment from DB0
+     * @param {string} paymentID ID of the payment
+     * @returns {HTTPResponse} Returns response with payment object in data
+     */
+    public deletePayment(paymentID: string) {
+        return this.paymentController.deletePayment(paymentID);
+    }
+
+    /**
+     * @description Get all payments from DB
+     * @returns {HTTPResponse} Returns response with array of payments in data
+     */
+    public getAllPayments() {
+        return this.paymentController.getAllPayments();
+    }
+
 }
