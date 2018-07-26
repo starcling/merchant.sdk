@@ -53,8 +53,21 @@ describe('PaymentDbConnector', () => {
             result.data[0].should.have.property('endTimestamp').that.is.equal(updateTestPayment.endTimestamp);
             result.data[0].should.have.property('type').that.is.equal(updateTestPayment.type);
             result.data[0].should.have.property('frequency').that.is.equal(updateTestPayment.frequency);
-            result.data[0].should.have.property('transactionHash').that.is.equal(updateTestPayment.transactionHash);
-            result.data[0].should.have.property('debitAccount').that.is.equal(updateTestPayment.debitAccount);    
+            result.data[0].should.have.property('registerTxHash').that.is.equal(updateTestPayment.registerTxHash);
+            result.data[0].should.have.property('executeTxHash').that.is.equal(updateTestPayment.executeTxHash);
+            result.data[0].should.have.property('executeTxStatus').that.is.equal(updateTestPayment.executeTxStatus);
+            result.data[0].should.have.property('debitAccount').that.is.equal(updateTestPayment.debitAccount);
+            result.data[0].should.have.property('merchantAddress').that.is.equal(updateTestPayment.merchantAddress);
         });
     });
+
+    describe('Update non existing payment record', () => {
+        it('Should return false if no record is found in the database', async() => {
+            updateTestPayment.id = 'e3006e22-90bb-11e8-9daa-939c9206691a';
+            const result  = await paymentDbConnector.updatePayment(updateTestPayment);
+            result.should.have.property('success').that.is.equal(false);
+            result.should.have.property('status').that.is.equal(400);
+            result.should.have.property('message').that.is.equal('No record found with provided id.');
+        })
+    })
 });
