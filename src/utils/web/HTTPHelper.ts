@@ -13,14 +13,14 @@ export class HTTPHelper {
     }
 
     /**
-    * @description post request to puma core api
-    * @param {string} endpoint: endpoint
-    * @param {string} payload: payload
-	* @code <b>200</b>: Returns response.
-    * @code <b>401</b>: Invalid or No access token.
-	* @code <b>500</b>: When internal error while processing request.
-	* @response {any}
-    */
+     * @description post request to puma core api
+     * @param {string} endpoint: endpoint
+     * @param {string} payload: payload
+	 * @code <b>200</b>: Returns response.
+     * @code <b>401</b>: Invalid or No access token.
+	 * @code <b>500</b>: When internal error while processing request.
+	 * @response {any}
+     */
     public async postRequest(endpoint: string, payload: object): Promise<any> {
         if (!DefaultConfig.settings.pmaApiKey) {
             return { error: 'No provided ApiKey!' }
@@ -93,6 +93,37 @@ export class HTTPHelper {
                 'pma-api-key': DefaultConfig.settings.pmaApiKey,
                 'pma-access-token': pmaAccessKey
             }, 'GET');
+        try {
+            const httpResponse = await httpRequest.getResponse();
+            if (httpResponse.isSuccessfulRequest()) {
+                return JSON.parse(httpResponse.body);
+            } else {
+                try {
+                    return JSON.parse(httpResponse.body)
+                } catch (e) {
+                    return { error: httpResponse.body };
+                }
+            }
+        } catch (err) {
+            return err;
+        }
+    }
+
+    /**
+     * @description post request to puma core api
+     * @param {string} endpoint: endpoint
+     * @param {string} payload: payload
+	 * @code <b>200</b>: Returns response.
+     * @code <b>401</b>: Invalid or No access token.
+	 * @code <b>500</b>: When internal error while processing request.
+	 * @response {any}
+     */
+    public async request(requestUrl: string, method: string, payload: object = null): Promise<any> {
+        
+        const httpRequest = new HTTPRequestFactory()
+            .create(requestUrl, {
+                'Content-Type': 'application/json'
+            }, method, payload);
         try {
             const httpResponse = await httpRequest.getResponse();
             if (httpResponse.isSuccessfulRequest()) {
