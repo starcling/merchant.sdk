@@ -15,7 +15,6 @@ export class AuthenticationController {
 	* @response token, merchant {token:String, merchant:String}
     */
     public async getPMAUserToken(username: string, password: string): Promise<any> {
-        console.log(`${DefaultConfig.settings.apiUrl}${DefaultConfig.settings.loginUrl}`);
         const httpRequest = new HTTPRequestFactory()
             .create(`${DefaultConfig.settings.apiUrl}${DefaultConfig.settings.loginUrl}`, {
                 'Content-Type': 'application/json'
