@@ -26,9 +26,15 @@
         "@types/request-promise": "^4.1.41",
         "chai": "^4.1.2",
         "chai-as-promised": "^7.1.1",
+        "husky": "^0.14.3",
         "mocha": "^5.2.0",
         "nodemon": "^1.17.3",
         "ts-node": "~4.1.0",
         "typescript": "~2.9.2"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "npm test"
+        }
     }
 }

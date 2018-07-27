@@ -5,7 +5,7 @@ export class ErrorHandler extends Error {
     public status: number;
     public error: any;
 
-    constructor(_message: string, _error: any) {
+    constructor(_message: string, _error: any, _status?: number) {
         super(_error);
         this.message = _message;
         this.status = HTTPResponseCodes.BAD_REQUEST();
