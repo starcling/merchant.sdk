@@ -19,8 +19,7 @@ export class BlockchainController extends PaymentDbConnector {
     * @param {string} paymentID: ID of the payment which status is to be updated
     * @returns {boolean} success/fail response
     */
-    protected monitorTransaction(txHash: string, paymentID: string) {
-
+    protected async monitorTransaction(txHash: string, paymentID: string) {
         try {
             const sub = setInterval( async () => {
                 const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
