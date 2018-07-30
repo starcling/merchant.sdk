@@ -32,7 +32,7 @@ export class BlockchainController extends PaymentDbConnector {
                         status: status 
                     });
                     if (result.status) {
-                        const payment = await this.getPayment(paymentID);
+                        const payment = (await this.getPayment(paymentID)).data[0];
                         new Scheduler(payment, () => {
                             this.executePullPayment(payment.debitAddress, payment.merchantAddress, paymentID);
                         }).start();  
