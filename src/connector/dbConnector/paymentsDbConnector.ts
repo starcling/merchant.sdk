@@ -4,7 +4,7 @@ import { IPaymentInsertDetails, IPaymentUpdateDetails } from '../../core/payment
 export class PaymentDbConnector {
   public createPayment(insertDetails: IPaymentInsertDetails) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8)',
+      text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       values: [
         insertDetails.title,
         insertDetails.description,
@@ -12,6 +12,7 @@ export class PaymentDbConnector {
         insertDetails.currency,
         insertDetails.startTimestamp,
         insertDetails.endTimestamp,
+        insertDetails.startTimestamp,
         insertDetails.type,
         insertDetails.frequency
       ]
@@ -22,7 +23,7 @@ export class PaymentDbConnector {
 
   public async updatePayment(updateDetails: IPaymentUpdateDetails) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)',
+      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)',
       values: [
         updateDetails.id,
         updateDetails.title,
@@ -34,6 +35,8 @@ export class PaymentDbConnector {
         updateDetails.currency,
         updateDetails.startTimestamp,
         updateDetails.endTimestamp,
+        updateDetails.nextPaymentDate,
+        updateDetails.lastPaymentDate,
         updateDetails.type,
         updateDetails.frequency,
         updateDetails.registerTxHash,
