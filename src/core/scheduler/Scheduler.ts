@@ -10,32 +10,55 @@ const schedule = require('node-schedule');
  */
 export class Scheduler {
 
+    private _interval = null;
+    private _schedule = null;
+
     public constructor(private reccuringDetails: any, private callback: any) {
 
     }
 
     public start() {
-        let scheduler;
-        schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), () => {
+        this._schedule = schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), () => {
             this.callback();
-            scheduler = setInterval(() => {
-                this.callback();
-                if (new Date().getTime() > Number(this.reccuringDetails.endTimestamp) * 1000) {
-                    clearInterval(scheduler);
-                }
-            }, this.reccuringDetails.frequency * 1000);
+            this._interval = this.startInterval();
         });
 
-        return SchedulerBuffer.set(this.reccuringDetails.id, scheduler);
+        return SchedulerBuffer.set(this.reccuringDetails.id, this);
     }
 
     public static stop(payment_id: string) {
-        SchedulerBuffer.get(payment_id).cancel();
-        clearInterval(SchedulerBuffer.get(payment_id));
+        const scheduler = SchedulerBuffer.get(payment_id);
+        if (scheduler) {
+            scheduler.instance.cancel();
+            if (scheduler.interval) {
+                clearInterval(scheduler.interval);
+            }
+        }
     }
 
     public static restart(payment_id: string, reccuringDetails: any) {
-        SchedulerBuffer.get(payment_id).reschedule(reccuringDetails);
+        const scheduler = SchedulerBuffer.get(payment_id);
+        if (scheduler) {
+            scheduler.instance.reschedule(reccuringDetails);
+        }
+    }
+
+    public get interval() {
+        return this._interval;
+    }
+
+    public get instance() {
+        return this._schedule;
+    }
+
+    private startInterval() {
+        return setInterval(() => {
+            if (new Date().getTime() > Number(this.reccuringDetails.endTimestamp) * 1000) {
+                SchedulerBuffer.delete(this.reccuringDetails.id);
+            } else {
+                this.callback();
+            }
+        }, this.reccuringDetails.frequency * 1000);
     }
 
 }
