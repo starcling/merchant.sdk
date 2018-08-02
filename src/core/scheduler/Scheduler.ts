@@ -1,4 +1,6 @@
 import { SchedulerBuffer } from "./ScheduleBuffer";
+import { Globals } from "../../utils/globals";
+import { PaymentDbConnector } from "../../connector/dbConnector/paymentsDBconnector";
 const schedule = require('node-schedule');
 
 /**
@@ -18,6 +20,7 @@ export class Scheduler {
     }
 
     public start() {
+        this.adjustStartTime();
         this._schedule = schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), () => {
             this.callback();
             this._interval = this.startInterval();
@@ -59,6 +62,17 @@ export class Scheduler {
                 this.callback();
             }
         }, this.reccuringDetails.frequency * 1000);
+    }
+
+    /**
+     * @description Adjusts the start timestamp if the start timestamp is in the 5 min window in past of the current time
+     */
+    private adjustStartTime() {
+        const currentTime = Number(new Date().getTime() / 1000);
+        if (Number(this.reccuringDetails.startTimestamp) < currentTime && Number(this.reccuringDetails.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() > currentTime) {
+            this.reccuringDetails.startTimestamp = Number(currentTime + 1);
+            new PaymentDbConnector().updatePayment(this.reccuringDetails).catch(() => {});
+        }
     }
 
 }

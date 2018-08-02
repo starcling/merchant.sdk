@@ -55,6 +55,15 @@ export class Globals {
     public static GET_ACCESS_TOKEN_URL(): string {
         return '/auth/token/generate';
     }
+
+    /**
+     * @description Method for getting time for which it is allowed the start timestamp of the scheduler 
+     * of the recurring payment to be in the past
+     * @returns {number} time in seconds
+     */
+    public static GET_START_SCHEDULER_TIME_WINDOW(): number {
+        return 300;
+    }
     
     public static GET_PG_HOST(): string {
         return 'localhost';
