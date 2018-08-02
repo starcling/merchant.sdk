@@ -22,6 +22,7 @@ export class Scheduler {
     public start() {
         this.adjustStartTime();
         this._schedule = schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), () => {
+            this.updatePaymentStatus(Globals.GET_PAYMENT_STATUS_ENUM().started);
             this.callback();
             this._interval = this.startInterval();
         });
@@ -73,6 +74,11 @@ export class Scheduler {
             this.reccuringDetails.startTimestamp = Number(currentTime + 1);
             new PaymentDbConnector().updatePayment(this.reccuringDetails).catch(() => {});
         }
+    }
+
+    private updatePaymentStatus(status: number) {
+        this.reccuringDetails.status = status;
+        new PaymentDbConnector().updatePayment(this.reccuringDetails).catch(() => {});
     }
 
 }

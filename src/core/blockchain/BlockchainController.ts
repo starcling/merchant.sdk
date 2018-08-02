@@ -28,12 +28,12 @@ export class BlockchainController extends PaymentDbConnector {
                     const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
                     this.updatePayment(<IPaymentUpdateDetails>{
                         id: paymentID,
-                        status: status
+                        regiserTxStatus: status
                     });
                     if (result.status) {
                         const payment = (await this.getPayment(paymentID)).data[0];
                         new Scheduler(payment, () => {
-                            this.executePullPayment(payment.debitAddress, payment.merchantAddress, payment);
+                            this.executePullPayment(paymentID);
                         }).start();
                     }
                 }
@@ -49,12 +49,13 @@ export class BlockchainController extends PaymentDbConnector {
     * @description Method for actuall execution of pull payment
     * @returns {object} null
     */
-    private async executePullPayment(debitAddress?: string, merchantAddress?: string, payment?: IPaymentUpdateDetails) {
+    private async executePullPayment(paymentID?: string) {
+        const payment = (await this.getPayment(paymentID)).data[0];
         const blockchainHelper = new BlockchainHelper();
-        const contract = await new SmartContractReader('DebitAccount').readContract(debitAddress ? debitAddress : this.debitAddress);
-        const txCount = await blockchainHelper.getTxCount(merchantAddress ? merchantAddress : this.merchantAddress);
+        const contract = await new SmartContractReader('DebitAccount').readContract(payment.debitAddress ? payment.debitAddress : this.debitAddress);
+        const txCount = await blockchainHelper.getTxCount(payment.merchantAddress ? payment.merchantAddress : this.merchantAddress);
         const data = contract.methods.executePullPayment().encodeABI();
-        const serializedTx = await new RawTransactionSerializer(data, debitAddress ? debitAddress : this.debitAddress, txCount).getSerializedTx();
+        const serializedTx = await new RawTransactionSerializer(data, payment.debitAddress ? payment.debitAddress : this.debitAddress, txCount).getSerializedTx();
 
         blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => {
             const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;

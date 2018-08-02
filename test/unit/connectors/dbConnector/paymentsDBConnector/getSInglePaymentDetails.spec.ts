@@ -57,7 +57,7 @@ describe('A paymentDbConnector', () => {
             result.data[0].should.have.property('executeTxHash').that.is.equal(null);
             result.data[0].should.have.property('executeTxStatus').that.is.equal(1);
             result.data[0].should.have.property('debitAccount').that.is.equal(null);
-            result.data[0].should.have.property('merchantAddress').that.is.equal(null);
+            result.data[0].should.have.property('merchantAddress').that.is.equal(testPayment.merchantAddress);
         });
     });
 });
