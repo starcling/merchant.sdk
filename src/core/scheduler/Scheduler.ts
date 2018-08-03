@@ -66,8 +66,8 @@ export class Scheduler {
         }, this.reccuringDetails.frequency * 1000);
     }
 
-    private executeCallback() {
-        this.callback();
+    private async executeCallback() {
+        await this.callback();
         ScheduleHelper.reduceLimit(this.reccuringDetails);
     }
 
