@@ -24,14 +24,14 @@ export class ScheduleHelper {
         }
     }
 
-    public static updatePaymentStatus(reccuringDetails: IPaymentUpdateDetails, status: number) {
+    public static async updatePaymentStatus(reccuringDetails: IPaymentUpdateDetails, status: number) {
         reccuringDetails.status = status;
-        new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {});
+        await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {});
     }
 
-    public static reduceLimit(reccuringDetails: IPaymentUpdateDetails) {
+    public static async reduceLimit(reccuringDetails: IPaymentUpdateDetails) {
         reccuringDetails.limit = reccuringDetails.limit - 1;
-        new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {});
+        await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {});
     }
 
 }
