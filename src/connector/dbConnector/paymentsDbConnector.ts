@@ -43,7 +43,7 @@ export class PaymentDbConnector {
         updateDetails.type,
         updateDetails.frequency,
         updateDetails.registerTxHash,
-        updateDetails.regiserTxStatus,
+        updateDetails.registerTxStatus,
         updateDetails.executeTxHash,
         updateDetails.executeTxStatus,
         updateDetails.debitAccount,
