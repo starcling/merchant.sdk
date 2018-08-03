@@ -55,6 +55,15 @@ export class Globals {
     public static GET_ACCESS_TOKEN_URL(): string {
         return '/auth/token/generate';
     }
+
+    /**
+     * @description Method for getting time for which it is allowed the start timestamp of the scheduler 
+     * of the recurring payment to be in the past
+     * @returns {number} time in seconds
+     */
+    public static GET_START_SCHEDULER_TIME_WINDOW(): number {
+        return 300;
+    }
     
     public static GET_PG_HOST(): string {
         return 'localhost';
@@ -108,6 +117,10 @@ export class Globals {
         return TransactionStatusEnum;
     }
 
+    public static GET_PAYMENT_STATUS_ENUM(): any {
+        return PaymentStatusEnum;
+    }
+
     public static GET_MERCHANT_PRIVATE_KEY(): string {
         return '3f455a331a4fdd97f14fe8025cdb6722ac7dffea2b98c5bca5087e26d7ab862c';
     }
@@ -119,4 +132,10 @@ enum TransactionStatusEnum {
     scaned = 2,
     pending = 3,
     success = 4
+}
+
+enum PaymentStatusEnum {
+    canceled = 0,
+    initial = 1,
+    started = 2,
 }

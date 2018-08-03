@@ -1,15 +1,24 @@
-import * as uuid from 'uuid';
+import { Scheduler } from "./Scheduler";
 
 export class SchedulerBuffer {
 
-    private static SCHEDULER_BUFFER = [];
+    private static SCHEDULER_BUFFER: Scheduler[] = [];
 
-    public static get(id: string): any {
-        return this.SCHEDULER_BUFFER[id];
+    public static set(payment_id: string, scheduler: Scheduler) {
+        SchedulerBuffer.SCHEDULER_BUFFER[payment_id] = scheduler;
     }
 
-    public static set(scheduler: any) {
-        this.SCHEDULER_BUFFER[uuid.v4()] = scheduler;
+    public static get(payment_id: string): Scheduler {
+        return SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
     }
-
+    
+    public static delete(payment_id: string) {
+        if (SchedulerBuffer.SCHEDULER_BUFFER[payment_id]) {
+            clearInterval(SchedulerBuffer.SCHEDULER_BUFFER[payment_id].interval);
+            delete SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
+            return true;
+        }
+        
+        return false;
+    }
 }

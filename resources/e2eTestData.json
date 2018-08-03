@@ -1,4 +1,3 @@
-
 {
     "payments": {
         "insertPayment": {
@@ -8,8 +7,10 @@
             "currency": "string",
             "startTimestamp": 10,
             "endTimestamp": 13,
+            "limit": 5,
             "type": 1,
-            "frequency": 10
+            "frequency": 10,
+            "merchantAddress": "string"
         },
         "updatePayment": {
             "id": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
@@ -22,9 +23,13 @@
             "currency": "string",
             "startTimestamp": 10,
             "endTimestamp": 13,
+            "limit": 5,
+            "nextPaymentDate": "123456789",
+            "lastPaymentDate": "123456789",
             "type": 1,
             "frequency": 10,
             "registerTxHash": "string",
+            "registerTxStatus": 1,
             "executeTxHash": "string",
             "executeTxStatus": 1,
             "debitAccount": "string",

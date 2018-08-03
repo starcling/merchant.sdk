@@ -19,27 +19,26 @@ export class BlockchainController extends PaymentDbConnector {
     * @param {string} paymentID: ID of the payment which status is to be updated
     * @returns {boolean} success/fail response
     */
-    protected monitorTransaction(txHash: string, paymentID: string) {
-
+    protected async monitorTransaction(txHash: string, paymentID: string) {
         try {
-            const sub = setInterval( async () => {
+            const sub = setInterval(async () => {
                 const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
-                if(result) {
+                if (result) {
                     clearInterval(sub);
                     const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                    this.updatePayment(<IPaymentUpdateDetails>{ 
+                    this.updatePayment(<IPaymentUpdateDetails>{
                         id: paymentID,
-                        status: status 
+                        regiserTxStatus: status
                     });
                     if (result.status) {
-                        const payment = await this.getPayment(paymentID);
+                        const payment = (await this.getPayment(paymentID)).data[0];
                         new Scheduler(payment, () => {
-                            this.executePullPayment(payment.debitAddress, payment.merchantAddress, paymentID);
-                        }).start();  
+                            this.executePullPayment(paymentID);
+                        }).start();
                     }
                 }
             }, DefaultConfig.settings.txStatusInterval);
-    
+
             return true;
         } catch (error) {
             return false;
@@ -50,29 +49,32 @@ export class BlockchainController extends PaymentDbConnector {
     * @description Method for actuall execution of pull payment
     * @returns {object} null
     */
-    private async executePullPayment(debitAddress?: string, merchantAddress?: string, paymentID?: string) {
+    private async executePullPayment(paymentID?: string) {
+        const payment = (await this.getPayment(paymentID)).data[0];
         const blockchainHelper = new BlockchainHelper();
-        const contract = await new SmartContractReader('DebitAccount').readContract(debitAddress ? debitAddress : this.debitAddress);
-        const txCount = await blockchainHelper.getTxCount(merchantAddress ? merchantAddress : this.merchantAddress);
+        const contract = await new SmartContractReader('DebitAccount').readContract(payment.debitAddress ? payment.debitAddress : this.debitAddress);
+        const txCount = await blockchainHelper.getTxCount(payment.merchantAddress ? payment.merchantAddress : this.merchantAddress);
         const data = contract.methods.executePullPayment().encodeABI();
-        const serializedTx = await new RawTransactionSerializer(data, debitAddress ? debitAddress : this.debitAddress, txCount).getSerializedTx();
+        const serializedTx = await new RawTransactionSerializer(data, payment.debitAddress ? payment.debitAddress : this.debitAddress, txCount).getSerializedTx();
 
         blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => {
             const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;
 
             this.updatePayment(<IPaymentUpdateDetails>{
-                id: paymentID,
-                executeTxHash: hash, 
-                executeTxStatus: status 
+                id: payment.id,
+                executeTxHash: hash,
+                executeTxStatus: status
             });
         }).on('receipt', (receipt) => {
             const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
 
             this.updatePayment(<IPaymentUpdateDetails>{
-                id: paymentID,
-                executeTxStatus: status 
+                id: payment.id,
+                executeTxStatus: status,
+                lastPaymentDate: payment.nextPaymentDate,
+                nextPaymentDate: Number(payment.nextPaymentDate) + Number(payment.frequency)
             });
-            
+
         });
     }
 }

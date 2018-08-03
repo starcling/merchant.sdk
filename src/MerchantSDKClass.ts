@@ -6,12 +6,13 @@ import { HTTPHelper } from './utils/web/HTTPHelper';
 import { PaymentController } from './core/payment/PaymentController';
 import { BlockchainController } from './core/blockchain/BlockchainController';
 import { MultipleInheritance } from './utils/MultipleInheritance/MultipleInheritance';
+import { ErrorHandler } from './utils/handlers/ErrorHandler';
+import { Scheduler } from './core/scheduler/Scheduler';
 
 export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, BlockchainController, AuthenticationController, PaymentController) {
 
-    public constructor(buildParams: MerchantSDKBuild) {
+    public constructor() {
         super();
-        this.build(buildParams);
     }
 
     /**
@@ -20,9 +21,19 @@ export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, Blockch
      * @returns {MerchantSDK} MerchantSDK object - this
      */
     public build(buildParams: MerchantSDKBuild): MerchantSDK {
+        ErrorHandler.validate(buildParams);
         DefaultConfig.settings = <MerchantSDKSettings>new MerchantSDKBuild(buildParams);
 
         return this;
+    }
+
+
+    /**
+     * @description Method to retrieve Scheduler
+     * @returns {Scheduler} Scheduler class with static methods {stop} and {restart}
+     */
+    public getScheduler() {
+        return Scheduler;
     }
     
 }
