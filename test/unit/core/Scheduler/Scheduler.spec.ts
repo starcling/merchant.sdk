@@ -124,6 +124,7 @@ describe('A Scheduler', () => {
 
                 for (let i = 0; i < multipleInstances; i++) {
                     expect(SchedulerBuffer.delete(ids[i])).to.be.equal(false);
+                    paymentDbConnector.deletePayment(ids[i]);
                 }
 
                 done();
