@@ -33,7 +33,8 @@
             "executeTxHash": "string",
             "executeTxStatus": 1,
             "debitAccount": "string",
-            "merchantAddress": "string"
+            "merchantAddress": "string",
+            "userId": "string"
         }
     }
 }

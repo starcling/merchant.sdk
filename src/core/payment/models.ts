@@ -33,4 +33,5 @@ export interface IPaymentUpdateDetails {
   executeTxStatus: number;
   debitAccount: string;
   merchantAddress: string;
+  userId: string;
 }
