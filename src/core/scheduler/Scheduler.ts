@@ -1,6 +1,7 @@
 import { SchedulerBuffer } from "./ScheduleBuffer";
 import { Globals } from "../../utils/globals";
-import { PaymentDbConnector } from "../../connector/dbConnector/paymentsDBconnector";
+import { IPaymentUpdateDetails } from "../payment/models";
+import { ScheduleHelper } from "./ScheduleHelper";
 const schedule = require('node-schedule');
 
 /**
@@ -15,15 +16,15 @@ export class Scheduler {
     private _interval = null;
     private _schedule = null;
 
-    public constructor(private reccuringDetails: any, private callback: any) {
+    public constructor(private reccuringDetails: IPaymentUpdateDetails, private callback: any) {
 
     }
 
     public start() {
-        this.adjustStartTime();
+        ScheduleHelper.adjustStartTime(this.reccuringDetails);
         this._schedule = schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), () => {
-            this.updatePaymentStatus(Globals.GET_PAYMENT_STATUS_ENUM().started);
-            this.callback();
+            ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().started);
+            this.executeCallback();
             this._interval = this.startInterval();
         });
 
@@ -57,28 +58,17 @@ export class Scheduler {
 
     private startInterval() {
         return setInterval(() => {
-            if (new Date().getTime() > Number(this.reccuringDetails.endTimestamp) * 1000) {
+            if (this.reccuringDetails.limit == 0) {
                 SchedulerBuffer.delete(this.reccuringDetails.id);
             } else {
-                this.callback();
+                this.executeCallback();
             }
         }, this.reccuringDetails.frequency * 1000);
     }
 
-    /**
-     * @description Adjusts the start timestamp if the start timestamp is in the 5 min window in past of the current time
-     */
-    private adjustStartTime() {
-        const currentTime = Number(new Date().getTime() / 1000);
-        if (Number(this.reccuringDetails.startTimestamp) < currentTime && Number(this.reccuringDetails.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() > currentTime) {
-            this.reccuringDetails.startTimestamp = Number(currentTime + 1);
-            new PaymentDbConnector().updatePayment(this.reccuringDetails).catch(() => {});
-        }
-    }
-
-    private updatePaymentStatus(status: number) {
-        this.reccuringDetails.status = status;
-        new PaymentDbConnector().updatePayment(this.reccuringDetails).catch(() => {});
+    private executeCallback() {
+        this.callback();
+        ScheduleHelper.reduceLimit(this.reccuringDetails);
     }
 
 }
