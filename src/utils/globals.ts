@@ -4,7 +4,7 @@ export class Globals {
      * @description Method for getting core backend api url 
      * @returns {string} url
      */
-    public static GET_CORE_API_URL(): string {
+    public static GET_DEFAULT_CORE_API_URL(): string {
         return 'http://52.29.233.47:8081/api/v1/';
     }
 
@@ -12,7 +12,7 @@ export class Globals {
      * @description Method for getting merchant backend api url 
      * @returns {string} url
      */
-    public static GET_MERCHANT_API_URL(): string {
+    public static GET_DEFAULT_MERCHANT_API_URL(): string {
         return 'http://merchant:3000/api/v1';
     }
 
@@ -65,23 +65,23 @@ export class Globals {
         return 300;
     }
     
-    public static GET_PG_HOST(): string {
+    public static GET_DEFAULT_PG_HOST(): string {
         return 'localhost';
     }
 
-    public static GET_PG_USER(): string {
+    public static GET_DEFAULT_PG_USER(): string {
         return 'local_user';
     }
 
-    public static GET_PG_PASSWORD(): string {
+    public static GET_DEFAULT_PG_PASSWORD(): string {
         return 'local_pass';
     }
 
-    public static GET_PG_DATABASE(): string {
+    public static GET_DEFAULT_PG_DATABASE(): string {
         return 'local_merchant_server';
     }
 
-    public static GET_PG_PORT(): string {
+    public static GET_DEFAULT_PG_PORT(): string {
         return '5431';
     }
 
@@ -89,7 +89,7 @@ export class Globals {
      * @description Method for getting network used
      * @returns {string} url
      */
-    public static GET_NETWORK(): string {
+    public static GET_DEFAULT_NETWORK(): string {
         return 'ropsten';
     }
 
@@ -102,15 +102,7 @@ export class Globals {
     }
 
     public static GET_SOLIDITY_FILE(): string {
-        return `${__dirname.substring(0, __dirname.length - 15)}/src/core/blockchain/smartContracts/SmartContracts.sol`;
-    }
-
-    public static GET_LOCAL_ETHNODE_URL(): string {
-        return 'http://127.0.0.1:7545';
-    }
-
-    public static GET_SPECIFIC_INFURA_URL(): string {
-        return 'https://ropsten.infura.io/ZDNEJN22wNXziclTLijw';
+        return `${__dirname.substring(0, __dirname.length - 15)}/contracts/PullPayment.sol`;
     }
 
     public static GET_TRANSACTION_STATUS_ENUM(): any {
