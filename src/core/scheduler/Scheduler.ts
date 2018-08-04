@@ -57,7 +57,7 @@ export class Scheduler {
 
     private startInterval() {
         return setInterval(() => {
-            if (this.reccuringDetails.limit == 0) {
+            if (this.reccuringDetails.numberOfPayments== 0) {
                 SchedulerBuffer.delete(this.reccuringDetails.id);
             } else {
                 this.executeCallback();
@@ -67,6 +67,6 @@ export class Scheduler {
 
     private async executeCallback() {
         await this.callback();
-        ScheduleHelper.reduceLimit(this.reccuringDetails);
+        ScheduleHelper.reduceNumberOfPayments(this.reccuringDetails);
     }
 }

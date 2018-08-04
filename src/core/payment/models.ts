@@ -5,7 +5,7 @@ export interface IPaymentInsertDetails {
   currency: string;
   startTimestamp: number;
   endTimestamp: number;
-  limit: number;
+  numberOfPayments: number;
   type: number;
   frequency: number;
   merchantAddress: string;
@@ -22,7 +22,7 @@ export interface IPaymentUpdateDetails {
   currency: string;
   startTimestamp: number;
   endTimestamp: number;
-  limit: number;
+  numberOfPayments: number;
   nextPaymentDate: number;
   lastPaymentDate: number;
   type: number;
