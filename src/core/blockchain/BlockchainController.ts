@@ -26,9 +26,9 @@ export class BlockchainController extends PaymentDbConnector {
                 if (result) {
                     clearInterval(sub);
                     const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                    this.updatePayment(<IPaymentUpdateDetails>{
+                    await this.updatePayment(<IPaymentUpdateDetails>{
                         id: paymentID,
-                        regiserTxStatus: status
+                        registerTxStatus: status
                     });
                     if (result.status) {
                         const payment = (await this.getPayment(paymentID)).data[0];

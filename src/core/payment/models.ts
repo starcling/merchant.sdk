@@ -28,9 +28,10 @@ export interface IPaymentUpdateDetails {
   type: number;
   frequency: number;
   registerTxHash: string;
-  regiserTxStatus: number;
+  registerTxStatus: number;
   executeTxHash: string;
   executeTxStatus: number;
   debitAccount: string;
   merchantAddress: string;
+  userId: string;
 }

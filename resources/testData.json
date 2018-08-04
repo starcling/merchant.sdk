@@ -3,7 +3,7 @@
         "insertTestPayment": {
             "title": "test payment",
             "description": "test description",
-            "amount": "12000",
+            "amount": "20",
             "currency": "PMA",
             "startTimestamp": "1234566899",
             "endTimestamp": "9876543211",
@@ -19,7 +19,7 @@
             "promo": "testing",
             "status": 2,
             "customerAddress": "0xuiuin2n",
-            "amount": "23000",
+            "amount": "20",
             "currency": "CVC",
             "startTimestamp": "987654321",
             "endTimestamp": "123456789",
@@ -27,19 +27,14 @@
             "nextPaymentDate": "123456789",
             "lastPaymentDate": "123456789",
             "type": 2,
-            "frequency": 2,
+            "frequency": 3,
             "registerTxHash": "string",
             "registerTxStatus": 1,
             "executeTxHash": "string",
             "executeTxStatus": 1,
             "debitAccount": "string",
-            "merchantAddress": "string"
+            "merchantAddress": "string",
+            "userId": "string"
         }
-    },
-    "scheduler": {
-        "id": "test-scheduler",
-        "startTimestamp": "987654321",
-        "endTimestamp": "123456789",
-        "frequency": 1
     }
 }
