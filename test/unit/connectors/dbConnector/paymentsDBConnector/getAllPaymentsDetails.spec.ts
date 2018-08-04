@@ -17,7 +17,7 @@ var testId: string;
 const insertTestPayment = async () => {
     const result = await paymentDbConnector.createPayment(testPayment);
     testId = result.data[0].id;
-}
+};
 
 const clearTestPayment = async () => {
     const sqlQuery: ISqlQuery = {
@@ -25,10 +25,10 @@ const clearTestPayment = async () => {
         values: [testId]
     };
     await dataservice.executeQueryAsPromise(sqlQuery);
-}
+};
 
 describe('A paymentDbConnector', () => {
-    describe('Get payment details', () => {
+    describe('Get all payment details', () => {
         beforeEach(async () => {
             await insertTestPayment();
         });

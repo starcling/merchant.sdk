@@ -31,5 +31,4 @@ export class MerchantSDKBuild {
         this.pgDatabase = buildParams.pgDatabase ? buildParams.pgDatabase : null;
         this.pgPassword = buildParams.pgPassword ? buildParams.pgPassword : null;
     }
-    
 }

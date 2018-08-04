@@ -33,5 +33,4 @@ export class ScheduleHelper {
         reccuringDetails.limit = reccuringDetails.limit - 1;
         await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {});
     }
-
 }

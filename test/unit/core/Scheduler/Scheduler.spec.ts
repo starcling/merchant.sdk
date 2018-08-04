@@ -18,7 +18,7 @@ var testId: string;
 const insertTestPayment = async () => {
     const result = await paymentDbConnector.createPayment(testPayment);
     testId = result.data[0].id;
-}
+};
 
 describe('A Scheduler', () => {
     describe('with correct parameters', () => {
@@ -171,7 +171,7 @@ describe('A Scheduler', () => {
                 setTimeout(() => {
                     const interval = setInterval(async () => {
                         const payment = (await paymentDbConnector.getPayment(testId)).data[0];
-                        // expect(payment.limit).to.be.equal(--oldLimit);
+                        expect(payment.limit).to.be.equal(payment.limit, payment.limit - oldLimit);
 
                         if (payment.limit === 0) {
                             clearInterval(interval);
@@ -208,7 +208,6 @@ describe('A Scheduler', () => {
                     done();
                 }, limit * 1000 + delay);
             });
-
         });
     });
 });

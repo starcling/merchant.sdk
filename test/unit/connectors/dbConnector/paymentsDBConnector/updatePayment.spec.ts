@@ -17,7 +17,7 @@ const updateTestPayment: IPaymentUpdateDetails = paymentsTestData['updateTestPay
 const insertTestPayment = async () => {
     const result = await paymentDbConnector.createPayment(testPayment);
     updateTestPayment.id = result.data[0].id;
-}
+};
 
 const clearTestPayment = async () => {
     const sqlQuery: ISqlQuery = {
@@ -25,7 +25,7 @@ const clearTestPayment = async () => {
         values: [updateTestPayment.id]
     };
     await dataservice.executeQueryAsPromise(sqlQuery);
-}
+};
 
 describe('PaymentDbConnector', () => {
     describe('Update payment record', () => {
@@ -56,8 +56,9 @@ describe('PaymentDbConnector', () => {
             result.data[0].should.have.property('registerTxHash').that.is.equal(updateTestPayment.registerTxHash);
             result.data[0].should.have.property('executeTxHash').that.is.equal(updateTestPayment.executeTxHash);
             result.data[0].should.have.property('executeTxStatus').that.is.equal(updateTestPayment.executeTxStatus);
-            result.data[0].should.have.property('debitAccount').that.is.equal(updateTestPayment.debitAccount);
+            result.data[0].should.have.property('pullPaymentAccountAddress').that.is.equal(updateTestPayment.pullPaymentAccountAddress);
             result.data[0].should.have.property('merchantAddress').that.is.equal(updateTestPayment.merchantAddress);
+            result.data[0].should.have.property('userId').that.is.equal(updateTestPayment.userId);
         });
     });
 

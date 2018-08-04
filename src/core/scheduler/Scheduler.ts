@@ -12,7 +12,6 @@ const schedule = require('node-schedule');
  * {reccuringDetails}: any which is the details for the reccuring payment
  */
 export class Scheduler {
-
     private _interval = null;
     private _schedule = null;
 
@@ -70,5 +69,4 @@ export class Scheduler {
         await this.callback();
         ScheduleHelper.reduceLimit(this.reccuringDetails);
     }
-
 }

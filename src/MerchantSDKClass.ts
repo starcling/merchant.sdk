@@ -21,12 +21,11 @@ export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, Blockch
      * @returns {MerchantSDK} MerchantSDK object - this
      */
     public build(buildParams: MerchantSDKBuild): MerchantSDK {
-        ErrorHandler.validate(buildParams);
+        ErrorHandler.validateBuildParams(buildParams);
         DefaultConfig.settings = <MerchantSDKSettings>new MerchantSDKBuild(buildParams);
 
         return this;
     }
-
 
     /**
      * @description Method to retrieve Scheduler
@@ -35,5 +34,4 @@ export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, Blockch
     public getScheduler() {
         return Scheduler;
     }
-    
 }

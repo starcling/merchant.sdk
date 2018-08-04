@@ -10,6 +10,7 @@ const TX = require('ethereumjs-tx');
  * @private {Buffer} privateKey - The private key of the account that is executing the transaction
  * */
 export class RawTransactionSerializer {
+    //TODO: Get from encrypted DB
     private privateKey: Buffer = Buffer.from(Globals.GET_MERCHANT_PRIVATE_KEY(), 'hex');
 
     public constructor(private data: any, private contractAddress: string, private txCount: number) {
@@ -21,7 +22,7 @@ export class RawTransactionSerializer {
      * */
     public getSerializedTx(): string {
         const rawTx = {
-            gasPrice: '0x3b9aca00',
+            gasPrice: DefaultConfig.settings.web3.utils.toHex(DefaultConfig.settings.web3.utils.toWei('1', 'Gwei')),
             gasLimit: DefaultConfig.settings.web3.utils.toHex(210000),
             to: this.contractAddress,
             value: '0x00',
