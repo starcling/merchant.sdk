@@ -5,3 +5,4 @@ package-lock.json
 .vs/
 dist
 docs
+.idea/

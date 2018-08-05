@@ -1,7 +1,7 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { PaymentDbConnector } from '../../../../../src/connector/dbConnector/paymentsDBconnector';
-import { IPaymentInsertDetails, IPaymentUpdateDetails } from '../../../../../src/core/payment/models';
+import { IPaymentInsertDetails } from '../../../../../src/core/payment/models';
 import { DataService, ISqlQuery } from '../../../../../src/utils/datasource/DataService';
 
 chai.use(chaiAsPromised);
@@ -17,7 +17,7 @@ var testId: string;
 const insertTestPayment = async () => {
   const result = await paymentDbConnector.createPayment(testPayment);
   testId = result.data[0].id;
-}
+};
 
 const clearTestPayment = async () => {
   const sqlQuery: ISqlQuery = {
@@ -25,7 +25,7 @@ const clearTestPayment = async () => {
     values: [testId]
   };
   await dataservice.executeQueryAsPromise(sqlQuery);
-}
+};
 
 describe('A paymentDbConnector', () => {
   describe('Delete payment details', () => {

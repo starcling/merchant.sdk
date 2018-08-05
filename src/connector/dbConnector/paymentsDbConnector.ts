@@ -12,7 +12,7 @@ export class PaymentDbConnector {
         insertDetails.currency,
         insertDetails.startTimestamp,
         insertDetails.endTimestamp,
-        insertDetails.limit,
+        insertDetails.numberOfPayments,
         insertDetails.startTimestamp,
         insertDetails.type,
         insertDetails.frequency,
@@ -37,7 +37,7 @@ export class PaymentDbConnector {
         updateDetails.currency,
         updateDetails.startTimestamp,
         updateDetails.endTimestamp,
-        updateDetails.limit,
+        updateDetails.numberOfPayments,
         updateDetails.nextPaymentDate,
         updateDetails.lastPaymentDate,
         updateDetails.type,
@@ -46,7 +46,7 @@ export class PaymentDbConnector {
         updateDetails.registerTxStatus,
         updateDetails.executeTxHash,
         updateDetails.executeTxStatus,
-        updateDetails.debitAccount,
+        updateDetails.pullPaymentAccountAddress,
         updateDetails.merchantAddress,
         updateDetails.userId
       ]
@@ -58,14 +58,14 @@ export class PaymentDbConnector {
       response.status = 400;
       response.message = 'No record found with provided id.'
     }
+
     return response;
-    
   }
 
-  public getPayment(paymentid: string) {
+  public getPayment(paymentID: string) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM public.fc_get_payment_details($1);',
-      values: [paymentid]
+      values: [paymentID]
     };
 
     return new DataService().executeQueryAsPromise(sqlQuery);
@@ -84,6 +84,7 @@ export class PaymentDbConnector {
       text: 'SELECT * FROM public.fc_delete_payment($1);',
       values: [paymentId]
     };
+
     return new DataService().executeQueryAsPromise(sqlQuery);
   }
 }

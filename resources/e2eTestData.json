@@ -7,7 +7,7 @@
             "currency": "string",
             "startTimestamp": 10,
             "endTimestamp": 13,
-            "limit": 5,
+            "numberOfPayments": 5,
             "type": 1,
             "frequency": 10,
             "merchantAddress": "string"
@@ -23,7 +23,7 @@
             "currency": "string",
             "startTimestamp": 10,
             "endTimestamp": 13,
-            "limit": 5,
+            "numberOfPayments": 5,
             "nextPaymentDate": "123456789",
             "lastPaymentDate": "123456789",
             "type": 1,
@@ -32,7 +32,7 @@
             "registerTxStatus": 1,
             "executeTxHash": "string",
             "executeTxStatus": 1,
-            "debitAccount": "string",
+            "pullPaymentAccountAddress": "string",
             "merchantAddress": "string",
             "userId": "string"
         }

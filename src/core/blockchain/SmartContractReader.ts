@@ -29,7 +29,7 @@ export class SmartContractReader {
     }
 
     /**
-     * @description Reads the smart contract specified
+     * @description Reads the smart contract specifiedIPaymentUpdateDetails
      * @param {string} address - The smart contract address on ethereum
      * @returns {any} Returns the smart contract instance on that address
      * */

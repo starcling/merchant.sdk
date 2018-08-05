@@ -6,12 +6,9 @@ import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerial
 import { Scheduler } from '../scheduler/Scheduler';
 import { PaymentDbConnector } from '../../connector/dbConnector/paymentsDbConnector';
 import { IPaymentUpdateDetails } from '../payment/models';
+import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
 
 export class BlockchainController extends PaymentDbConnector {
-    //TODO: add these addresses dynamically
-    private debitAddress: string = '0x15f79A4247cD2e9898dD45485683a0B26855b646';
-    private merchantAddress: string = '0x9d11DDd84198B30E56E31Aa89227344Cdb645e34';
-
     /**
     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
     * to create a scheduler that will execute the pull payment
@@ -46,18 +43,20 @@ export class BlockchainController extends PaymentDbConnector {
     }
 
     /**
-    * @description Method for actuall execution of pull payment
+    * @description Method for actual execution of pull payment
     * @returns {object} null
     */
-    private async executePullPayment(paymentID?: string) {
-        const payment = (await this.getPayment(paymentID)).data[0];
-        const blockchainHelper = new BlockchainHelper();
-        const contract = await new SmartContractReader('DebitAccount').readContract(payment.debitAddress ? payment.debitAddress : this.debitAddress);
-        const txCount = await blockchainHelper.getTxCount(payment.merchantAddress ? payment.merchantAddress : this.merchantAddress);
-        const data = contract.methods.executePullPayment().encodeABI();
-        const serializedTx = await new RawTransactionSerializer(data, payment.debitAddress ? payment.debitAddress : this.debitAddress, txCount).getSerializedTx();
+    protected async executePullPayment(paymentID?: string) {
+        const payment: IPaymentUpdateDetails  = (await this.getPayment(paymentID)).data[0];
+        ErrorHandler.validatePullPaymentExecution(payment);
+        const blockchainHelper: BlockchainHelper = new BlockchainHelper();
+        const contract: any = await new SmartContractReader('PullPaymentAccount').readContract(payment.pullPaymentAccountAddress);
+        const txCount: number = await blockchainHelper.getTxCount(payment.merchantAddress);
+        const data: string = contract.methods.executePullPayment().encodeABI();
+        const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAccountAddress, txCount).getSerializedTx();
 
-        blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => {
+        blockchainHelper.executeSignedTransaction(serializedTx).
+        on('transactionHash', (hash) => {
             const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;
 
             this.updatePayment(<IPaymentUpdateDetails>{
@@ -74,7 +73,6 @@ export class BlockchainController extends PaymentDbConnector {
                 lastPaymentDate: payment.nextPaymentDate,
                 nextPaymentDate: Number(payment.nextPaymentDate) + Number(payment.frequency)
             });
-
         });
     }
 }

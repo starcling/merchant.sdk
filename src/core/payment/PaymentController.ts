@@ -49,6 +49,4 @@ export class PaymentController {
   public async updatePayment(payment: IPaymentUpdateDetails) {
     return await this.paymentDbConnector.updatePayment(payment);
   }
-
-
 }
