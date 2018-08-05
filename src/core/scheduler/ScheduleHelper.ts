@@ -19,19 +19,28 @@ export class ScheduleHelper {
         if (Number(reccuringDetails.startTimestamp) <= currentTime && Number(reccuringDetails.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
             reccuringDetails.startTimestamp = Math.floor(Number(currentTime + 1));
             reccuringDetails.endTimestamp = Math.floor(reccuringDetails.startTimestamp + reccuringDetails.frequency * reccuringDetails.limit);
-            const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data;
-            reccuringDetails = data ? data : reccuringDetails;
+            const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
+            Object.assign(reccuringDetails, data);
+            // reccuringDetails = data ? data : reccuringDetails;
         }
     }
 
     public static async updatePaymentStatus(reccuringDetails: IPaymentUpdateDetails, status: number) {
         reccuringDetails.status = status;
-        await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {});
+        reccuringDetails.startTimestamp = Math.floor(Number(reccuringDetails.startTimestamp));
+        reccuringDetails.endTimestamp = Math.floor(Number(reccuringDetails.endTimestamp));
+        reccuringDetails.amount = Math.floor(Number(reccuringDetails.amount));
+        const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
+        Object.assign(reccuringDetails, data);
     }
 
     public static async reduceLimit(reccuringDetails: IPaymentUpdateDetails) {
         reccuringDetails.limit = reccuringDetails.limit - 1;
-        await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {});
+        reccuringDetails.startTimestamp = Math.floor(Number(reccuringDetails.startTimestamp));
+        reccuringDetails.endTimestamp = Math.floor(Number(reccuringDetails.endTimestamp));
+        reccuringDetails.amount = Math.floor(Number(reccuringDetails.amount));
+        const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
+        Object.assign(reccuringDetails, data);
     }
 
 }

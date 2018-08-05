@@ -22,9 +22,9 @@ export class Scheduler {
 
     public start() {
         ScheduleHelper.adjustStartTime(this.reccuringDetails);
-        this._schedule = schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), () => {
-            ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().started);
-            this.executeCallback();
+        this._schedule = schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), async () => {
+            await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().started);
+            await this.executeCallback();
             this._interval = this.startInterval();
         });
 
@@ -68,7 +68,7 @@ export class Scheduler {
 
     private async executeCallback() {
         await this.callback();
-        ScheduleHelper.reduceLimit(this.reccuringDetails);
+        await ScheduleHelper.reduceLimit(this.reccuringDetails);
     }
 
 }
