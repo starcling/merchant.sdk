@@ -66,7 +66,7 @@ export class BlockchainController extends PaymentDbConnector {
             });
         }).on('receipt', (receipt) => {
             const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-            console.debug(receipt);
+
             this.updatePayment(<IPaymentUpdateDetails>{
                 id: payment.id,
                 executeTxStatus: status,
