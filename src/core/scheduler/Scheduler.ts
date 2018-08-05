@@ -2,6 +2,7 @@ import { SchedulerBuffer } from "./ScheduleBuffer";
 import { Globals } from "../../utils/globals";
 import { IPaymentUpdateDetails } from "../payment/models";
 import { ScheduleHelper } from "./ScheduleHelper";
+import { ScheduleQueue } from "./ScheduleQueue";
 const schedule = require('node-schedule');
 
 /**
@@ -22,15 +23,15 @@ export class Scheduler {
 
     public start() {
         ScheduleHelper.adjustStartTime(this.reccuringDetails);
-        this._schedule = schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), async () => {
-            await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().started);
-            await this.executeCallback();
-            this._interval = this.startInterval();
-        });
-
+        this._schedule = this.scheduleJob();
         return SchedulerBuffer.set(this.reccuringDetails.id, this);
     }
 
+    /**
+     * @description Stops the scheduler
+     * @param payment_id ID of the payment and the scheduler aswell
+     * @returns {boolean} true if scheduler is stopped, false if scheduler was not found
+     */
     public static stop(payment_id: string) {
         const scheduler = SchedulerBuffer.get(payment_id);
         if (scheduler) {
@@ -38,14 +39,57 @@ export class Scheduler {
             if (scheduler.interval) {
                 clearInterval(scheduler.interval);
             }
+
+            return true;
         }
+
+        return false;
     }
 
-    public static restart(payment_id: string, reccuringDetails: any) {
+
+
+    /**
+     * @description Restarts the stopped scheduler
+     * @param payment_id ID of the payment and the scheduler aswell
+     * @returns {boolean} true if scheduler is restarted, false if scheduler was not found or was not stopped
+     */
+    public static restart(payment_id: string) {
         const scheduler = SchedulerBuffer.get(payment_id);
         if (scheduler) {
-            scheduler.instance.reschedule(reccuringDetails);
+            const currentDate = Math.floor((new Date().getTime() / 1000));
+            let nextPayment = Math.floor(Number(scheduler.reccuringDetails.nextPaymentDate));
+
+            while (nextPayment <= currentDate) {
+                nextPayment = nextPayment + scheduler.reccuringDetails.frequency;
+                ScheduleQueue.instance().queue(scheduler.reccuringDetails.id);
+            }
+
+            scheduler.reccuringDetails.startTimestamp = nextPayment;
+            scheduler._schedule = scheduler.scheduleJob();
+
+            return true;
         }
+
+        return false;
+    }
+
+    /**
+     * @description Reschedules the scheduler with new payment details
+     * @param reccuringDetails ID of the payment and the scheduler aswell
+     * @returns {boolean} true if scheduler is rescheduled, false if scheduler was not found
+     */
+    public static reschedule(reccuringDetails: any) {
+        const scheduler = SchedulerBuffer.get(reccuringDetails.id);
+        if (scheduler) {
+            const callback = scheduler.callback;
+            const payload = Object.assign(scheduler.reccuringDetails, reccuringDetails);
+            SchedulerBuffer.delete(scheduler.reccuringDetails.id);
+            new Scheduler(payload, callback);
+
+            return true;
+        }
+
+        return false;
     }
 
     public get interval() {
@@ -56,19 +100,27 @@ export class Scheduler {
         return this._schedule;
     }
 
+    private scheduleJob() {
+        return schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), async () => {
+            await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().running);
+            await this.executeCallback();
+            this._interval = this.startInterval();
+        });
+    }
+
     private startInterval() {
         return setInterval(() => {
-            if (this.reccuringDetails.limit == 0) {
-                SchedulerBuffer.delete(this.reccuringDetails.id);
-            } else {
-                this.executeCallback();
-            }
+            this.executeCallback();
         }, this.reccuringDetails.frequency * 1000);
     }
 
-    private async executeCallback() {
-        await this.callback();
-        await ScheduleHelper.reduceLimit(this.reccuringDetails);
+    public async executeCallback() {
+        if (this.reccuringDetails.limit == 0) {
+            SchedulerBuffer.delete(this.reccuringDetails.id);
+        } else if (Number(this.reccuringDetails.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000)) {
+            await this.callback();
+            await ScheduleHelper.reduceLimit(this.reccuringDetails);
+        }
     }
 
 }

@@ -124,6 +124,10 @@ export class Globals {
     public static GET_MERCHANT_PRIVATE_KEY(): string {
         return '3f455a331a4fdd97f14fe8025cdb6722ac7dffea2b98c5bca5087e26d7ab862c';
     }
+
+    public static GET_SCHEDULE_QUEUE_INTERVAL(): number {
+        return 100;
+    }
 }
 
 enum TransactionStatusEnum {
@@ -137,5 +141,7 @@ enum TransactionStatusEnum {
 enum PaymentStatusEnum {
     canceled = 0,
     initial = 1,
-    started = 2,
+    running = 2,
+    stopped = 3,
+    done = 4,
 }
