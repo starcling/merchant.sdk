@@ -21,7 +21,6 @@ export class ScheduleHelper {
             reccuringDetails.endTimestamp = Math.floor(reccuringDetails.startTimestamp + reccuringDetails.frequency * reccuringDetails.limit);
             const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
             Object.assign(reccuringDetails, data);
-            // reccuringDetails = data ? data : reccuringDetails;
         }
     }
 

@@ -36,6 +36,7 @@ export class Scheduler {
         if (scheduler) {
             scheduler.instance.cancel();
             if (scheduler.interval) {
+                console.log('cleared');
                 clearInterval(scheduler.interval);
             }
         }
