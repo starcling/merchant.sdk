@@ -55,21 +55,23 @@ export class BlockchainController extends PaymentDbConnector {
         const data: string = contract.methods.executePullPayment().encodeABI();
         const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAccountAddress, txCount).getSerializedTx();
 
-        await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => {
+        await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
             const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;
 
-            this.updatePayment(<IPaymentUpdateDetails>{
+            await this.updatePayment(<IPaymentUpdateDetails>{
                 id: payment.id,
                 executeTxHash: hash,
                 executeTxStatus: status
             });
-        }).on('receipt', (receipt) => {
+        }).on('receipt', async (receipt) => {
             const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+            const numberOfPayments = receipt.status ? payment.numberOfPayments - 1 : payment.numberOfPayments;
 
-            this.updatePayment(<IPaymentUpdateDetails>{
+            await this.updatePayment(<IPaymentUpdateDetails>{
                 id: payment.id,
                 executeTxStatus: status,
                 lastPaymentDate: payment.nextPaymentDate,
+                numberOfPayments: numberOfPayments,
                 nextPaymentDate: Number(payment.nextPaymentDate) + Number(payment.frequency)
             });
         });

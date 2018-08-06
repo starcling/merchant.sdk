@@ -33,12 +33,4 @@ export class ScheduleHelper {
         Object.assign(reccuringDetails, data);
     }
 
-    public static async reduceLimit(reccuringDetails: IPaymentUpdateDetails) {
-        reccuringDetails.numberOfPayments = reccuringDetails.numberOfPayments - 1;
-        reccuringDetails.startTimestamp = Math.floor(Number(reccuringDetails.startTimestamp));
-        reccuringDetails.endTimestamp = Math.floor(Number(reccuringDetails.endTimestamp));
-        reccuringDetails.amount = Math.floor(Number(reccuringDetails.amount));
-        const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
-        Object.assign(reccuringDetails, data);
-    }
 }

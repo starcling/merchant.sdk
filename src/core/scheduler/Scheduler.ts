@@ -58,8 +58,10 @@ export class Scheduler {
         if (scheduler) {
             const currentDate = Math.floor((new Date().getTime() / 1000));
             let nextPayment = Math.floor(Number(scheduler.reccuringDetails.nextPaymentDate));
+            let numberOfPayments = Math.floor(Number(scheduler.reccuringDetails.numberOfPayments));
 
-            while (nextPayment <= currentDate) {
+            while (nextPayment <= currentDate && numberOfPayments > 0) {
+                numberOfPayments--;
                 nextPayment = nextPayment + scheduler.reccuringDetails.frequency;
                 ScheduleQueue.instance().queue(scheduler.reccuringDetails.id);
             }
@@ -121,7 +123,6 @@ export class Scheduler {
         } else if (Number(this.reccuringDetails.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000)) {
             await this.callback();
             this.reccuringDetails = (await new PaymentDbConnector().getPayment(this.reccuringDetails.id).catch(() => {})).data[0];
-            await ScheduleHelper.reduceLimit(this.reccuringDetails);
         }
     }
 }
