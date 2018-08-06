@@ -19,7 +19,6 @@ export class ScheduleQueue {
     public static instance() {
         if (!this._instance) {
             this._instance = new ScheduleQueue();
-            this._instance.drip();
         }
 
         return this._instance;
@@ -27,15 +26,16 @@ export class ScheduleQueue {
 
     public queue(method: any) {
         this.executionQueue.push(method);
+        this.drip();
     }
 
     private async drip() {
         if (!ScheduleQueue._instance.isExecuting && ScheduleQueue._instance.executionQueue.length) {
             ScheduleQueue._instance.isExecuting = true;
             ScheduleQueue._instance.execute();
+        } else {
+            setTimeout(ScheduleQueue._instance.drip, Globals.GET_SCHEDULE_QUEUE_INTERVAL());
         }
-
-        setTimeout(ScheduleQueue._instance.drip, Globals.GET_SCHEDULE_QUEUE_INTERVAL());
     }
 
     private async execute() {

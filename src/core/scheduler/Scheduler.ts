@@ -67,6 +67,7 @@ export class Scheduler {
             }
 
             scheduler.reccuringDetails.startTimestamp = nextPayment;
+            scheduler._schedule.cancel();
             scheduler._schedule = scheduler.scheduleJob();
 
             return true;
