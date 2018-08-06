@@ -3,6 +3,7 @@ import { Globals } from "../../utils/globals";
 import { IPaymentUpdateDetails } from "../payment/models";
 import { ScheduleHelper } from "./ScheduleHelper";
 import { ScheduleQueue } from "./ScheduleQueue";
+import { PaymentDbConnector } from "../../connector/dbConnector/paymentsDBconnector";
 const schedule = require('node-schedule');
 
 /**
@@ -120,6 +121,7 @@ export class Scheduler {
             await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().done);
         } else if (Number(this.reccuringDetails.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000)) {
             await this.callback();
+            this.reccuringDetails = (await new PaymentDbConnector().getPayment(this.reccuringDetails.id).catch(() => {})).data[0];
             await ScheduleHelper.reduceLimit(this.reccuringDetails);
         }
     }
