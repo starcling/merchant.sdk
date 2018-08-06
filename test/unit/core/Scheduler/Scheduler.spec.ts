@@ -159,9 +159,9 @@ describe('A Scheduler', () => {
                     payment.frequency = 1;
 
                     new Scheduler(payment, async () => {
-                        count++;
                         payment.numberOfPayments = payment.numberOfPayments - 1;
                         await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                        count++;
                     }).start();
                 })
             }

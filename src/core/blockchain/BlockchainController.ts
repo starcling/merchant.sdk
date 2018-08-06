@@ -9,6 +9,10 @@ import { IPaymentUpdateDetails } from '../payment/models';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
 
 export class BlockchainController extends PaymentDbConnector {
+
+    private static queueLimit = 100;
+    private static queueCount = 0;
+
     /**
     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
     * to create a scheduler that will execute the pull payment
@@ -74,6 +78,13 @@ export class BlockchainController extends PaymentDbConnector {
                 numberOfPayments: numberOfPayments,
                 nextPaymentDate: Number(payment.nextPaymentDate) + Number(payment.frequency)
             });
+            
+            if (BlockchainController.queueCount > 0 && status == Globals.GET_TRANSACTION_STATUS_ENUM().success) BlockchainController.queueCount--;
+        }).catch(() => {
+            if (BlockchainController.queueCount < BlockchainController.queueLimit) {
+                BlockchainController.queueCount++;
+                this.executePullPayment(paymentID);
+            }
         });
     }
 }
