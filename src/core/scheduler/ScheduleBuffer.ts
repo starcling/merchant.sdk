@@ -15,7 +15,9 @@ export class SchedulerBuffer {
     public static delete(payment_id: string) {
         const scheduler = SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
         if (scheduler) {
-            scheduler.instance.cancel();
+            if (scheduler.instance) {
+                scheduler.instance.cancel();    
+            }
             clearInterval(scheduler.interval);
             delete SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
             return true;
