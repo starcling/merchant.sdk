@@ -1,4 +1,5 @@
-pragma solidity ^0.4.23;
+
+pragma solidity ^0.4.24;
 
 // File: node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol
 
@@ -58,6 +59,44 @@ contract Ownable {
         require(_newOwner != address(0));
         emit OwnershipTransferred(owner, _newOwner);
         owner = _newOwner;
+    }
+}
+
+// File: contracts/Oracle/PumaPayOracle.sol
+
+contract PumaPayOracle is Ownable {
+    /// =================================================================================================================
+    ///                                      Events
+    /// =================================================================================================================
+    event LogSetExchangeRate(string currency, uint256 exchangeRate);
+
+    /// =================================================================================================================
+    ///                                      Members
+    /// =================================================================================================================
+    mapping (string => uint256) private exchangeRates;
+
+    /// =================================================================================================================
+    ///                                      Constructor
+    /// =================================================================================================================
+    constructor() public {
+    }
+
+    /// =================================================================================================================
+    ///                                      Public Functions
+    /// =================================================================================================================
+
+    function setRate(string _currency, uint256 _rate)
+    public
+    onlyOwner
+    returns (bool) {
+        exchangeRates[_currency] = _rate;
+        emit LogSetExchangeRate(_currency, _rate);
+
+        return true;
+    }
+
+    function getRate(string _currency) public view returns(uint256) {
+        return exchangeRates[_currency];
     }
 }
 
@@ -413,268 +452,7 @@ contract PumaPayToken is MintableToken {
     }
 }
 
-// File: contracts/DebitAccount/DebitAccount.sol
-
-/// @title Utility Account - Contract that facilitates our pull payment protocol
-/// @author PumaPay Dev Team - <developers@pumapay.io>
-contract DebitAccount is Ownable {
-    using SafeMath for uint256;
-    /// =================================================================================================================
-    ///                                      Events
-    /// =================================================================================================================
-
-    event LogPaymentRegistered(address _beneficiaryAddress, string _currency, uint256 _fiatAmountInCents);
-    event LogPaymentCancelled(address _beneficiaryAddress, uint256 _amountInPMA);
-    event LogPullPaymentExecution(address _beneficiaryAddress, string _currency, uint256 _fiatAmountInCents, uint256 _amountInPMA);
-
-    // event LogBytes32(bytes32 _bytes);
-    // event LogBytes(bytes _bytes);
-    event LogAddress(address _address);
-    // event LogNumber(uint8 _number);
-    event LogNumber256(uint256 _number);
-    // event LogBoolean(bool _boolean);
-    // event LogString(string _string);
-
-    /// =================================================================================================================
-    ///                                      Constants
-    /// =================================================================================================================
-
-    /// This transforms the Rate from decimals to uint256
-    uint256 constant private DECIMAL_FIXER = 10000;
-    uint256 constant private ONE_ETHER = 1 ether;
-
-    /// =================================================================================================================
-    ///                                      Members
-    /// =================================================================================================================
-
-    uint256 public paymentCounter;
-    address public signatory;
-    PumaPayToken public token;
-
-    mapping (address => RecurringPayment) public recurringPayments;
-
-    struct RecurringPayment {
-        string currency;                        /// 3-letter abbr i.e. 'EUR' -M
-        uint256 fiatAmountInCents;                     /// payment amount in fiat in cents - M
-        uint256 frequency;                      /// how often merchant can pull - in seconds
-        uint256 endTimestamp;                   /// when subscription ends - in seconds
-        uint256 lastPaymentTimestamp;           /// timestamp of last payment
-        uint256 nextPaymentTimestamp;           /// timestamp of next payment
-        uint256 startTimestamp;                 /// when subscription starts - in seconds
-    }
-
-    /// =================================================================================================================
-    ///                                      Modifiers
-    /// =================================================================================================================
-
-    modifier paymentExists(address _beneficiary) {
-        require(
-            bytes(recurringPayments[_beneficiary].currency).length != 0 &&
-            recurringPayments[_beneficiary].fiatAmountInCents != 0 &&
-            recurringPayments[_beneficiary].frequency != 0 &&
-            recurringPayments[_beneficiary].startTimestamp != 0 &&
-            recurringPayments[_beneficiary].endTimestamp != 0 &&
-            recurringPayments[_beneficiary].nextPaymentTimestamp != 0
-        );
-        _;
-    }
-
-    modifier isValidRegistration(
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        string _currency,
-        uint256 _endTimestamp,
-        uint256 _fiatAmountInCents,
-        uint256 _startTimestamp
-    ) {
-        require(validateRegistration(
-                v,
-                r,
-                s,
-                _currency,
-                _endTimestamp,
-                _fiatAmountInCents,
-                _startTimestamp)
-        );
-        _;
-    }
-
-    modifier isValidDeletion(
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        address _beneficiary
-    ) {
-        require(validateDeletion(
-                v,
-                r,
-                s,
-                _beneficiary
-            )
-        );
-        _;
-    }
-
-    modifier validRequirements(address _owner, address _signaory, PumaPayToken _token) {
-        require(
-            _owner != address(0)
-            && _token != address(0)
-            && _signaory != address(0)
-        );
-        _;
-    }
-
-    modifier isPaymentRequestValid(uint256 startTimestamp, uint256 endTimestamp) {
-        require(startTimestamp <= now && endTimestamp > now);
-        _;
-    }
-
-    /// =================================================================================================================
-    ///                                      Constructor
-    /// =================================================================================================================
-
-    constructor (address _owner, address _signatory, PumaPayToken _token)
-    public
-    validRequirements(_owner, _signatory, _token) {
-        owner = _owner;
-        signatory = _signatory;
-        token = _token;
-    }
-
-    /// =================================================================================================================
-    ///                                      Public Functions
-    /// =================================================================================================================
-
-    function registerRecurringPayment (
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        address _beneficiary,
-        string _currency,
-        uint256 _endTimestamp,
-        uint256 _fiatAmountInCents,
-        uint256 _frequency,
-        uint256 _startTimestamp
-    )
-    public
-    onlyOwner()
-    isValidRegistration(
-        v,
-        r,
-        s,
-        _currency,
-        _endTimestamp,
-        _fiatAmountInCents,
-        _startTimestamp)
-    {
-
-        recurringPayments[_beneficiary].currency = _currency;
-        recurringPayments[_beneficiary].fiatAmountInCents = _fiatAmountInCents;
-        recurringPayments[_beneficiary].frequency = _frequency;
-        recurringPayments[_beneficiary].startTimestamp = _startTimestamp;
-        recurringPayments[_beneficiary].endTimestamp = _endTimestamp;
-        recurringPayments[_beneficiary].nextPaymentTimestamp = _startTimestamp;
-
-        paymentCounter++;
-
-        emit LogPaymentRegistered(_beneficiary, _currency, _fiatAmountInCents);
-    }
-
-    function deleteRecurringPayment (
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        address _beneficiary
-    )
-    public
-    onlyOwner()
-    isValidDeletion(v, r, s, _beneficiary)
-    {
-        delete(recurringPayments[_beneficiary]);
-
-        paymentCounter--;
-    }
-
-    function executePullPayment()
-    public
-    paymentExists(msg.sender)
-        // isPaymentRequestValid(recurringPayments[msg.sender].startTimestamp, recurringPayments[msg.sender].endTimestamp)
-    {
-        // calculate the amount in PMA based on fiat
-        uint256 amountInPMA = calculatePMAFromFiat(recurringPayments[msg.sender].fiatAmountInCents, recurringPayments[msg.sender].currency);
-
-        token.transferFrom(signatory, msg.sender, amountInPMA);
-        // TODO: SET NEXT AND LAST PAYMENT DATE
-        emit LogPullPaymentExecution(msg.sender, recurringPayments[msg.sender].currency, recurringPayments[msg.sender].fiatAmountInCents, amountInPMA);
-    }
-
-    /// =================================================================================================================
-    ///                                      Internal Functions
-    /// =================================================================================================================
-
-    function calculatePMAFromFiat(uint256 _fiatAmountInCents, string _currency)
-    internal
-    pure
-    returns (uint256) {
-        // TODO: RATE SHOULD COME FROM ORACLE BASED ON THE CURRENCY SPECIFIED
-        // RATE CALCULATION
-        // RATE => 1 PMA = 0.012 USD$ = 1.2 USD cents
-        // 1 USD$ = 1/0.012 PMA = 83.33 PMA
-        // 1 USD cent = 1/1.2 PMA = 0.833 PMA
-        uint256 amountOfPmaInFiatCents = 1.2 * 10;
-        // * ^^ Multiply rate of PMA to Fiat in cents by 10 to make it an integer ^^
-        // * Start the calculation from one ether - PMA Token has 18 decimals
-        // * Multiply by 10 to fix the multiplication of the rate
-        //      ^^ e.g 100 / (1.2 / 10) == 100 * 10 / 12
-        // * Multiply with the fiat amount in cets
-        // * Devide by the Rate of PMA to Fiat in cents
-
-        return ONE_ETHER.mul(10).mul(_fiatAmountInCents).div(amountOfPmaInFiatCents);
-    }
-
-    function validateRegistration(
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        string _currency,
-        uint256 _endTimestamp,
-        uint256 _fiatAmountInCents,
-        uint256 _startTimestamp
-    )
-    internal
-    view
-    returns(bool)
-    {
-        return ecrecover(keccak256(
-                abi.encodePacked(
-                    _currency,
-                    _endTimestamp,
-                    _fiatAmountInCents,
-                    _startTimestamp
-                )
-            ), v, r, s) == signatory;
-    }
-
-    function validateDeletion(
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        address _beneficiary
-    )
-    internal
-    view
-    returns(bool)
-    {
-        return ecrecover(keccak256(
-                abi.encodePacked(
-                    _beneficiary
-                )
-            ), v, r, s) == signatory;
-    }
-}
-
-// File: contracts/DebitAccount/Factory.sol
+// File: contracts/PullPayment/Factory.sol
 
 /// @title Factory - Factory contract which deploys new contracts to the blockchain
 /// @author PumaPay Dev Team - <developers@pumapay.io>
@@ -683,7 +461,7 @@ contract Factory {
     /// =================================================================================================================
     ///                                      Events
     /// =================================================================================================================
-    event LogContractInstantiation(address sender, address instantiation);
+    event LogPullPaymentContractInstantiation(address sender, address instantiation);
 
     /// =================================================================================================================
     ///                                      Members
@@ -706,6 +484,17 @@ contract Factory {
         return instantiations[creator].length;
     }
 
+    /// @dev Returns all the instantiations by creator.
+    /// @param creator Contract creator.
+    /// @return Returns all the instantiations by creator.
+    function getAllInstantiations(address creator)
+    public
+    view
+    returns (address[])
+    {
+        return instantiations[creator];
+    }
+
     /// =================================================================================================================
     ///                                      Internal Functions
     /// =================================================================================================================
@@ -717,30 +506,379 @@ contract Factory {
     {
         isInstantiation[instantiation] = true;
         instantiations[msg.sender].push(instantiation);
-        emit LogContractInstantiation(msg.sender, instantiation);
+
+        emit LogPullPaymentContractInstantiation(msg.sender, instantiation);
     }
 }
 
-// File: contracts/DebitAccount/DebitAccountFactory.sol
+// File: contracts/PullPayment/PullPaymentAccount.sol
 
-/// @title Utility Account factory - Allows creation of utility account.
+/// @title Pull Payment Account - Contract that facilitates our pull payment protocol
 /// @author PumaPay Dev Team - <developers@pumapay.io>
-contract DebitAccountFactory is Factory {
+contract PullPaymentAccount is Ownable {
+    using SafeMath for uint256;
+    /// =================================================================================================================
+    ///                                      Events
+    /// =================================================================================================================
+
+    event LogPaymentRegistered(address beneficiaryAddress, string paymentID);
+    event LogPaymentCancelled(address beneficiaryAddress, string paymentID);
+    event LogPullPaymentExecuted(address beneficiaryAddress, string paymentID);
+
+    /// =================================================================================================================
+    ///                                      Constants
+    /// =================================================================================================================
+
+    /// This transforms the Rate from decimals to uint256
+    uint256 constant private DECIMAL_FIXER = 10000000000; // 10^10
+    uint256 constant private FIAT_TO_CENT_FIXER = 100;
+    uint256 constant private ONE_ETHER = 1 ether;
+
+    /// =================================================================================================================
+    ///                                      Members
+    /// =================================================================================================================
+
+    PumaPayToken public token;
+    PumaPayOracle public oracle;
+
+    uint256 public paymentCounter;
+    address public signatory;
+
+    mapping (address => RecurringPayment) public recurringPayments;
+
+    struct RecurringPayment {
+        string merchantID;                      /// ID of the merchant
+        string paymentID;                       /// ID of the payment
+        string currency;                        /// 3-letter abbr i.e. 'EUR'
+        uint256 fiatAmountInCents;              /// payment amount in fiat in cents
+        uint256 frequency;                      /// how often merchant can pull - in seconds
+        uint256 numberOfPayments;               /// amount of pull payments merchant can make
+        uint256 startTimestamp;                 /// when subscription starts - in seconds
+        uint256 nextPaymentTimestamp;           /// timestamp of next payment
+        uint256 lastPaymentTimestamp;           /// timestamp of last payment
+        uint256 cancelTimestamp;                /// timestamp the payment was cancelled
+    }
+
+    /// =================================================================================================================
+    ///                                      Modifiers
+    /// =================================================================================================================
+
+    modifier onlySignatory() {
+        require(msg.sender == signatory);
+        _;
+    }
+
+    modifier paymentExists(address _beneficiary) {
+        require(doesPaymentExist(_beneficiary));
+        _;
+    }
+
+    modifier paymentNotCancelled(address _beneficiary) {
+        require(recurringPayments[_beneficiary].cancelTimestamp == 0);
+        _;
+    }
+
+    modifier isPullPaymentRequestValid(address _beneficiary) {
+        require(
+            now >= recurringPayments[_beneficiary].startTimestamp &&
+            now >= recurringPayments[_beneficiary].nextPaymentTimestamp &&
+            recurringPayments[_beneficiary].numberOfPayments > 0 &&
+        (recurringPayments[_beneficiary].cancelTimestamp == 0 ||
+        recurringPayments[_beneficiary].cancelTimestamp > recurringPayments[_beneficiary].nextPaymentTimestamp)
+        );
+        _;
+    }
+
+    modifier validRequirements(address _owner, address _signatory, PumaPayToken _token, PumaPayOracle _oracle) {
+        require(
+            _owner != address(0) &&
+            _token != address(0) &&
+            _signatory != address(0) &&
+            _oracle != address(0)
+        );
+        _;
+    }
+
+    modifier isValidDeletionRequest(string paymentID, address beneficiary) {
+        require(
+            beneficiary != address(0) &&
+            bytes(paymentID).length != 0
+        );
+        _;
+    }
+
+    modifier isValidDeletion(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        string _paymentID,
+        address _beneficiary
+    ) {
+        require(validateDeletion(
+                v,
+                r,
+                s,
+                _paymentID,
+                _beneficiary
+            )
+        );
+        _;
+    }
+
+    /// =================================================================================================================
+    ///                                      Constructor
+    /// =================================================================================================================
+
+    /// @dev Contract constructor sets owner of the Pull Payment Account, the signatory, the token address to handle
+    /// and the oracle that provides the exchange rates.
+    /// @param _owner Owner of the Pull Payment Account.
+    /// @param _signatory Signatory of the Pull Payment Account.
+    /// @param _token Token Address.
+    /// @param _oracle Oracle Address.
+    constructor (address _owner, address _signatory, PumaPayToken _token, PumaPayOracle _oracle)
+    public
+    validRequirements(_owner, _signatory, _token, _oracle)
+    {
+        owner = _owner;
+        signatory = _signatory;
+        token = _token;
+        oracle = _oracle;
+    }
 
     /// =================================================================================================================
     ///                                      Public Functions
     /// =================================================================================================================
 
-    /// @dev Allows verified creation of utlity account.
-    /// @param _owner Utility Account Owner.
-    /// @param _signatory Utility Account Signatory.
-    /// @param _token Address of PumaPayToken.
-    /// @return Returns wallet address.
-    function create(address _owner, address _signatory, PumaPayToken _token)
+    /// @dev Registers a new pull payment to the pull payment account - The registration needs to happen by the owner of the pull payment account
+    /// and the pull payment account checks that the pull payment has been singed by the signatory of the account.
+    /// Emits 'LogPaymentRegistered' with beneficiary address and paymentID.
+    /// @param v - recovery ID of the ETH signature. - https://github.com/ethereum/EIPs/issues/155
+    /// @param r - R output of ECDSA signature.
+    /// @param s - S output of ECDSA signature.
+    /// @param _merchantID - ID of the merchant.
+    /// @param _paymentID - ID of the payment.
+    /// @param _beneficiary - address that is allowed to execute this pull payment.
+    /// @param _currency - currency of the payment / 3-letter abbr i.e. 'EUR'.
+    /// @param _fiatAmountInCents - payment amount in fiat in cents.
+    /// @param _frequency - how often merchant can pull - in seconds.
+    /// @param _numberOfPayments - amount of pull payments merchant can make
+    /// @param _startTimestamp - when subscription starts - in seconds.
+    function registerPullPayment (
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        string _merchantID,
+        string _paymentID,
+        address _beneficiary,
+        string _currency,
+        uint256 _fiatAmountInCents,
+        uint256 _frequency,
+        uint256 _numberOfPayments,
+        uint256 _startTimestamp
+    )
     public
-    returns (address debitAccount)
+    onlyOwner()
     {
-        debitAccount = new DebitAccount(_owner, _signatory, _token);
-        register(debitAccount);
+        require(
+            bytes(_paymentID).length != 0 &&
+            bytes(_currency).length != 0 &&
+            _beneficiary != address(0) &&
+            _fiatAmountInCents > 0 &&
+            _frequency > 0 &&
+            _numberOfPayments > 0 &&
+            _startTimestamp > 0
+        );
+
+        recurringPayments[_beneficiary].currency = _currency;
+        recurringPayments[_beneficiary].fiatAmountInCents = _fiatAmountInCents;
+        recurringPayments[_beneficiary].frequency = _frequency;
+        recurringPayments[_beneficiary].startTimestamp = _startTimestamp;
+        recurringPayments[_beneficiary].numberOfPayments = _numberOfPayments;
+
+        if (!isValidRegistration(v, r, s, recurringPayments[_beneficiary])) revert();
+
+        recurringPayments[_beneficiary].merchantID = _merchantID;
+        recurringPayments[_beneficiary].paymentID = _paymentID;
+        recurringPayments[_beneficiary].nextPaymentTimestamp = _startTimestamp;
+
+        paymentCounter++;
+
+        emit LogPaymentRegistered(_beneficiary, _paymentID);
+    }
+
+    /// @dev Deletes a pull payment for a beneficiary - The deletion needs to happen by the owner of the pull payment account
+    /// and the pull payment account checks that the beneficiary has been singed by the signatory of the account.
+    /// This method deletes the pull payment from the pull payments array for this beneficiary specified and
+    /// also deletes the beneficiary from the beneficiaries array.
+    /// Emits 'LogPaymentCancelled' with beneficiary address and paymentID.
+    /// @param v - recovery ID of the ETH signature. - https://github.com/ethereum/EIPs/issues/155
+    /// @param r - R output of ECDSA signature.
+    /// @param s - S output of ECDSA signature.
+    /// @param _paymentID - ID of the payment.
+    /// @param _beneficiary - address that is allowed to execute this pull payment.
+    function deletePullPayment (
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        string _paymentID,
+        address _beneficiary
+    )
+    public
+    onlyOwner()
+    paymentExists(_beneficiary)
+    paymentNotCancelled(_beneficiary)
+    isValidDeletionRequest(_paymentID, _beneficiary)
+    isValidDeletion(v, r, s, _paymentID, _beneficiary)
+    {
+        recurringPayments[_beneficiary].cancelTimestamp = now;
+        paymentCounter--;
+
+        emit LogPaymentCancelled(_beneficiary, _paymentID);
+    }
+
+    /// @dev Executes a pull payment for the msg.sender - The pull payment should exist and the payment request
+    /// should be valid in terms of when it can be executed.
+    /// First we calculate the PMA to FIAT using the Oracle rate and the currency and we transfer from the
+    /// signatory account the amount in PMA.
+    /// After execution we set the last payment timestamp to NOW and the, the next payment timestamp is incremented by
+    /// the frequency and the number of payments is decresed by 1.
+    /// Emits 'LogPullPaymentExecuted' with msg.sender as the beneficiary address and the paymentID.
+    function executePullPayment()
+    public
+    paymentExists(msg.sender)
+    isPullPaymentRequestValid(msg.sender)
+    {
+        uint256 amountInPMA = calculatePMAFromFiat(recurringPayments[msg.sender].fiatAmountInCents, recurringPayments[msg.sender].currency);
+        token.transferFrom(signatory, msg.sender, amountInPMA);
+
+        recurringPayments[msg.sender].lastPaymentTimestamp = now;
+        recurringPayments[msg.sender].nextPaymentTimestamp = recurringPayments[msg.sender].nextPaymentTimestamp + recurringPayments[msg.sender].frequency;
+        recurringPayments[msg.sender].numberOfPayments = recurringPayments[msg.sender].numberOfPayments - 1;
+
+        emit LogPullPaymentExecuted(msg.sender, recurringPayments[msg.sender].paymentID);
+    }
+
+
+    /// =================================================================================================================
+    ///                                      Internal Functions
+    /// =================================================================================================================
+
+    /// @dev Calculates the PMA Rate for the fiat currency specified - The rate is being retrieved by the PumaPayOracle
+    /// for the currency specified. The Oracle is being updated every minute for each different currency the our system supports.
+    /// @param _fiatAmountInCents - payment amount in fiat CENTS so that is always integer
+    /// @param _currency - currency in which the payment needs to take place
+    /// RATE CALCULATION EXAMPLE
+    /// ------------------------
+    /// RATE ==> 1 PMA = 0.01 USD$
+    /// 1 USD$ = 1/0.01 PMA = 100 PMA
+    /// Start the calculation from one ether - PMA Token has 18 decimals
+    /// Multiply by the DECIMAL_FIXER (1e+10) to fix the multiplication of the rate
+    /// Multiply with the fiat amount in cents
+    /// Divide by the Rate of PMA to Fiat in cents
+    /// Divide by the FIAT_TO_CENT_FIXER to fix the _fiatAmountInCents
+    function calculatePMAFromFiat(uint256 _fiatAmountInCents, string _currency)
+    internal
+    view
+    returns (uint256) {
+        uint256 rate = oracle.getRate(_currency);
+
+        return ONE_ETHER.mul(DECIMAL_FIXER).mul(_fiatAmountInCents).div(rate).div(FIAT_TO_CENT_FIXER);
+    }
+
+    /// @dev Checks if a deletion request is valid by comparing the v, r, s params
+    /// and the hashed params with the signatory address.
+    /// @param v - recovery ID of the ETH signature. - https://github.com/ethereum/EIPs/issues/155
+    /// @param r - R output of ECDSA signature.
+    /// @param s - S output of ECDSA signature.
+    /// @param recurringPayment - pull payment to be validated.
+    /// @return bool - when the v, r, s params with the hashed params match the signatory address
+    function isValidRegistration(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        RecurringPayment recurringPayment
+    )
+    internal
+    view
+    returns(bool)
+    {
+        return ecrecover(keccak256(
+                abi.encodePacked(
+                    recurringPayment.currency,
+                    recurringPayment.fiatAmountInCents,
+                    recurringPayment.frequency,
+                    recurringPayment.numberOfPayments,
+                    recurringPayment.startTimestamp
+                )
+            ), v, r, s) == signatory;
+    }
+
+    /// @dev Checks if a deletion request is valid by comparing the v, r, s params
+    /// and the hashed params with the signatory address.
+    /// @param v - recovery ID of the ETH signature. - https://github.com/ethereum/EIPs/issues/155
+    /// @param r - R output of ECDSA signature.
+    /// @param s - S output of ECDSA signature.
+    /// @param _paymentID - ID of the payment.
+    /// @param _beneficiary - address that is allowed to execute this pull payment.
+    /// @return bool - when the v, r, s params with the hashed params match the signatory address
+    function validateDeletion(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        string _paymentID,
+        address _beneficiary
+    )
+    internal
+    view
+    returns(bool)
+    {
+        return ecrecover(keccak256(
+                abi.encodePacked(
+                    _paymentID,
+                    _beneficiary
+                )
+            ), v, r, s) == signatory;
+    }
+
+    /// @dev Checks if a payment for a beneficiary exists.
+    /// @param _beneficiary - address to execute a pull payment.
+    /// @return bool - whether the beneficiary has a pull payment to execute.
+    function doesPaymentExist(address _beneficiary)
+    internal
+    view
+    returns(bool) {
+        return (
+        bytes(recurringPayments[_beneficiary].currency).length != 0 &&
+        recurringPayments[_beneficiary].fiatAmountInCents != 0 &&
+        recurringPayments[_beneficiary].frequency != 0 &&
+        recurringPayments[_beneficiary].startTimestamp != 0 &&
+        recurringPayments[_beneficiary].numberOfPayments > 0 &&
+        recurringPayments[_beneficiary].nextPaymentTimestamp != 0
+        );
+    }
+}
+
+// File: contracts/PullPayment/PullPaymentAccountFactory.sol
+
+/// @title Pull Payment Account factory - Allows creation of utility account.
+/// @author PumaPay Dev Team - <developers@pumapay.io>
+contract PullPaymentAccountFactory is Factory {
+
+    /// =================================================================================================================
+    ///                                      Public Functions
+    /// =================================================================================================================
+
+    /// @dev Allows verified creation of pull payment account.
+    /// @param _owner Owner of the Pull Payment Account.
+    /// @param _signatory Signatory of the Pull Payment Account.
+    /// @param _token Token Address.
+    /// @param _oracle Oracle Address.
+    /// @return Returns pull paument account address.
+    function create(address _owner, address _signatory, PumaPayToken _token, PumaPayOracle _oracle)
+    public
+    returns (address pullPaymentAccount)
+    {
+        pullPaymentAccount = new PullPaymentAccount(_owner, _signatory, _token, _oracle);
+        register(pullPaymentAccount);
     }
 }

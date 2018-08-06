@@ -14,7 +14,6 @@ const schedule = require('node-schedule');
  * {reccuringDetails}: any which is the details for the reccuring payment
  */
 export class Scheduler {
-
     private _interval = null;
     private _schedule = null;
 
@@ -116,7 +115,7 @@ export class Scheduler {
     }
 
     public async executeCallback() {
-        if (this.reccuringDetails.limit == 0) {
+        if (this.reccuringDetails.numberOfPayments == 0) {
             SchedulerBuffer.delete(this.reccuringDetails.id);
             await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().done);
         } else if (Number(this.reccuringDetails.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000)) {
@@ -125,5 +124,4 @@ export class Scheduler {
             await ScheduleHelper.reduceLimit(this.reccuringDetails);
         }
     }
-
 }

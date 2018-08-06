@@ -46,6 +46,7 @@ describe('A DataService', () => {
     before(async () => {
         await createTable();
     });
+
     describe('with a correct query', () => {
         afterEach(async () => {
             await clearTestData();

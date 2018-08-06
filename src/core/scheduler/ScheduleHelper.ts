@@ -18,7 +18,7 @@ export class ScheduleHelper {
         const currentTime = Number(new Date().getTime() / 1000);
         if (Number(reccuringDetails.startTimestamp) <= currentTime && Number(reccuringDetails.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
             reccuringDetails.startTimestamp = Math.floor(Number(currentTime + 1));
-            reccuringDetails.endTimestamp = Math.floor(reccuringDetails.startTimestamp + reccuringDetails.frequency * reccuringDetails.limit);
+            reccuringDetails.endTimestamp = Math.floor(reccuringDetails.startTimestamp + reccuringDetails.frequency * reccuringDetails.numberOfPayments);
             const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
             Object.assign(reccuringDetails, data);
         }
@@ -34,12 +34,11 @@ export class ScheduleHelper {
     }
 
     public static async reduceLimit(reccuringDetails: IPaymentUpdateDetails) {
-        reccuringDetails.limit = reccuringDetails.limit - 1;
+        reccuringDetails.numberOfPayments = reccuringDetails.numberOfPayments - 1;
         reccuringDetails.startTimestamp = Math.floor(Number(reccuringDetails.startTimestamp));
         reccuringDetails.endTimestamp = Math.floor(Number(reccuringDetails.endTimestamp));
         reccuringDetails.amount = Math.floor(Number(reccuringDetails.amount));
         const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
         Object.assign(reccuringDetails, data);
     }
-
 }

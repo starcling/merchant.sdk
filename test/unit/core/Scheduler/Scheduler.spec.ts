@@ -18,7 +18,7 @@ var testId: string;
 const insertTestPayment = async () => {
     const result = await paymentDbConnector.createPayment(testPayment);
     testId = result.data[0].id;
-}
+};
 
 describe('A Scheduler', () => {
     describe('with correct parameters', () => {
@@ -33,12 +33,12 @@ describe('A Scheduler', () => {
 
         it('should execute every second', (done) => {
             let count = 0;
-            const limit = 3;
+            const numberOfPayments= 3;
 
             paymentDbConnector.getPayment(testId).then(res => {
                 const payment = res.data[0];
                 payment.startTimestamp = `${new Date().getTime() / 1000}`;
-                payment.limit = limit;
+                payment.numberOfPayments= numberOfPayments;
                 payment.frequency = 1;
 
                 new Scheduler(payment, () => {
@@ -46,19 +46,19 @@ describe('A Scheduler', () => {
                 }).start();
 
                 setTimeout(() => {
-                    expect(count).to.be.equal(limit);
+                    expect(count).to.be.equal(numberOfPayments);
                     done();
-                }, limit * 1000 + delay);
+                }, numberOfPayments* 1000 + delay);
             });
         });
 
-        it('should stop when limit reaches 0', (done) => {
-            const limit = 2;
+        it('should stop when numberOfPaymentsreaches 0', (done) => {
+            const numberOfPayments= 2;
 
             paymentDbConnector.getPayment(testId).then(res => {
                 const payment = res.data[0];
                 payment.startTimestamp = `${new Date().getTime() / 1000}`;
-                payment.limit = limit;
+                payment.numberOfPayments= numberOfPayments;
                 payment.frequency = 1;
 
                 new Scheduler(payment, () => { }).start();
@@ -66,18 +66,18 @@ describe('A Scheduler', () => {
                 setTimeout(() => {
                     expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
                     done();
-                }, limit * 1000 + delay);
+                }, numberOfPayments* 1000 + delay);
             });
         });
 
         it('should stop when called stop() method', (done) => {
             let count = 0;
-            const limit = 4; //Must be even number
+            const numberOfPayments= 4; //Must be even number
 
             paymentDbConnector.getPayment(testId).then(res => {
                 const payment = res.data[0];
                 payment.startTimestamp = `${new Date(Date.now() + 200).getTime() / 1000}`;
-                payment.limit = limit;
+                payment.numberOfPayments = numberOfPayments;
                 payment.frequency = 1;
 
                 new Scheduler(payment, () => {
@@ -87,14 +87,14 @@ describe('A Scheduler', () => {
                 setTimeout(() => {
                     setTimeout(() => {
                         Scheduler.stop(payment.id);
-                    }, (limit / 2) * 1000);
+                    }, (numberOfPayments / 2) * 1000);
 
                     setTimeout(() => {
-                        expect(count).to.be.equal(limit / 2);
+                        expect(count).to.be.equal(numberOfPayments / 2);
                         expect(SchedulerBuffer.delete(payment.id)).to.be.equal(true);
                         expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
                         done();
-                    }, limit * 1000 + delay);
+                    }, numberOfPayments * 1000 + delay);
                 }, 200);
 
             });
@@ -102,13 +102,13 @@ describe('A Scheduler', () => {
 
         // it('should restart and execute missing payments', (done) => {
         //     let count = 0;
-        //     const limit = 8;
+        //     const numberOfPayments = 8;
 
         //     paymentDbConnector.getPayment(testId).then(res => {
         //         const payment = res.data[0];
         //         payment.startTimestamp = `${new Date(Date.now() + 200).getTime() / 1000}`;
         //         payment.nextPaymentDate = Math.floor(Number(payment.startTimestamp)) + 1;
-        //         payment.limit = limit;
+        //         payment.numberOfPayments = numberOfPayments;
         //         payment.frequency = 1;
 
         //         new Scheduler(payment, () => {
@@ -118,18 +118,18 @@ describe('A Scheduler', () => {
         //         setTimeout(() => {
         //             setTimeout(() => {
         //                 Scheduler.stop(payment.id);
-        //                 expect(count).to.be.equal(limit / 4);
-        //             }, (limit / 4) * 1000 + 200);
+        //                 expect(count).to.be.equal(numberOfPayments / 4);
+        //             }, (numberOfPayments / 4) * 1000 + 200);
 
         //             setTimeout(() => {
         //                 Scheduler.restart(payment.id);
-        //             }, (limit - 3) * 1000 + 200);
+        //             }, (numberOfPayments - 3) * 1000 + 200);
 
         //             setTimeout(() => {
-        //                 expect(count).to.be.equal(limit);
+        //                 expect(count).to.be.equal(numberOfPayments);
         //                 expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
         //                 done();
-        //             }, limit * 1000 + delay);
+        //             }, numberOfPayments * 1000 + delay);
         //         }, 200);
 
         //     });
@@ -137,7 +137,7 @@ describe('A Scheduler', () => {
 
         it('should be able to run multiple instances', (done) => {
             let count = 0;
-            const limit = 3;
+            const numberOfPayments = 3;
             const multipleInstances = 30;
             const ids = [];
 
@@ -146,7 +146,7 @@ describe('A Scheduler', () => {
                     ids.push(res.data[0].id);
                     const payment = res.data[0];
                     payment.startTimestamp = `${new Date().getTime() / 1000}`;
-                    payment.limit = limit;
+                    payment.numberOfPayments = numberOfPayments;
                     payment.frequency = 1;
 
                     new Scheduler(payment, () => {
@@ -156,7 +156,7 @@ describe('A Scheduler', () => {
             }
 
             setTimeout(() => {
-                expect(count).to.be.equal(multipleInstances * limit);
+                expect(count).to.be.equal(multipleInstances * numberOfPayments);
 
                 for (let i = 0; i < multipleInstances; i++) {
                     expect(SchedulerBuffer.delete(ids[i])).to.be.equal(false);
@@ -164,18 +164,18 @@ describe('A Scheduler', () => {
                 }
 
                 done();
-            }, limit * 1000 + 2 * delay);
+            }, numberOfPayments* 1000 + 2 * delay);
         });
 
         it('should be able to start if start timestamp is in the 5min window below current time', (done) => {
             let count = 0;
-            const limit = 3;
+            const numberOfPayments= 3;
             const timeWindow = 2000; // Time window of 2 seconds
 
             paymentDbConnector.getPayment(testId).then(res => {
                 const payment = res.data[0];
                 payment.startTimestamp = `${new Date(Date.now() - timeWindow).getTime() / 1000}`;
-                payment.limit = limit;
+                payment.numberOfPayments= numberOfPayments;
                 payment.frequency = 1;
 
                 new Scheduler(payment, () => {
@@ -183,21 +183,21 @@ describe('A Scheduler', () => {
                 }).start();
 
                 setTimeout(() => {
-                    expect(count).to.be.equal(limit);
+                    expect(count).to.be.equal(numberOfPayments);
                     done();
-                }, limit * 1000 + delay);
+                }, numberOfPayments* 1000 + delay);
             });
         });
 
-        it('should reduce limit on every execution', (done) => {
+        it('should reduce numberOfPaymentson every execution', (done) => {
             let count = 0;
-            let limit = 3;
-            let oldLimit = limit;
+            let numberOfPayments= 3;
+            let oldNumberOfPayments = numberOfPayments;
 
             paymentDbConnector.getPayment(testId).then(res => {
                 const payment = res.data[0];
                 payment.startTimestamp = `${new Date(Date.now() + 200).getTime() / 1000}`;
-                payment.limit = limit;
+                payment.numberOfPayments = numberOfPayments;
                 payment.frequency = 1;
 
                 new Scheduler(payment, () => {
@@ -207,11 +207,11 @@ describe('A Scheduler', () => {
                 setTimeout(() => {
                     const interval = setInterval(async () => {
                         const payment = (await paymentDbConnector.getPayment(testId)).data[0];
-                        expect(payment.limit).to.be.equal(--oldLimit);
+                        expect(payment.numberOfPayments).to.be.equal(--oldNumberOfPayments);
 
-                        if (payment.limit === 0) {
+                        if (payment.numberOfPayments=== 0) {
                             clearInterval(interval);
-                            expect(count).to.be.equal(limit);
+                            expect(count).to.be.equal(numberOfPayments);
                             done();
                         }
 
@@ -226,13 +226,13 @@ describe('A Scheduler', () => {
         it('should not be able to start if start timestamp is out of the 5min window below current time', (done) => {
             const c = 0;
             let count = c;
-            const limit = 3; //Run scheduler for 3 seconds
+            const numberOfPayments= 3; //Run scheduler for 3 seconds
             const timeWindow = 301000; // Time window of 5 min and 1 second
 
             paymentDbConnector.getPayment(testId).then(res => {
                 const payment = res.data[0];
                 payment.startTimestamp = `${new Date(Date.now() - timeWindow).getTime() / 1000}`;
-                payment.limit = limit;
+                payment.numberOfPayments= numberOfPayments;
                 payment.frequency = 1;
 
                 new Scheduler(payment, () => {
@@ -242,9 +242,8 @@ describe('A Scheduler', () => {
                 setTimeout(() => {
                     expect(count).to.be.equal(c);
                     done();
-                }, limit * 1000 + delay);
+                }, numberOfPayments* 1000 + delay);
             });
-
         });
     });
 });

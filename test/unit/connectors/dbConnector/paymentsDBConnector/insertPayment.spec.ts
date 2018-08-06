@@ -19,7 +19,7 @@ const clearTestPayment = async () => {
         values: [testID]
     };
     await dataservice.executeQueryAsPromise(sqlQuery);
-}
+};
 
 describe('A payment insert DBcontroller', () => {
     afterEach(async () => {
@@ -48,7 +48,8 @@ describe('A payment insert DBcontroller', () => {
         result.data[0].should.have.property('registerTxHash').that.is.equal(null);
         result.data[0].should.have.property('executeTxHash').that.is.equal(null);
         result.data[0].should.have.property('executeTxStatus').that.is.equal(1);
-        result.data[0].should.have.property('debitAccount').that.is.equal(null);
+        result.data[0].should.have.property('pullPaymentAccountAddress').that.is.equal(null);
         result.data[0].should.have.property('merchantAddress').that.is.equal(testInsertPayment.merchantAddress);
+        result.data[0].should.have.property('userId').that.is.equal(null);
     });
 });
