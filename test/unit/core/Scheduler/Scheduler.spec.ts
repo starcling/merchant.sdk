@@ -63,7 +63,7 @@ describe('A Scheduler', () => {
                 payment.numberOfPayments = numberOfPayments;
                 payment.frequency = 1;
 
-                new Scheduler(payment, async () => { 
+                new Scheduler(payment, async () => {
                     payment.numberOfPayments = payment.numberOfPayments - 1;
                     await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
                 }).start();
@@ -154,12 +154,13 @@ describe('A Scheduler', () => {
                 paymentDbConnector.createPayment(testPayment).then(res => {
                     ids.push(res.data[0].id);
                     const payment = res.data[0];
-                    payment.startTimestamp = `${new Date().getTime() / 1000}`;
+                    payment.startTimestamp = `${new Date(Date.now() + 200).getTime() / 1000}`;
+                    payment.nextPaymentDate = Math.floor(new Date(Date.now() + 200).getTime() / 1000);
                     payment.numberOfPayments = numberOfPayments;
                     payment.frequency = 1;
 
                     new Scheduler(payment, async () => {
-                        if (payment.numberOfPayments > 0) count++;
+                        count++;
                         payment.numberOfPayments = payment.numberOfPayments - 1;
                         await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
                     }).start();
