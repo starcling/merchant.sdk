@@ -1,9 +1,9 @@
-import { SchedulerBuffer } from "./ScheduleBuffer";
-import { Globals } from "../../utils/globals";
-import { IPaymentUpdateDetails } from "../payment/models";
-import { ScheduleHelper } from "./ScheduleHelper";
-import { ScheduleQueue } from "./ScheduleQueue";
-import { PaymentDbConnector } from "../../connector/dbConnector/paymentsDBconnector";
+import { SchedulerBuffer } from './ScheduleBuffer';
+import { Globals } from '../../utils/globals';
+import { IPaymentUpdateDetails } from '../payment/models';
+import { ScheduleHelper } from './ScheduleHelper';
+import { ScheduleQueue } from './ScheduleQueue';
+import { PaymentDbConnector } from '../../connector/dbConnector/paymentsDBconnector';
 const schedule = require('node-schedule');
 
 /**
@@ -119,7 +119,7 @@ export class Scheduler {
     public async executeCallback() {
         if (this.reccuringDetails.numberOfPayments > 0 && (Number(this.reccuringDetails.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000))) {
             await this.callback();
-            this.reccuringDetails = (await new PaymentDbConnector().getPayment(this.reccuringDetails.id).catch(() => {})).data[0];
+            this.reccuringDetails = (await new PaymentDbConnector().getPayment(this.reccuringDetails.id).catch(() => { })).data[0];
             if (this.reccuringDetails.numberOfPayments == 0) {
                 SchedulerBuffer.delete(this.reccuringDetails.id);
                 await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().done);
