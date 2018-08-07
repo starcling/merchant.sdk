@@ -13,8 +13,12 @@ export class SchedulerBuffer {
     }
     
     public static delete(payment_id: string) {
-        if (SchedulerBuffer.SCHEDULER_BUFFER[payment_id]) {
-            clearInterval(SchedulerBuffer.SCHEDULER_BUFFER[payment_id].interval);
+        const scheduler = SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
+        if (scheduler) {
+            if (scheduler.instance) {
+                scheduler.instance.cancel();    
+            }
+            clearInterval(scheduler.interval);
             delete SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
             return true;
         }
