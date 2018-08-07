@@ -36,9 +36,12 @@ export class Scheduler {
         const scheduler = SchedulerBuffer.get(payment_id);
         if (scheduler) {
             scheduler._schedule.cancel();
+
             if (scheduler.interval) {
                 clearInterval(scheduler.interval);
             }
+
+            ScheduleHelper.updatePaymentStatus(scheduler.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().stopped);
 
             return true;
         }
@@ -53,8 +56,9 @@ export class Scheduler {
      */
     public static restart(payment_id: string) {
         const scheduler = SchedulerBuffer.get(payment_id);
-        if (scheduler) {
+        if (scheduler && scheduler.reccuringDetails.status == Globals.GET_PAYMENT_STATUS_ENUM().stopped) {
             const currentDate = Math.floor((new Date().getTime() / 1000));
+            let status = Globals.GET_PAYMENT_STATUS_ENUM().running;
             let nextPayment = Math.floor(Number(scheduler.reccuringDetails.nextPaymentDate));
             let numberOfPayments = Math.floor(Number(scheduler.reccuringDetails.numberOfPayments));
 
@@ -64,10 +68,16 @@ export class Scheduler {
                 ScheduleQueue.instance().queue(scheduler.reccuringDetails.id);
             }
 
+            if (scheduler.reccuringDetails.nextPaymentDate == scheduler.reccuringDetails.startTimestamp) {
+                status = Globals.GET_PAYMENT_STATUS_ENUM().initial;
+            }
+
             if (numberOfPayments > 0) {
                 scheduler.reccuringDetails.startTimestamp = nextPayment;
                 scheduler._schedule = scheduler.scheduleJob();
             }
+
+            ScheduleHelper.updatePaymentStatus(scheduler.reccuringDetails, status);
 
             return true;
         }
@@ -119,7 +129,7 @@ export class Scheduler {
     public async executeCallback() {
         if (this.reccuringDetails.numberOfPayments > 0 && (Number(this.reccuringDetails.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000))) {
             await this.callback();
-            this.reccuringDetails = (await new PaymentDbConnector().getPayment(this.reccuringDetails.id).catch(() => {})).data[0];
+            this.reccuringDetails = (await new PaymentDbConnector().getPayment(this.reccuringDetails.id).catch(() => { })).data[0];
             if (this.reccuringDetails.numberOfPayments == 0) {
                 SchedulerBuffer.delete(this.reccuringDetails.id);
                 await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().done);

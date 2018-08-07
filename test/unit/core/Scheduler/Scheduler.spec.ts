@@ -142,6 +142,44 @@ describe('A Scheduler', () => {
             });
         });
 
+        it('should restart only once even if called multiple times', (done) => {
+            let count = 0;
+            const numberOfPayments = 8;
+            const numberOfRestarts = 8;
+
+            paymentDbConnector.getPayment(testId).then(res => {
+                const payment = res.data[0];
+                payment.startTimestamp = `${new Date(Date.now() + 200).getTime() / 1000}`;
+                payment.nextPaymentDate = Math.floor(new Date(Date.now() + 200).getTime() / 1000);
+                payment.numberOfPayments = numberOfPayments;
+                payment.frequency = 1;
+
+                new Scheduler(payment, async () => {
+                    count++;
+                    payment.numberOfPayments = payment.numberOfPayments - 1;
+                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                }).start();
+
+                setTimeout(() => {
+                    Scheduler.stop(payment.id);
+                    expect(count).to.be.equal(numberOfPayments / 4);
+                }, (numberOfPayments / 4) * 1000 + 200);
+
+                setTimeout(() => {
+                    for (let i = 0; i < numberOfRestarts; i++) {
+                        Scheduler.restart(payment.id);
+                    }
+                }, (numberOfPayments - 3) * 1000 + 200);
+
+                setTimeout(() => {
+                    expect(count).to.be.equal(numberOfPayments);
+                    expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
+                    done();
+                }, numberOfPayments * 1000 + 2 * delay);
+
+            });
+        });
+
         it('should be able to run multiple instances', (done) => {
             let count = 0;
             const numberOfPayments = 3;
