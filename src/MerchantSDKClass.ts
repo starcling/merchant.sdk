@@ -31,7 +31,7 @@ export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, Blockch
      * @description Method to retrieve Scheduler
      * @returns {Scheduler} Scheduler class with static methods {stop} and {restart}
      */
-    public getScheduler() {
+    public get Scheduler() {
         return Scheduler;
     }
 }

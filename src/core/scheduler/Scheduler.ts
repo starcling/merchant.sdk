@@ -46,8 +46,6 @@ export class Scheduler {
         return false;
     }
 
-
-
     /**
      * @description Restarts the stopped scheduler
      * @param payment_id ID of the payment and the scheduler aswell
