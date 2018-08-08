@@ -1,26 +1,10 @@
 import { Scheduler } from './Scheduler';
 import { PaymentDbConnector } from '../../connector/dbConnector/paymentsDBconnector';
 import { DefaultConfig } from '../../config/default.config';
-
-const redis = require('redis').createClient({
-    port: 6379,
-    host: 'redis'
-});
-
-redis.on('error', (err) => {
-    console.log({
-        server: 'Warning! Redis server not started. ',
-        error: JSON.parse(JSON.stringify(err)),
-        message: `You won't be able to persist the schedulers`,
-        usedPort: DefaultConfig.settings.redisPort,
-        usedHost: DefaultConfig.settings.redisHost
-    });
-    redis.quit();
-});
-
-redis.on('connect', () => {
-    console.log(`Redis client connected to: ${DefaultConfig.settings.redisHost}:${DefaultConfig.settings.redisPort}`);
-});
+import { IPaymentUpdateDetails } from '../payment/models';
+import { Globals } from '../../utils/globals';
+const redis = require('redis');
+let rclient = null;
 
 export class SchedulerBuffer {
     private static bufferName = 'scheduler_keys';
@@ -28,7 +12,7 @@ export class SchedulerBuffer {
 
     public static set(payment_id: string, scheduler: Scheduler) {
         SchedulerBuffer.SCHEDULER_BUFFER[payment_id] = scheduler;
-        redis.sadd(SchedulerBuffer.bufferName, payment_id);
+        rclient.sadd(SchedulerBuffer.bufferName, payment_id);
     }
 
     public static get(payment_id: string): Scheduler {
@@ -43,7 +27,7 @@ export class SchedulerBuffer {
             }
             clearInterval(scheduler.interval);
             delete SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
-            redis.srem(SchedulerBuffer.bufferName, payment_id);
+            rclient.srem(SchedulerBuffer.bufferName, payment_id);
             return true;
         }
 
@@ -51,34 +35,87 @@ export class SchedulerBuffer {
     }
 
     public static async sync(executePullPayment: any) {
-        redis.smembers(SchedulerBuffer.bufferName, async (err, ids) => {
+
+        this.reconnectToRedis();
+
+        rclient.smembers(SchedulerBuffer.bufferName, async (err, ids) => {
             if (!err) {
                 for (let i = 0; i < ids.length; i++) {
-                    new PaymentDbConnector().getPayment(ids[i]).then(response => {
+                    new PaymentDbConnector().getPayment(ids[i]).then(async response => {
                         const payment = response.data[0];
                         if (!SchedulerBuffer.SCHEDULER_BUFFER[payment.id]) {
-                            redis.srem(SchedulerBuffer.bufferName, ids[i]);
-
+                            rclient.srem(SchedulerBuffer.bufferName, ids[i]);
 
                             if (payment.id != null) {
                                 new Scheduler(payment, () => {
-                                    executePullPayment(payment.id);
-                                }).start();
+                                    SchedulerBuffer.testExecution(payment.id);
+                                }).start(true);
 
-                                if (payment.startTimestamp > Math.floor(new Date().getTime() / 1000)) {
+                                if (payment.startTimestamp <= Math.floor(new Date().getTime() / 1000)) {
                                     Scheduler.stop(payment.id);
                                     Scheduler.restart(payment.id);
                                 }
-
                             }
 
                         }
                     }).catch(() => {
-                        redis.srem(SchedulerBuffer.bufferName, ids[i]);
+                        rclient.srem(SchedulerBuffer.bufferName, ids[i]);
                     });
                 }
             }
         });
     }
+
+    /**
+    * @description Method for actual execution of pull payment
+    * @returns {object} null
+    */
+    protected static async testExecution(paymentID?: string) {
+        const paymentDbConnector = new PaymentDbConnector();
+        const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
+        
+        const numberOfPayments = payment.numberOfPayments - 1;
+        await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
+            id: payment.id,
+            lastPaymentDate: numberOfPayments == 0 ? payment.lastPaymentDate : payment.nextPaymentDate,
+            numberOfPayments: numberOfPayments,
+            status: numberOfPayments == 0 ? Globals.GET_TRANSACTION_STATUS_ENUM().done : payment.status,
+            nextPaymentDate: numberOfPayments == 0 ? payment.nextPaymentDate : Number(payment.nextPaymentDate) + Number(payment.frequency)
+        });
+    }
+
+    private static reconnectToRedis() {
+        if (!rclient) {
+            rclient = redis.createClient({
+                port: DefaultConfig.settings.redisPort,
+                host: DefaultConfig.settings.redisHost
+            });
+
+            rclient.on('error', (err) => {
+                console.log({
+                    server: 'Warning! Redis server not started. ',
+                    error: JSON.parse(JSON.stringify(err)),
+                    message: `You won't be able to persist the schedulers`,
+                    usedPort: DefaultConfig.settings.redisPort,
+                    usedHost: DefaultConfig.settings.redisHost
+                });
+                rclient.quit();
+                rclient = null;
+            });
+
+            rclient.on('connect', () => {
+                console.log(`Redis client connected to: ${DefaultConfig.settings.redisHost}:${DefaultConfig.settings.redisPort}`);
+            });
+        } else {
+            rclient.quit();
+            rclient = null;
+            SchedulerBuffer.reconnectToRedis();
+        }
+    };
+
+    public static closeConnection() {
+        rclient.quit();
+        rclient = null;
+    };
 
 }

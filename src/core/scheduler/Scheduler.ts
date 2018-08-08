@@ -21,8 +21,8 @@ export class Scheduler {
 
     }
 
-    public start() {
-        ScheduleHelper.adjustStartTime(this.reccuringDetails);
+    public start(reinitialized: boolean = false) {
+        if (!reinitialized) ScheduleHelper.adjustStartTime(this.reccuringDetails);
         this._schedule = this.scheduleJob();
         return SchedulerBuffer.set(this.reccuringDetails.id, this);
     }
@@ -35,7 +35,10 @@ export class Scheduler {
     public static stop(payment_id: string) {
         const scheduler = SchedulerBuffer.get(payment_id);
         if (scheduler) {
-            scheduler._schedule.cancel();
+
+            if (scheduler._schedule) {
+                scheduler._schedule.cancel();
+            }
 
             if (scheduler.interval) {
                 clearInterval(scheduler.interval);
@@ -73,8 +76,7 @@ export class Scheduler {
             }
 
             if (numberOfPayments > 0) {
-                scheduler.reccuringDetails.startTimestamp = nextPayment;
-                scheduler._schedule = scheduler.scheduleJob();
+                scheduler._schedule = scheduler.scheduleJob(nextPayment);
             }
 
             ScheduleHelper.updatePaymentStatus(scheduler.reccuringDetails, status);
@@ -112,8 +114,8 @@ export class Scheduler {
         return this._schedule;
     }
 
-    private scheduleJob() {
-        return schedule.scheduleJob(new Date(Number(this.reccuringDetails.startTimestamp) * 1000), async () => {
+    private scheduleJob(startTime: number = this.reccuringDetails.startTimestamp) {
+        return schedule.scheduleJob(new Date(Number(startTime) * 1000), async () => {
             await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().running);
             await this.executeCallback();
             this._interval = this.startInterval();

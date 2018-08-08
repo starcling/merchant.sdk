@@ -21,6 +21,15 @@ const insertTestPayment = async () => {
 };
 
 describe('A Scheduler', () => {
+
+    before(async () => {
+        SchedulerBuffer.sync(() => {});
+    });
+
+    after(async () => {
+        SchedulerBuffer.closeConnection();
+    });
+
     describe('with correct parameters', () => {
 
         beforeEach(async () => {
@@ -322,6 +331,15 @@ describe('A Scheduler', () => {
     });
 
     describe('with incorrect parameters', () => {
+
+        beforeEach(async () => {
+            await insertTestPayment();
+        });
+
+        afterEach(async () => {
+            await paymentDbConnector.deletePayment(testId);
+        });
+
         it('should not be able to start if start timestamp is out of the 5min window below current time', (done) => {
             const c = 0;
             let count = c;

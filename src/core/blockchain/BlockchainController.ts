@@ -7,7 +7,6 @@ import { Scheduler } from '../scheduler/Scheduler';
 import { PaymentDbConnector } from '../../connector/dbConnector/paymentsDbConnector';
 import { IPaymentUpdateDetails } from '../payment/models';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
-import { SchedulerBuffer } from '../scheduler/ScheduleBuffer';
 
 export class BlockchainController {
 
@@ -15,13 +14,7 @@ export class BlockchainController {
     private static queueCount = 0;
     private paymentDB;
 
-    public constructor(condition: boolean = false) {
-        if (condition) {
-            SchedulerBuffer.sync(BlockchainController.executePullPayment);
-        } else {
-            SchedulerBuffer.sync(BlockchainController.testExecution);
-        }
-
+    public constructor() {
         this.paymentDB = new PaymentDbConnector();
     }
 
@@ -81,15 +74,27 @@ export class BlockchainController {
                 executeTxStatus: status
             });
         }).on('receipt', async (receipt) => {
-            const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-            const numberOfPayments = receipt.status ? payment.numberOfPayments - 1 : payment.numberOfPayments;
+
+            let numberOfPayments = payment.numberOfPayments;
+            let lastPaymentDate = payment.lastPaymentDate;
+            let nextPaymentDate = payment.nextPaymentDate;
+            let status = payment.executeTxStatus;
+
+            if (receipt.status) {
+                numberOfPayments = numberOfPayments - 1;
+                lastPaymentDate = nextPaymentDate;
+                nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
+                status = numberOfPayments == 0 ? Globals.GET_TRANSACTION_STATUS_ENUM().done : Globals.GET_TRANSACTION_STATUS_ENUM().success;
+            } else {
+                status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+            }
 
             await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
                 id: payment.id,
                 executeTxStatus: status,
-                lastPaymentDate: payment.nextPaymentDate,
+                lastPaymentDate: lastPaymentDate,
                 numberOfPayments: numberOfPayments,
-                nextPaymentDate: Number(payment.nextPaymentDate) + Number(payment.frequency)
+                nextPaymentDate: nextPaymentDate
             });
 
             if (BlockchainController.queueCount > 0 && status == Globals.GET_TRANSACTION_STATUS_ENUM().success) BlockchainController.queueCount--;
@@ -101,18 +106,8 @@ export class BlockchainController {
         });
     }
 
-    /**
-    * @description Method for actual execution of pull payment
-    * @returns {object} null
-    */
-    private static async testExecution(paymentID?: string) {
-        const paymentDbConnector = new PaymentDbConnector();
-        const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
-        await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
-            id: payment.id,
-            lastPaymentDate: payment.nextPaymentDate,
-            numberOfPayments: payment.numberOfPayments - 1,
-            nextPaymentDate: Number(payment.nextPaymentDate) + Number(payment.frequency)
-        });
+    protected executePullPayment(paymentID?: string) {
+        BlockchainController.executePullPayment(paymentID);
     }
+
 }

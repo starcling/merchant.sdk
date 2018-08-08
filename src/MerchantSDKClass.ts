@@ -8,8 +8,9 @@ import { BlockchainController } from './core/blockchain/BlockchainController';
 import { MultipleInheritance } from './utils/MultipleInheritance/MultipleInheritance';
 import { ErrorHandler } from './utils/handlers/ErrorHandler';
 import { Scheduler } from './core/scheduler/Scheduler';
+import { SchedulerBuffer } from './core/scheduler/ScheduleBuffer';
 
-export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, BlockchainController, AuthenticationController, PaymentController) {
+export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PaymentController) {
 
     public constructor() {
         super();
@@ -23,6 +24,7 @@ export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, Blockch
     public build(buildParams: MerchantSDKBuild): MerchantSDK {
         ErrorHandler.validateBuildParams(buildParams);
         DefaultConfig.settings = <MerchantSDKSettings>new MerchantSDKBuild(buildParams);
+        SchedulerBuffer.sync(this.executePullPayment);
 
         return this;
     }
