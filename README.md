@@ -2,7 +2,7 @@
 
 ## How to use
 ```
-    import MerchantSDK from "puma_merchant_sdk";
+    import MerchantSDK from "pumapay_merchant_sdk";
 ```
 
 ## Example
