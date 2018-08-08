@@ -64,6 +64,14 @@ export class Globals {
     public static GET_START_SCHEDULER_TIME_WINDOW(): number {
         return 300;
     }
+
+    public static GET_DEFAULT_REDIS_HOST(): string {
+        return 'localhost';
+    }
+
+    public static GET_DEFAULT_REDIS_PORT(): string {
+        return '6379';
+    }
     
     public static GET_DEFAULT_PG_HOST(): string {
         return 'localhost';

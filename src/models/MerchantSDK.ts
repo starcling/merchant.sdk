@@ -20,6 +20,8 @@ export class MerchantSDKBuild {
     pgPort?: string;
     pgDatabase?: string;
     pgPassword?: string;
+    redisHost?: string;
+    redisPort?: string;
     
     public constructor(buildParams: MerchantSDKBuild) {
         this.web3 = buildParams.web3;
@@ -30,5 +32,7 @@ export class MerchantSDKBuild {
         this.pgPort = buildParams.pgPort ? buildParams.pgPort : null;
         this.pgDatabase = buildParams.pgDatabase ? buildParams.pgDatabase : null;
         this.pgPassword = buildParams.pgPassword ? buildParams.pgPassword : null;
+        this.redisHost = buildParams.redisHost ? buildParams.redisHost : null;
+        this.redisPort = buildParams.redisPort ? buildParams.redisPort : null;
     }
 }
