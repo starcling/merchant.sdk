@@ -5,7 +5,7 @@ import { MerchantSDKBuild, MerchantSDKSettings } from './models/MerchantSDK';
 import { HTTPHelper } from './utils/web/HTTPHelper';
 import { PaymentController } from './core/payment/PaymentController';
 import { BlockchainController } from './core/blockchain/BlockchainController';
-import { MultipleInheritance } from './utils/MultipleInheritance/MultipleInheritance';
+import { MultipleInheritance } from './utils/multipleinheritance/MultipleInheritance';
 import { ErrorHandler } from './utils/handlers/ErrorHandler';
 import { Scheduler } from './core/scheduler/Scheduler';
 
