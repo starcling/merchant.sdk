@@ -2,7 +2,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Scheduler } from '../../../../src/core/scheduler/Scheduler';
 import { SchedulerBuffer } from '../../../../src/core/scheduler/ScheduleBuffer';
-import { PaymentDbConnector } from '../../../../src/connector/dbConnector/paymentsDBconnector';
+import { PaymentDbConnector } from '../../../../src/connector/dbconnector/PaymentDbConnector';
 import { IPaymentInsertDetails } from '../../../../src/core/payment/models';
 
 chai.use(chaiAsPromised);

@@ -3,7 +3,7 @@ import { Globals } from '../../utils/globals';
 import { IPaymentUpdateDetails } from '../payment/models';
 import { ScheduleHelper } from './ScheduleHelper';
 import { ScheduleQueue } from './ScheduleQueue';
-import { PaymentDbConnector } from '../../connector/dbConnector/paymentsDBconnector';
+import { PaymentDbConnector } from '../../connector/dbconnector/PaymentDbConnector';
 const schedule = require('node-schedule');
 
 /**

@@ -4,7 +4,7 @@ import { SmartContractReader } from './SmartContractReader';
 import { BlockchainHelper } from './BlockchainHelper';
 import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerializer';
 import { Scheduler } from '../scheduler/Scheduler';
-import { PaymentDbConnector } from '../../connector/dbConnector/paymentsDbConnector';
+import { PaymentDbConnector } from '../../connector/dbconnector/PaymentDbConnector';
 import { IPaymentUpdateDetails } from '../payment/models';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
 
@@ -51,7 +51,7 @@ export class BlockchainController extends PaymentDbConnector {
     * @returns {object} null
     */
     protected async executePullPayment(paymentID?: string) {
-        const payment: IPaymentUpdateDetails  = (await this.getPayment(paymentID)).data[0];
+        const payment: IPaymentUpdateDetails = (await this.getPayment(paymentID)).data[0];
         ErrorHandler.validatePullPaymentExecution(payment);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
         const contract: any = await new SmartContractReader('PullPaymentAccount').readContract(payment.pullPaymentAccountAddress);
@@ -78,7 +78,7 @@ export class BlockchainController extends PaymentDbConnector {
                 numberOfPayments: numberOfPayments,
                 nextPaymentDate: Number(payment.nextPaymentDate) + Number(payment.frequency)
             });
-            
+
             if (BlockchainController.queueCount > 0 && status == Globals.GET_TRANSACTION_STATUS_ENUM().success) BlockchainController.queueCount--;
         }).catch(() => {
             if (BlockchainController.queueCount < BlockchainController.queueLimit) {
