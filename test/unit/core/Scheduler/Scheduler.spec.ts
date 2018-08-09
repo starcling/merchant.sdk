@@ -170,10 +170,7 @@ describe('A Scheduler', () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
                     payment.nextPaymentDate = Number(payment.nextPaymentDate) + payment.frequency;
-                    console.log('before', payment.numberOfPayments);
                     await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
-                    console.log('afterr', payment.numberOfPayments);
-                    console.log('----');
                 }).start();
 
                 Scheduler.stop(payment.id);
