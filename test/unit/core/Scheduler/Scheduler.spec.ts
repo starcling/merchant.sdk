@@ -23,7 +23,7 @@ const insertTestPayment = async () => {
 describe('A Scheduler', () => {
 
     before(async () => {
-        SchedulerBuffer.sync(() => {});
+        SchedulerBuffer.reconnectToRedis();
     });
 
     after(async () => {
@@ -58,6 +58,7 @@ describe('A Scheduler', () => {
 
                 setTimeout(() => {
                     expect(count).to.be.equal(numberOfPayments);
+                    expect(payment.numberOfPayments).to.be.equal(0);
                     done();
                 }, numberOfPayments * 1000 + delay);
             });
@@ -78,6 +79,7 @@ describe('A Scheduler', () => {
                 }).start();
 
                 setTimeout(() => {
+                    expect(payment.numberOfPayments).to.be.equal(0);
                     expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
                     done();
                 }, numberOfPayments * 1000 + delay);
@@ -107,6 +109,7 @@ describe('A Scheduler', () => {
 
                     setTimeout(() => {
                         expect(count).to.be.equal(numberOfPayments / 2);
+                        expect(payment.numberOfPayments).to.be.equal(numberOfPayments / 2);
                         expect(SchedulerBuffer.delete(payment.id)).to.be.equal(true);
                         expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
                         done();
@@ -144,6 +147,80 @@ describe('A Scheduler', () => {
 
                 setTimeout(() => {
                     expect(count).to.be.equal(numberOfPayments);
+                    expect(payment.numberOfPayments).to.be.equal(0);
+                    expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
+                    done();
+                }, numberOfPayments * 1000 + 2 * delay);
+
+            });
+        });
+
+        it('should restart and execute all payments stopped scheduler that hasnt started, after endTS', (done) => {
+            let count = 0;
+            const numberOfPayments = 8;
+
+            paymentDbConnector.getPayment(testId).then(res => {
+                let payment = res.data[0];
+                payment.startTimestamp = `${new Date(Date.now() + 200).getTime() / 1000}`;
+                payment.nextPaymentDate = Math.floor(new Date(Date.now() + 200).getTime() / 1000);
+                payment.numberOfPayments = numberOfPayments;
+                payment.frequency = 1;
+
+                new Scheduler(payment, async () => {
+                    count++;
+                    payment.numberOfPayments = payment.numberOfPayments - 1;
+                    payment.nextPaymentDate = Number(payment.nextPaymentDate) + payment.frequency;
+                    console.log('before', payment.numberOfPayments);
+                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    console.log('afterr', payment.numberOfPayments);
+                    console.log('----');
+                }).start();
+
+                Scheduler.stop(payment.id);
+
+                setTimeout(() => {
+                    Scheduler.restart(payment.id);
+                }, numberOfPayments * 1000 + delay);
+
+                setTimeout(() => {
+                    expect(count).to.be.equal(numberOfPayments);
+                    expect(payment.numberOfPayments).to.be.equal(0);
+                    expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
+                    done();
+                }, numberOfPayments * 1000 + 2 * delay);
+
+            });
+        });
+
+        it('should restart and execute all payments stopped scheduler that has started, after endTS', (done) => {
+            let count = 0;
+            const numberOfPayments = 8;
+
+            paymentDbConnector.getPayment(testId).then(res => {
+                const payment = res.data[0];
+                payment.startTimestamp = `${new Date(Date.now() + 200).getTime() / 1000}`;
+                payment.nextPaymentDate = Math.floor(new Date(Date.now() + 200).getTime() / 1000);
+                payment.numberOfPayments = numberOfPayments;
+                payment.frequency = 1;
+
+                new Scheduler(payment, async () => {
+                    count++;
+                    payment.numberOfPayments = payment.numberOfPayments - 1;
+                    payment.nextPaymentDate = Number(payment.nextPaymentDate) + payment.frequency;
+                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                }).start();
+
+                setTimeout(() => {
+                    Scheduler.stop(payment.id);
+                }, (numberOfPayments / 2) * 1000);
+
+                setTimeout(() => {
+                    Scheduler.restart(payment.id);
+                }, numberOfPayments * 1000 + delay);
+
+                setTimeout(() => {
+                    expect(count).to.be.equal(numberOfPayments);
+                    expect(payment.numberOfPayments).to.be.equal(0);
                     expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
                     done();
                 }, numberOfPayments * 1000 + 2 * delay);
@@ -182,6 +259,7 @@ describe('A Scheduler', () => {
 
                 setTimeout(() => {
                     expect(count).to.be.equal(numberOfPayments);
+                    expect(payment.numberOfPayments).to.be.equal(0);
                     expect(SchedulerBuffer.delete(payment.id)).to.be.equal(false);
                     done();
                 }, numberOfPayments * 1000 + 2 * delay);
@@ -227,7 +305,7 @@ describe('A Scheduler', () => {
         it('should be able to stop & restart multiple instances', (done) => {
             let count = 0;
             const numberOfPayments = 8;
-            const multipleInstances = 6;
+            const multipleInstances = 12;
             const ids = [];
 
             for (let i = 0; i < multipleInstances; i++) {
@@ -290,6 +368,7 @@ describe('A Scheduler', () => {
 
                 setTimeout(() => {
                     expect(count).to.be.equal(numberOfPayments);
+                    expect(payment.numberOfPayments).to.be.equal(0);
                     done();
                 }, numberOfPayments * 1000 + delay);
             });

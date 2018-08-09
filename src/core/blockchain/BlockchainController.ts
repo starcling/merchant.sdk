@@ -38,7 +38,7 @@ export class BlockchainController {
                     });
                     if (result.status) {
                         const payment = (await this.paymentDB.getPayment(paymentID)).data[0];
-                        new Scheduler(payment, () => {
+                        new Scheduler(payment, async () => {
                             BlockchainController.executePullPayment(paymentID);
                         }).start();
                     }
@@ -78,26 +78,29 @@ export class BlockchainController {
             let numberOfPayments = payment.numberOfPayments;
             let lastPaymentDate = payment.lastPaymentDate;
             let nextPaymentDate = payment.nextPaymentDate;
-            let status = payment.executeTxStatus;
+            let executeTxStatus = payment.executeTxStatus;
+            let status = payment.status;
 
             if (receipt.status) {
                 numberOfPayments = numberOfPayments - 1;
                 lastPaymentDate = nextPaymentDate;
                 nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
-                status = numberOfPayments == 0 ? Globals.GET_TRANSACTION_STATUS_ENUM().done : Globals.GET_TRANSACTION_STATUS_ENUM().success;
+                executeTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().success;
+                status = numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : status;
             } else {
                 status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
             }
 
             await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
                 id: payment.id,
-                executeTxStatus: status,
-                lastPaymentDate: lastPaymentDate,
                 numberOfPayments: numberOfPayments,
-                nextPaymentDate: nextPaymentDate
+                lastPaymentDate: lastPaymentDate,
+                nextPaymentDate: nextPaymentDate,
+                executeTxStatus: executeTxStatus,
+                status: status
             });
 
-            if (BlockchainController.queueCount > 0 && status == Globals.GET_TRANSACTION_STATUS_ENUM().success) BlockchainController.queueCount--;
+            if (BlockchainController.queueCount > 0 && executeTxStatus == Globals.GET_TRANSACTION_STATUS_ENUM().success) BlockchainController.queueCount--;
         }).catch(() => {
             if (BlockchainController.queueCount < BlockchainController.queueLimit) {
                 BlockchainController.queueCount++;

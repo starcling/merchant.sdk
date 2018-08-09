@@ -47,13 +47,25 @@ export class SchedulerBuffer {
                             rclient.srem(SchedulerBuffer.bufferName, ids[i]);
 
                             if (payment.id != null) {
-                                new Scheduler(payment, () => {
+                                new Scheduler(payment, async () => {
                                     SchedulerBuffer.testExecution(payment.id);
                                 }).start(true);
 
-                                if (payment.startTimestamp <= Math.floor(new Date().getTime() / 1000)) {
-                                    Scheduler.stop(payment.id);
-                                    Scheduler.restart(payment.id);
+                                switch (payment.status) {
+                                    case (Globals.GET_PAYMENT_STATUS_ENUM().initial):
+                                        Scheduler.stop(payment.id);
+                                        Scheduler.restart(payment.id);
+                                        break;
+                                    case (Globals.GET_PAYMENT_STATUS_ENUM().running):
+                                        Scheduler.stop(payment.id);
+                                        Scheduler.restart(payment.id);
+                                        break;
+                                    case (Globals.GET_PAYMENT_STATUS_ENUM().stopped):
+                                        Scheduler.stop(payment.id);
+                                        break;
+                                    case (Globals.GET_PAYMENT_STATUS_ENUM().canceled):
+                                        Scheduler.stop(payment.id);
+                                        break;
                                 }
                             }
 
@@ -73,18 +85,18 @@ export class SchedulerBuffer {
     protected static async testExecution(paymentID?: string) {
         const paymentDbConnector = new PaymentDbConnector();
         const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
-        
+
         const numberOfPayments = payment.numberOfPayments - 1;
         await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
             id: payment.id,
-            lastPaymentDate: numberOfPayments == 0 ? payment.lastPaymentDate : payment.nextPaymentDate,
+            lastPaymentDate: Math.floor(new Date().getTime() / 1000),
             numberOfPayments: numberOfPayments,
-            status: numberOfPayments == 0 ? Globals.GET_TRANSACTION_STATUS_ENUM().done : payment.status,
-            nextPaymentDate: numberOfPayments == 0 ? payment.nextPaymentDate : Number(payment.nextPaymentDate) + Number(payment.frequency)
+            status: numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : payment.status,
+            nextPaymentDate: numberOfPayments == 0 ? payment.nextPaymentDate : Number(Math.floor(new Date().getTime() / 1000)) + Number(payment.frequency)
         });
     }
 
-    private static reconnectToRedis() {
+    public static reconnectToRedis() {
         if (!rclient) {
             rclient = redis.createClient({
                 port: DefaultConfig.settings.redisPort,

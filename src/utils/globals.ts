@@ -126,7 +126,7 @@ export class Globals {
     }
 
     public static GET_SCHEDULE_QUEUE_INTERVAL(): number {
-        return 100;
+        return 10;
     }
 }
 

@@ -34,4 +34,12 @@ export class ScheduleHelper {
         Object.assign(reccuringDetails, data);
     }
 
+    public static async getPayment(paymentID: string) {
+        try {
+            return (await new PaymentDbConnector().getPayment(paymentID).catch(() => {})).data[0];
+        } catch(err) {
+            return null;
+        }
+    }
+
 }

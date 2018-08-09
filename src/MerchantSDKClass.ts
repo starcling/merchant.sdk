@@ -36,4 +36,14 @@ export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPH
     public get Scheduler() {
         return Scheduler;
     }
+
+    /**
+     * @description Method to close the connection to redis
+     * @returns {boolean} always true, this cannot fail
+     */
+    public disconnectRedis() {
+        SchedulerBuffer.closeConnection();
+        
+        return true;
+    }
 }
