@@ -10,7 +10,8 @@
             "numberOfPayments": 5,
             "type": 1,
             "frequency": 3,
-            "merchantAddress": "string"
+            "merchantAddress": "string",
+            "networkID": 3
         },
         "updateTestPayment": {
             "id": "",
@@ -34,7 +35,8 @@
             "executeTxStatus": 1,
             "pullPaymentAccountAddress": "string",
             "merchantAddress": "string",
-            "userId": "string"
+            "userId": "string",
+            "networkID": 3
         }
     }
 }

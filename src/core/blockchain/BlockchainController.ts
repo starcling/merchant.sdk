@@ -47,10 +47,11 @@ export class BlockchainController extends PaymentDbConnector {
     * @returns {object} null
     */
     protected async executePullPayment(paymentID?: string) {
+        // TODO: Check with Nash if there is a networkID.
         const payment: IPaymentUpdateDetails  = (await this.getPayment(paymentID)).data[0];
         ErrorHandler.validatePullPaymentExecution(payment);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
-        const contract: any = await new SmartContractReader('PullPaymentAccount').readContract(payment.pullPaymentAccountAddress);
+        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(Globals.GET_SMART_CONTRACT_ADDRESSES(3));
         const txCount: number = await blockchainHelper.getTxCount(payment.merchantAddress);
         const data: string = contract.methods.executePullPayment().encodeABI();
         const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAccountAddress, txCount).getSerializedTx();

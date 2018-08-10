@@ -35,10 +35,11 @@ export class PaymentController {
   
   /**
   * @description Get method for getting all payments from DB
+  * @param {string} networkID ETH Network ID - 1 mainnet / 3 ropsten
   * @returns {HTTPResponse} Returns response with array of payments in data
   */
-  public async getAllPayments() {
-    return await this.paymentDbConnector.getAllPayments();
+  public async getAllPayments(networkID: number) {
+    return await this.paymentDbConnector.getAllPayments(networkID);
   }
 
   /**

@@ -36,7 +36,7 @@ describe('A paymentDbConnector', () => {
             await clearTestPayment();
         });
         it('Should retrieve the payment details for all records', async () => {
-            const result = await paymentDbConnector.getAllPayments();
+            const result = await paymentDbConnector.getAllPayments(testPayment.networkID);
             result.should.have.property('success').that.is.equal(true);
             result.should.have.property('status').that.is.equal(200);
             result.should.have.property('message').that.is.equal('SQL Query completed successful.');
