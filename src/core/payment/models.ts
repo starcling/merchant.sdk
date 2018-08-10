@@ -32,7 +32,6 @@ export interface IPaymentUpdateDetails {
   registerTxStatus: number;
   executeTxHash: string;
   executeTxStatus: number;
-  pullPaymentAccountAddress: string;
   merchantAddress: string;
   userId: string;
   networkID: number;

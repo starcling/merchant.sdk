@@ -56,7 +56,6 @@ describe('PaymentDbConnector', () => {
             result.data[0].should.have.property('registerTxHash').that.is.equal(updateTestPayment.registerTxHash);
             result.data[0].should.have.property('executeTxHash').that.is.equal(updateTestPayment.executeTxHash);
             result.data[0].should.have.property('executeTxStatus').that.is.equal(updateTestPayment.executeTxStatus);
-            result.data[0].should.have.property('pullPaymentAccountAddress').that.is.equal(updateTestPayment.pullPaymentAccountAddress);
             result.data[0].should.have.property('merchantAddress').that.is.equal(updateTestPayment.merchantAddress);
             result.data[0].should.have.property('userId').that.is.equal(updateTestPayment.userId);
         });

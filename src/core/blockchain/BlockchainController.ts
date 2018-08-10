@@ -51,10 +51,10 @@ export class BlockchainController extends PaymentDbConnector {
         const payment: IPaymentUpdateDetails  = (await this.getPayment(paymentID)).data[0];
         ErrorHandler.validatePullPaymentExecution(payment);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
-        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(Globals.GET_SMART_CONTRACT_ADDRESSES(3));
+        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(Globals.GET_MASTER_PULL_PAYMENT_ADDRESSES(payment.networkID));
         const txCount: number = await blockchainHelper.getTxCount(payment.merchantAddress);
-        const data: string = contract.methods.executePullPayment().encodeABI();
-        const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAccountAddress, txCount).getSerializedTx();
+        const data: string = contract.methods.executePullPayment(payment.customerAddress, payment.id).encodeABI();
+        const serializedTx: string = await new RawTransactionSerializer(data, Globals.GET_MASTER_PULL_PAYMENT_ADDRESSES(payment.networkID), txCount).getSerializedTx();
 
         blockchainHelper.executeSignedTransaction(serializedTx).
         on('transactionHash', (hash) => {

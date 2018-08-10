@@ -33,7 +33,6 @@
             "registerTxStatus": 1,
             "executeTxHash": "string",
             "executeTxStatus": 1,
-            "pullPaymentAccountAddress": "string",
             "merchantAddress": "string",
             "userId": "string",
             "networkID": 3

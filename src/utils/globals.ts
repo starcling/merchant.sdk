@@ -121,7 +121,7 @@ export class Globals {
         return 'MasterPullPayment';
     }
 
-    public static GET_SMART_CONTRACT_ADDRESSES(networkID: number): string {
+    public static GET_MASTER_PULL_PAYMENT_ADDRESSES(networkID: number): string {
         switch (networkID) {
             case(1):
                 // TODO: Update once deploy to ETH MAINNET

@@ -47,10 +47,6 @@ export class ErrorHandler extends Error {
             errors['payment_id'] = 'No payment ID provided.';
         }
 
-        if (!payment.pullPaymentAccountAddress) {
-            errors['pull_payment_address'] = 'No pull payment address provided.';
-        }
-
         if (!payment.merchantAddress) {
             errors['merchant_address'] = 'No merchant address provided.';
         }
