@@ -1,7 +1,6 @@
 import { Scheduler } from './Scheduler';
 import { PaymentDbConnector } from '../../connector/dbConnector/paymentsDBconnector';
 import { DefaultConfig } from '../../config/default.config';
-import { IPaymentUpdateDetails } from '../payment/models';
 import { Globals } from '../../utils/globals';
 const redis = require('redis');
 let rclient = null;
@@ -84,16 +83,23 @@ export class SchedulerBuffer {
     */
     protected static async testExecution(paymentID?: string) {
         const paymentDbConnector = new PaymentDbConnector();
-        const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
+        const payment = (await paymentDbConnector.getPayment(paymentID)).data[0];
 
-        const numberOfPayments = payment.numberOfPayments - 1;
-        await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
-            id: payment.id,
-            lastPaymentDate: payment.nextPaymentDate,
-            numberOfPayments: numberOfPayments,
-            status: numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : payment.status,
-            nextPaymentDate: numberOfPayments == 0 ? payment.nextPaymentDate : Number(payment.nextPaymentDate) + Number(payment.frequency)
-        });
+        payment.numberOfPayments = payment.numberOfPayments - 1;
+        payment.lastPaymentDate = payment.nextPaymentDate;
+        payment.nextPaymentDate = payment.numberOfPayments === 0 ?
+            payment.nextPaymentDate : Number(payment.nextPaymentDate) + payment.frequency;
+        payment.status = payment.numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : payment.status,
+        await paymentDbConnector.updatePayment(payment);
+
+        // const numberOfPayments = payment.numberOfPayments - 1;
+        // await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
+        //     id: payment.id,
+        //     lastPaymentDate: payment.nextPaymentDate,
+        //     numberOfPayments: numberOfPayments,
+        //     status: numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : payment.status,
+        //     nextPaymentDate: numberOfPayments == 0 ? payment.nextPaymentDate : Number(payment.nextPaymentDate) + Number(payment.frequency)
+        // });
     }
 
     public static reconnectToRedis() {
