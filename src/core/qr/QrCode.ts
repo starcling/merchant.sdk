@@ -1,4 +1,4 @@
-import { DefaultConfig } from "../../config/default.config";
+import { DefaultConfig } from '../../config/default.config';
 
 export class QrCode {
 

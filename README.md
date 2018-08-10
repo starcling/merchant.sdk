@@ -2,7 +2,7 @@
 
 ## How to use
 ```
-    import MerchantSDK from "puma_merchant_sdk";
+    import MerchantSDK from "pumapay_merchant_sdk";
 ```
 
 ## Example
@@ -56,4 +56,4 @@ $ git push development
 
 # LOCAL PACKAGING 
 To create a npm package locally run `npm run pack-local` 
-To install the local package to another project run `npm link puma_merchant_sdk`
+To install the local package to another project run `npm link pumapay_merchant_sdk`
