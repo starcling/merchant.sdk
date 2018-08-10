@@ -9,8 +9,6 @@ import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
 import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
 
 export class BlockchainController {
-
-    private static queueLimit = 100;
     private static queueCount = 0;
     private paymentDB;
 

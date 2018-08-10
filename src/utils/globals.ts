@@ -128,6 +128,10 @@ export class Globals {
     public static GET_SCHEDULE_QUEUE_INTERVAL(): number {
         return 10;
     }
+
+    public static GET_PULL_FAILED_QUEUE_LIMIT(): number {
+        return 100;
+    }
 }
 
 enum TransactionStatusEnum {

@@ -22,6 +22,7 @@ export class MerchantSDKBuild {
     pgPassword?: string;
     redisHost?: string;
     redisPort?: string;
+    queueLimit?: number;
     
     public constructor(buildParams: MerchantSDKBuild) {
         this.web3 = buildParams.web3;
@@ -34,5 +35,6 @@ export class MerchantSDKBuild {
         this.pgPassword = buildParams.pgPassword ? buildParams.pgPassword : null;
         this.redisHost = buildParams.redisHost ? buildParams.redisHost : null;
         this.redisPort = buildParams.redisPort ? buildParams.redisPort : null;
+        this.queueLimit = buildParams.queueLimit ? buildParams.queueLimit : null;
     }
 }
