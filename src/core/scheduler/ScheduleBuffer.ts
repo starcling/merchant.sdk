@@ -91,15 +91,6 @@ export class SchedulerBuffer {
             payment.nextPaymentDate : Number(payment.nextPaymentDate) + payment.frequency;
         payment.status = payment.numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : payment.status,
         await paymentDbConnector.updatePayment(payment);
-
-        // const numberOfPayments = payment.numberOfPayments - 1;
-        // await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
-        //     id: payment.id,
-        //     lastPaymentDate: payment.nextPaymentDate,
-        //     numberOfPayments: numberOfPayments,
-        //     status: numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : payment.status,
-        //     nextPaymentDate: numberOfPayments == 0 ? payment.nextPaymentDate : Number(payment.nextPaymentDate) + Number(payment.frequency)
-        // });
     }
 
     public static reconnectToRedis() {
