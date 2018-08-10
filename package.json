@@ -15,7 +15,7 @@
     "dependencies": {
         "ethereumjs-tx": "^1.3.6",
         "ethers": "^3.0.25",
-        "gulp": "^4.0.0",
+        "gulp": "3.9.1",
         "node-schedule": "^1.3.0",
         "pg": "^7.4.3",
         "redis": "^2.8.0",

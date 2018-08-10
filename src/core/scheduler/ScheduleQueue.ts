@@ -1,5 +1,5 @@
-import { SchedulerBuffer } from "./ScheduleBuffer";
-import { Globals } from "../../utils/globals";
+import { SchedulerBuffer } from './ScheduleBuffer';
+import { Globals } from '../../utils/globals';
 
 /**
  * @description Scheduler, started and created through monitorTransaction function.

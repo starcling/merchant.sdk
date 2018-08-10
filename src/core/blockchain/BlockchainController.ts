@@ -4,9 +4,9 @@ import { SmartContractReader } from './SmartContractReader';
 import { BlockchainHelper } from './BlockchainHelper';
 import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerializer';
 import { Scheduler } from '../scheduler/Scheduler';
-import { PaymentDbConnector } from '../../connector/dbConnector/paymentsDbConnector';
 import { IPaymentUpdateDetails } from '../payment/models';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
+import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
 
 export class BlockchainController {
 

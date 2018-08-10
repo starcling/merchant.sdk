@@ -1,5 +1,5 @@
-import { Globals } from "../utils/globals";
-import { MerchantSDKSettings } from "../models/MerchantSDK";
+import { Globals } from '../utils/globals';
+import { MerchantSDKSettings } from '../models/MerchantSDK';
 
 export class DefaultConfig {
 
