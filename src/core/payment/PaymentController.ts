@@ -1,4 +1,4 @@
-import { PaymentDbConnector } from '../../connector/dbconnector/PaymentDbConnector';
+import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
 import { IPaymentInsertDetails, IPaymentUpdateDetails } from './models';
 
 export class PaymentController {
