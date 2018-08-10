@@ -29,7 +29,7 @@ export class Scheduler {
     /**
      * @description Stops the scheduler
      * @param payment_id ID of the payment and the scheduler aswell
-     * @returns {boolean} true if scheduler is stopped, false if scheduler was not found
+     * @returns {object} ID of scheduler if it is stopped, null if scheduler was not found.
      */
     public static stop(payment_id: string) {
         const scheduler = SchedulerBuffer.get(payment_id);
@@ -45,43 +45,45 @@ export class Scheduler {
 
             ScheduleHelper.updatePaymentStatus(scheduler.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().stopped);
 
-            return true;
+            return scheduler.reccuringDetails.id;
         }
 
-        return false;
+        return null;
     }
 
     /**
      * @description Restarts the stopped scheduler
      * @param payment_id ID of the payment and the scheduler aswell
-     * @returns {boolean} true if scheduler is restarted, false if scheduler was not found or was not stopped
+     * @returns {object} ID of scheduler if it is restarted, null if scheduler was not found or is already running or done.
      */
-    public static async restart(payment_id: string) {
+    public static restart(payment_id: string) {
         const scheduler = SchedulerBuffer.get(payment_id);
-        const data = await ScheduleHelper.getPayment(payment_id);
 
         if (scheduler && scheduler.reccuringDetails.status == Globals.GET_PAYMENT_STATUS_ENUM().stopped) {
-            await ScheduleHelper.updatePaymentStatus(scheduler.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().initial);
-            scheduler.reccuringDetails = data ? data : scheduler.reccuringDetails;
 
-            const currentDate = Math.floor((new Date().getTime() / 1000));
-            let nextPayment = Math.floor(Number(scheduler.reccuringDetails.nextPaymentDate));
-            let numberOfPayments = Math.floor(Number(scheduler.reccuringDetails.numberOfPayments));
+            (async () => {
+                const data = await ScheduleHelper.updatePaymentStatus(scheduler.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().initial);
+                scheduler.reccuringDetails = data ? data : scheduler.reccuringDetails;
 
-            while (nextPayment <= currentDate && numberOfPayments > 0) {
-                numberOfPayments--;
-                nextPayment = nextPayment + scheduler.reccuringDetails.frequency;
-                ScheduleQueue.instance().queue(scheduler.reccuringDetails.id);
-            }
+                const currentDate = Math.floor((new Date().getTime() / 1000));
+                let nextPayment = Math.floor(Number(scheduler.reccuringDetails.nextPaymentDate));
+                let numberOfPayments = Math.floor(Number(scheduler.reccuringDetails.numberOfPayments));
 
-            if (numberOfPayments > 0) {
-                scheduler._schedule = scheduler.scheduleJob(nextPayment);
-            }
+                while (nextPayment <= currentDate && numberOfPayments > 0) {
+                    numberOfPayments--;
+                    nextPayment = nextPayment + scheduler.reccuringDetails.frequency;
+                    ScheduleQueue.instance().queue(scheduler.reccuringDetails.id);
+                }
 
-            return true;
+                if (numberOfPayments > 0) {
+                    scheduler._schedule = scheduler.scheduleJob(nextPayment);
+                }
+            })();
+
+            return scheduler.reccuringDetails.id;
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -113,7 +115,7 @@ export class Scheduler {
 
     private scheduleJob(startTime: number = this.reccuringDetails.startTimestamp) {
         return schedule.scheduleJob(new Date(Number(startTime) * 1000), async () => {
-            await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().running);
+            this.reccuringDetails = await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().running);
             await this.executeCallback();
             this._interval = this.startInterval();
         });

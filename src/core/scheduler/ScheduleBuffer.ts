@@ -89,10 +89,10 @@ export class SchedulerBuffer {
         const numberOfPayments = payment.numberOfPayments - 1;
         await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
             id: payment.id,
-            lastPaymentDate: Math.floor(new Date().getTime() / 1000),
+            lastPaymentDate: payment.nextPaymentDate,
             numberOfPayments: numberOfPayments,
             status: numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : payment.status,
-            nextPaymentDate: numberOfPayments == 0 ? payment.nextPaymentDate : Number(Math.floor(new Date().getTime() / 1000)) + Number(payment.frequency)
+            nextPaymentDate: numberOfPayments == 0 ? payment.nextPaymentDate : Number(payment.nextPaymentDate) + Number(payment.frequency)
         });
     }
 

@@ -21,7 +21,7 @@ export class ScheduleHelper {
             reccuringDetails.nextPaymentDate = Math.floor(Number(currentTime + 1));
             reccuringDetails.endTimestamp = Math.floor(reccuringDetails.startTimestamp + reccuringDetails.frequency * reccuringDetails.numberOfPayments);
             const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
-            Object.assign(reccuringDetails, data);
+            return Object.assign(reccuringDetails, data);
         }
     }
 
@@ -31,7 +31,7 @@ export class ScheduleHelper {
         reccuringDetails.endTimestamp = Math.floor(Number(reccuringDetails.endTimestamp));
         reccuringDetails.amount = Math.floor(Number(reccuringDetails.amount));
         const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
-        Object.assign(reccuringDetails, data);
+        return Object.assign(reccuringDetails, data);
     }
 
     public static async getPayment(paymentID: string) {
