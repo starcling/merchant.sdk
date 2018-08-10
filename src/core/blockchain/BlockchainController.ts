@@ -100,7 +100,7 @@ export class BlockchainController {
 
             if (BlockchainController.queueCount > 0 && executeTxStatus == Globals.GET_TRANSACTION_STATUS_ENUM().success) BlockchainController.queueCount--;
         }).catch(() => {
-            if (BlockchainController.queueCount < BlockchainController.queueLimit) {
+            if (BlockchainController.queueCount < DefaultConfig.settings.queueLimit) {
                 BlockchainController.queueCount++;
                 BlockchainController.executePullPayment(paymentID);
             }
