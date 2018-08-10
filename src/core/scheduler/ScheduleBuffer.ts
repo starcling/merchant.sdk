@@ -35,7 +35,7 @@ export class SchedulerBuffer {
 
     public static async sync(executePullPayment: any) {
 
-        this.reconnectToRedis();
+        await this.reconnectToRedis();
 
         rclient.smembers(SchedulerBuffer.bufferName, async (err, ids) => {
             if (!err) {
@@ -47,7 +47,7 @@ export class SchedulerBuffer {
 
                             if (payment.id != null) {
                                 new Scheduler(payment, async () => {
-                                    SchedulerBuffer.testExecution(payment.id);
+                                    SchedulerBuffer.testScheduler(payment.id);
                                 }).start(true);
 
                                 switch (payment.status) {
@@ -81,7 +81,7 @@ export class SchedulerBuffer {
     * @description Method for actual execution of pull payment
     * @returns {object} null
     */
-    protected static async testExecution(paymentID?: string) {
+    protected static async testScheduler(paymentID?: string) {
         const paymentDbConnector = new PaymentDbConnector();
         const payment = (await paymentDbConnector.getPayment(paymentID)).data[0];
 
