@@ -1,5 +1,5 @@
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.23;
 
 // File: node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol
 
@@ -112,44 +112,6 @@ contract Ownable {
     emit OwnershipTransferred(owner, _newOwner);
     owner = _newOwner;
   }
-}
-
-// File: contracts/Oracle/PumaPayOracle.sol
-
-contract PumaPayOracle is Ownable {
-    /// =================================================================================================================
-    ///                                      Events
-    /// =================================================================================================================
-    event LogSetExchangeRate(string currency, uint256 exchangeRate);
-
-    /// =================================================================================================================
-    ///                                      Members
-    /// =================================================================================================================
-    mapping (string => uint256) private exchangeRates;
-
-    /// =================================================================================================================
-    ///                                      Constructor
-    /// =================================================================================================================
-    constructor() public {
-    }
-
-    /// =================================================================================================================
-    ///                                      Public Functions
-    /// =================================================================================================================
-
-    function setRate(string _currency, uint256 _rate)
-    public
-    onlyOwner
-    returns (bool) {
-        exchangeRates[_currency] = _rate;
-        emit LogSetExchangeRate(_currency, _rate);
-
-        return true;
-    }
-
-    function getRate(string _currency) public view returns(uint256) {
-        return exchangeRates[_currency];
-    }
 }
 
 // File: node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol
@@ -481,8 +443,7 @@ contract MasterPullPayment is Ownable {
     /// =================================================================================================================
 
     PumaPayToken public token;
-    PumaPayOracle public oracle;
-    
+
     mapping (string => uint256) private exchangeRates;
     mapping (address => bool) public executors;
     mapping (address => mapping (address => PullPayment)) public pullPayments;
@@ -641,8 +602,8 @@ contract MasterPullPayment is Ownable {
     isExecutor()
     {
         require(
-            bytes(_paymentID).length > 0 &&
-            bytes(_currency).length > 0 &&
+            bytes(_paymentID).length != 0 &&
+            bytes(_currency).length != 0 &&
             _client != address(0) &&
             _beneficiary != address(0) &&
             _fiatAmountInCents > 0 &&
