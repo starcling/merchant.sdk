@@ -47,18 +47,22 @@ export class ErrorHandler extends Error {
             errors['payment_id'] = 'No payment ID provided.';
         }
 
+        if (!payment.customerAddress) {
+            errors['customer_address'] = 'No customer address provided.';
+        }
+        
         if (!payment.merchantAddress) {
             errors['merchant_address'] = 'No merchant address provided.';
         }
-
+        
         if (!payment.nextPaymentDate) {
             errors['next_payment_date'] = 'No next payment date provided.';
         }
-
+        
         if (!payment.frequency) {
             errors['payment_frequency'] = 'No payment frequency provided.';
         }
-
+        
         if (Object.keys(errors).length > 0) {
             throw new ErrorHandler('Incorrect pull payment execution parameters.', errors);
         }

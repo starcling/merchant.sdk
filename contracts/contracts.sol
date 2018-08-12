@@ -641,8 +641,8 @@ contract MasterPullPayment is Ownable {
     isExecutor()
     {
         require(
-            bytes(_paymentID).length != 0 &&
-            bytes(_currency).length != 0 &&
+            bytes(_paymentID).length > 0 &&
+            bytes(_currency).length > 0 &&
             _client != address(0) &&
             _beneficiary != address(0) &&
             _fiatAmountInCents > 0 &&

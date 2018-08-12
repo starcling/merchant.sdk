@@ -34,6 +34,7 @@
             "executeTxHash": "string",
             "executeTxStatus": 1,
             "merchantAddress": "string",
+            "pullPaymentAddress": "string",
             "userId": "string",
             "networkID": 3
         }

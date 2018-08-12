@@ -33,6 +33,7 @@ export interface IPaymentUpdateDetails {
   executeTxHash: string;
   executeTxStatus: number;
   merchantAddress: string;
+  pullPaymentAddress: string;
   userId: string;
   networkID: number;
 }

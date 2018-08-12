@@ -114,7 +114,7 @@ export class Globals {
     }
 
     public static GET_MERCHANT_PRIVATE_KEY(): string {
-        return 'DFC180CE05435F93BD7B91B3B06287BFD085540BA9799AD2240B87D7A22717C0';
+        return '4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387'; // Acc 4
     }
 
     public static GET_PULL_PAYMENT_CONTRACT_NAME(): string {
@@ -125,9 +125,9 @@ export class Globals {
         switch (networkID) {
             case(1):
                 // TODO: Update once deploy to ETH MAINNET
-                return '0x2D4a745c45bf8dbDF24c4Cc9388787eEAd4827b6';
+                return '0x0f4aae2b099714a56f4a9ba4d09c9e94ae836636';
             case(3):
-                return '0x2D4a745c45bf8dbDF24c4Cc9388787eEAd4827b6';
+                return '0x0f4aae2b099714a56f4a9ba4d09c9e94ae836636';
         }
     }
 }

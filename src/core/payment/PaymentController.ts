@@ -11,7 +11,6 @@ export class PaymentController {
   */
   public async createPayment(payment: IPaymentInsertDetails) {
     //TODO: create a new merchant Address for every payment
-    payment.merchantAddress = '0x9d11DDd84198B30E56E31Aa89227344Cdb645e34';
     return await this.paymentDbConnector.createPayment(payment);
   }
 
@@ -35,11 +34,10 @@ export class PaymentController {
   
   /**
   * @description Get method for getting all payments from DB
-  * @param {string} networkID ETH Network ID - 1 mainnet / 3 ropsten
   * @returns {HTTPResponse} Returns response with array of payments in data
   */
-  public async getAllPayments(networkID: number) {
-    return await this.paymentDbConnector.getAllPayments(networkID);
+  public async getAllPayments() {
+    return await this.paymentDbConnector.getAllPayments();
   }
 
   /**
