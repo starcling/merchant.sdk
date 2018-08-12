@@ -1,6 +1,6 @@
-import { Globals } from "../../utils/globals";
-import { PaymentDbConnector } from "../../connector/dbConnector/paymentsDBconnector";
-import { IPaymentUpdateDetails } from "../payment/models";
+import { Globals } from '../../utils/globals';
+import { IPaymentUpdateDetails } from '../payment/models';
+import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
 
 /**
  * @description Scheduler, started and created through monitorTransaction function.
@@ -18,19 +18,28 @@ export class ScheduleHelper {
         const currentTime = Number(new Date().getTime() / 1000);
         if (Number(reccuringDetails.startTimestamp) <= currentTime && Number(reccuringDetails.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
             reccuringDetails.startTimestamp = Math.floor(Number(currentTime + 1));
+            reccuringDetails.nextPaymentDate = Math.floor(Number(currentTime + 1));
             reccuringDetails.endTimestamp = Math.floor(reccuringDetails.startTimestamp + reccuringDetails.frequency * reccuringDetails.numberOfPayments);
-            const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data;
-            reccuringDetails = data ? data : reccuringDetails;
+            const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
+            return Object.assign(reccuringDetails, data);
         }
     }
 
     public static async updatePaymentStatus(reccuringDetails: IPaymentUpdateDetails, status: number) {
         reccuringDetails.status = status;
-        await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {});
+        reccuringDetails.startTimestamp = Math.floor(Number(reccuringDetails.startTimestamp));
+        reccuringDetails.endTimestamp = Math.floor(Number(reccuringDetails.endTimestamp));
+        reccuringDetails.amount = Math.floor(Number(reccuringDetails.amount));
+        const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
+        return Object.assign(reccuringDetails, data);
     }
 
-    public static async reduceNumberOfPayments(reccuringDetails: IPaymentUpdateDetails) {
-        reccuringDetails.numberOfPayments= reccuringDetails.numberOfPayments- 1;
-        await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {});
+    public static async getPayment(paymentID: string) {
+        try {
+            return (await new PaymentDbConnector().getPayment(paymentID).catch(() => {})).data[0];
+        } catch(err) {
+            return null;
+        }
     }
+
 }

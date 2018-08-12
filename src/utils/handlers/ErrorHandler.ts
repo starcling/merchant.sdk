@@ -1,6 +1,6 @@
-import { HTTPResponseCodes } from "../../utils/web/HTTPResponseCodes";
-import { MerchantSDKBuild } from "../../models/MerchantSDK";
-import {IPaymentUpdateDetails} from "../../core/payment/models";
+import { HTTPResponseCodes } from '../../utils/web/HTTPResponseCodes';
+import { MerchantSDKBuild } from '../../models/MerchantSDK';
+import { IPaymentUpdateDetails } from '../../core/payment/models';
 
 export class ErrorHandler extends Error {
     public message: string;

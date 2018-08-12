@@ -1,9 +1,9 @@
-import { PaymentDbConnector } from '../../connector/dbConnector/paymentsDBconnector';
+import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
 import { IPaymentInsertDetails, IPaymentUpdateDetails } from './models';
 
 export class PaymentController {
   private paymentDbConnector = new PaymentDbConnector();
-  
+
   /**
   * @description Method for adding new payment to the database
   * @param {IPaymentInsertDetails} payment: New payment details
@@ -31,7 +31,7 @@ export class PaymentController {
   public async deletePayment(paymentID: string) {
     return await this.paymentDbConnector.deletePayment(paymentID);
   }
-  
+
   /**
   * @description Get method for getting all payments from DB
   * @returns {HTTPResponse} Returns response with array of payments in data

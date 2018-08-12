@@ -5,11 +5,12 @@ import { MerchantSDKBuild, MerchantSDKSettings } from './models/MerchantSDK';
 import { HTTPHelper } from './utils/web/HTTPHelper';
 import { PaymentController } from './core/payment/PaymentController';
 import { BlockchainController } from './core/blockchain/BlockchainController';
-import { MultipleInheritance } from './utils/MultipleInheritance/MultipleInheritance';
+import { MultipleInheritance } from './utils/multipleInheritance/MultipleInheritance';
 import { ErrorHandler } from './utils/handlers/ErrorHandler';
 import { Scheduler } from './core/scheduler/Scheduler';
+import { SchedulerBuffer } from './core/scheduler/ScheduleBuffer';
 
-export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, BlockchainController, AuthenticationController, PaymentController) {
+export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PaymentController) {
 
     public constructor() {
         super();
@@ -23,6 +24,7 @@ export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, Blockch
     public build(buildParams: MerchantSDKBuild): MerchantSDK {
         ErrorHandler.validateBuildParams(buildParams);
         DefaultConfig.settings = <MerchantSDKSettings>new MerchantSDKBuild(buildParams);
+        SchedulerBuffer.sync(this.executePullPayment);
 
         return this;
     }
@@ -31,7 +33,17 @@ export class MerchantSDK extends MultipleInheritance(HTTPHelper, QrCode, Blockch
      * @description Method to retrieve Scheduler
      * @returns {Scheduler} Scheduler class with static methods {stop} and {restart}
      */
-    public getScheduler() {
+    public get Scheduler() {
         return Scheduler;
+    }
+
+    /**
+     * @description Method to close the connection to redis
+     * @returns {boolean} always true, this cannot fail
+     */
+    public disconnectRedis() {
+        SchedulerBuffer.closeConnection();
+        
+        return true;
     }
 }

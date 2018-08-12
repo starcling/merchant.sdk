@@ -64,6 +64,14 @@ export class Globals {
     public static GET_START_SCHEDULER_TIME_WINDOW(): number {
         return 300;
     }
+
+    public static GET_DEFAULT_REDIS_HOST(): string {
+        return 'localhost';
+    }
+
+    public static GET_DEFAULT_REDIS_PORT(): string {
+        return '6379';
+    }
     
     public static GET_DEFAULT_PG_HOST(): string {
         return 'localhost';
@@ -130,6 +138,14 @@ export class Globals {
                 return '0x0f4aae2b099714a56f4a9ba4d09c9e94ae836636';
         }
     }
+
+    public static GET_SCHEDULE_QUEUE_INTERVAL(): number {
+        return 10;
+    }
+
+    public static GET_PULL_FAILED_QUEUE_LIMIT(): number {
+        return 100;
+    }
 }
 
 enum TransactionStatusEnum {
@@ -143,5 +159,7 @@ enum TransactionStatusEnum {
 enum PaymentStatusEnum {
     canceled = 0,
     initial = 1,
-    started = 2,
+    running = 2,
+    stopped = 3,
+    done = 4,
 }

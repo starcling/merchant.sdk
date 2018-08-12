@@ -1,6 +1,6 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { PaymentDbConnector } from '../../../../../src/connector/dbConnector/paymentsDBconnector';
+import { PaymentDbConnector } from '../../../../../src/connector/dbconnector/PaymentDbConnector';
 import { DataService, ISqlQuery } from '../../../../../src/utils/datasource/DataService';
 import { IPaymentInsertDetails } from '../../../../../src/core/payment/models';
 chai.use(chaiAsPromised);
@@ -8,7 +8,7 @@ chai.should();
 
 let paymentDbConnector = new PaymentDbConnector();
 const dataservice = new DataService();
-const payments: any = require('../../../../../resources/testData.json').payments; 
+const payments: any = require('../../../../../resources/testData.json').payments;
 
 const testInsertPayment: IPaymentInsertDetails = payments['insertTestPayment'];
 var testID: string;

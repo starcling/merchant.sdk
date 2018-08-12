@@ -1,7 +1,7 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { PaymentDbConnector } from '../../../../../src/connector/dbConnector/paymentsDBconnector';
-import { IPaymentInsertDetails, IPaymentUpdateDetails} from '../../../../../src/core/payment/models';
+import { PaymentDbConnector } from '../../../../../src/connector/dbconnector/PaymentDbConnector';
+import { IPaymentInsertDetails, IPaymentUpdateDetails } from '../../../../../src/core/payment/models';
 import { DataService, ISqlQuery } from '../../../../../src/utils/datasource/DataService';
 
 chai.use(chaiAsPromised);
@@ -62,9 +62,9 @@ describe('PaymentDbConnector', () => {
     });
 
     describe('Update non existing payment record', () => {
-        it('Should return false if no record is found in the database', async() => {
+        it('Should return false if no record is found in the database', async () => {
             updateTestPayment.id = 'e3006e22-90bb-11e8-9daa-939c9206691a';
-            const result  = await paymentDbConnector.updatePayment(updateTestPayment);
+            const result = await paymentDbConnector.updatePayment(updateTestPayment);
             result.should.have.property('success').that.is.equal(false);
             result.should.have.property('status').that.is.equal(400);
             result.should.have.property('message').that.is.equal('No record found with provided id.');
