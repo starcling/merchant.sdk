@@ -110,7 +110,7 @@ export class Globals {
     }
 
     public static GET_SOLIDITY_FILE(): string {
-        return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
+        return `${__dirname.substring(0, __dirname.length - 15)}/contracts/Contracts.sol`;
     }
 
     public static GET_TRANSACTION_STATUS_ENUM(): any {

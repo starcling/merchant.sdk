@@ -29,7 +29,6 @@ export class RawTransactionSerializer {
             data: this.data,
             nonce: this.txCount
         };
-        console.debug(rawTx);
 
         const tx = new TX(rawTx);
         tx.sign(this.privateKey);

@@ -110,5 +110,4 @@ export class BlockchainController {
     protected executePullPayment(paymentID?: string) {
         BlockchainController.executePullPayment(paymentID);
     }
-
 }
