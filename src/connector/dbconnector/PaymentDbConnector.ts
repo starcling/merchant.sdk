@@ -4,7 +4,7 @@ import { IPaymentInsertDetails, IPaymentUpdateDetails } from '../../core/payment
 export class PaymentDbConnector {
   public createPayment(insertDetails: IPaymentInsertDetails) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+      text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
       values: [
         insertDetails.title,
         insertDetails.description,
@@ -16,7 +16,8 @@ export class PaymentDbConnector {
         insertDetails.startTimestamp,
         insertDetails.type,
         insertDetails.frequency,
-        insertDetails.merchantAddress
+        insertDetails.merchantAddress,
+        insertDetails.networkID
       ]
     };
 
@@ -25,7 +26,7 @@ export class PaymentDbConnector {
 
   public async updatePayment(updateDetails: IPaymentUpdateDetails) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)',
+      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)',
       values: [
         updateDetails.id,
         updateDetails.title,
@@ -46,9 +47,10 @@ export class PaymentDbConnector {
         updateDetails.registerTxStatus,
         updateDetails.executeTxHash,
         updateDetails.executeTxStatus,
-        updateDetails.pullPaymentAccountAddress,
         updateDetails.merchantAddress,
-        updateDetails.userId
+        updateDetails.pullPaymentAddress,
+        updateDetails.userId,
+        updateDetails.networkID
       ]
     };
     // Handling the case when no record exists with provided id
@@ -73,7 +75,7 @@ export class PaymentDbConnector {
 
   public getAllPayments() {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM public.fc_get_all_payment_details();'
+        text: 'SELECT * FROM public.fc_get_all_payment_details();'
     };
 
     return new DataService().executeQueryAsPromise(sqlQuery);

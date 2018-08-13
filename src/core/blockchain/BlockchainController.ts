@@ -58,10 +58,10 @@ export class BlockchainController {
         const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
         ErrorHandler.validatePullPaymentExecution(payment);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
-        const contract: any = await new SmartContractReader('PullPaymentAccount').readContract(payment.pullPaymentAccountAddress);
+        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(Globals.GET_MASTER_PULL_PAYMENT_ADDRESSES(payment.networkID));
         const txCount: number = await blockchainHelper.getTxCount(payment.merchantAddress);
-        const data: string = contract.methods.executePullPayment().encodeABI();
-        const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAccountAddress, txCount).getSerializedTx();
+        const data: string = contract.methods.executePullPayment(payment.customerAddress, payment.id).encodeABI();
+        const serializedTx: string = await new RawTransactionSerializer(data, Globals.GET_MASTER_PULL_PAYMENT_ADDRESSES(payment.networkID), txCount).getSerializedTx();
 
         await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
             const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;

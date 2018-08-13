@@ -23,16 +23,17 @@ export class RawTransactionSerializer {
     public getSerializedTx(): string {
         const rawTx = {
             gasPrice: DefaultConfig.settings.web3.utils.toHex(DefaultConfig.settings.web3.utils.toWei('10', 'Gwei')),
-            gasNumberOfPayments: DefaultConfig.settings.web3.utils.toHex(210000),
+            gasLimit: DefaultConfig.settings.web3.utils.toHex(4000000),
             to: this.contractAddress,
             value: '0x00',
             data: this.data,
             nonce: this.txCount
         };
+        console.debug(rawTx);
 
         const tx = new TX(rawTx);
         tx.sign(this.privateKey);
-
+        
         return '0x' + tx.serialize().toString('hex');
     }
 }

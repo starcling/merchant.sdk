@@ -110,7 +110,7 @@ export class Globals {
     }
 
     public static GET_SOLIDITY_FILE(): string {
-        return `${__dirname.substring(0, __dirname.length - 15)}/contracts/PullPayment.sol`;
+        return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
     }
 
     public static GET_TRANSACTION_STATUS_ENUM(): any {
@@ -122,7 +122,21 @@ export class Globals {
     }
 
     public static GET_MERCHANT_PRIVATE_KEY(): string {
-        return '3f455a331a4fdd97f14fe8025cdb6722ac7dffea2b98c5bca5087e26d7ab862c';
+        return '4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387'; // Acc 4
+    }
+
+    public static GET_PULL_PAYMENT_CONTRACT_NAME(): string {
+        return 'MasterPullPayment';
+    }
+
+    public static GET_MASTER_PULL_PAYMENT_ADDRESSES(networkID: number): string {
+        switch (networkID) {
+            case(1):
+                // TODO: Update once deploy to ETH MAINNET
+                return '0x0f4aae2b099714a56f4a9ba4d09c9e94ae836636';
+            case(3):
+                return '0x0f4aae2b099714a56f4a9ba4d09c9e94ae836636';
+        }
     }
 
     public static GET_SCHEDULE_QUEUE_INTERVAL(): number {
