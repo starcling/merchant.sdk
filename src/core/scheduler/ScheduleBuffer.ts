@@ -1,5 +1,5 @@
 import { Scheduler } from './Scheduler';
-import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
+import { PaymentDbConnector } from '../../connector/dbconnector/PaymentDbConnector';
 import { DefaultConfig } from '../../config/default.config';
 import { Globals } from '../../utils/globals';
 const redis = require('redis');

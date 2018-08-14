@@ -6,7 +6,7 @@ import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerial
 import { Scheduler } from '../scheduler/Scheduler';
 import { IPaymentUpdateDetails } from '../payment/models';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
-import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
+import { PaymentDbConnector } from '../../connector/dbconnector/PaymentDbConnector';
 
 export class BlockchainController {
     private static queueCount = 0;

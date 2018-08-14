@@ -1,6 +1,6 @@
 import { Globals } from '../../utils/globals';
 import { IPaymentUpdateDetails } from '../payment/models';
-import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
+import { PaymentDbConnector } from '../../connector/dbconnector/PaymentDbConnector';
 
 /**
  * @description Scheduler, started and created through monitorTransaction function.
