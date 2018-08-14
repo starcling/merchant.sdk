@@ -4,8 +4,8 @@ import { PromiEvent } from 'web3/types';
 export class BlockchainHelper {
     private provider: any;
 
-    public constructor() {
-        this.provider = DefaultConfig.settings.web3;
+    public constructor(provider?: any) {
+        this.provider = provider? provider : DefaultConfig.settings.web3;
     }
 
     /**

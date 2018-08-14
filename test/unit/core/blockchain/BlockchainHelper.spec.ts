@@ -9,8 +9,7 @@ const web3 = require('web3');
 const web3API = new web3(new web3.providers.HttpProvider('http://localhost:7545'))
 let accounts;
 
-let blockchainHelper = new BlockchainHelper();
-blockchainHelper.provider = web3API;
+let blockchainHelper = new BlockchainHelper(web3API);
 
 describe('A Blockchain Helper', async () => {
     it('should return the nonce of an account', async () => {

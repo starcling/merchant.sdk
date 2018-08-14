@@ -129,16 +129,6 @@ export class Globals {
         return 'MasterPullPayment';
     }
 
-    public static GET_MASTER_PULL_PAYMENT_ADDRESSES(networkID: number): string {
-        switch (networkID) {
-            case(1):
-                // TODO: Update once deploy to ETH MAINNET
-                return '0x0f4aae2b099714a56f4a9ba4d09c9e94ae836636';
-            case(3):
-                return '0x0f4aae2b099714a56f4a9ba4d09c9e94ae836636';
-        }
-    }
-
     public static GET_SCHEDULE_QUEUE_INTERVAL(): number {
         return 10;
     }

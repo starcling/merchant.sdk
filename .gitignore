@@ -5,6 +5,6 @@ package-lock.json
 .vs/
 dist
 docs
-.idea/
 dump.rdb
 build/
+.idea/

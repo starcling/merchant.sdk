@@ -47,6 +47,11 @@ After you setup your ssh key setup git remote:
 $ git remote add development ssh://centos@18.196.208.131/home/centos/app/src/merchant.sdk/
 ```
 
+### Running blockchain tests 
+1. Install [Ganache](https://truffleframework.com/ganache) from truffle
+2. Update the seed phrase in Ganache to `chase eagle blur snack pass version raven awesome wisdom embrace wood example`
+3. run `npm run test-blockchain`
+
 Your done!
 To push the changes, make sure you are on development branch and do:
 ```bash
