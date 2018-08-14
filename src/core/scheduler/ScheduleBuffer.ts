@@ -46,7 +46,7 @@ export class SchedulerBuffer {
                             rclient.srem(SchedulerBuffer.bufferName, ids[i]);
 
                             if (payment.id != null) {
-                                new Scheduler(payment, async () => {
+                                new Scheduler(payment.id, async () => {
                                     SchedulerBuffer.testScheduler(payment.id);
                                 }).start(true);
 
