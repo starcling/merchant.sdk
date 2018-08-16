@@ -1,5 +1,5 @@
-import { ISqlQuery, DataService } from '../../utils/datasource/DataService';
-import { IPaymentInsertDetails, IPaymentUpdateDetails } from '../../core/payment/models';
+import { IPaymentInsertDetails, IPaymentUpdateDetails } from '../../../../src/core/payment/models';
+import { ISqlQuery, DataService } from '../../../../src/utils/datasource/DataService';
 
 export class PaymentDbConnector {
   public createPayment(insertDetails: IPaymentInsertDetails) {
@@ -26,6 +26,7 @@ export class PaymentDbConnector {
 
   public async updatePayment(updateDetails: IPaymentUpdateDetails) {
     const sqlQuery: ISqlQuery = {
+      // tslint:disable-next-line:max-line-length
       text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)',
       values: [
         updateDetails.id,
@@ -54,11 +55,11 @@ export class PaymentDbConnector {
       ]
     };
     // Handling the case when no record exists with provided id
-    var response = await new DataService().executeQueryAsPromise(sqlQuery);
-    if(response.data.length === 0 || !response.data[0].id){
+    const response = await new DataService().executeQueryAsPromise(sqlQuery);
+    if (response.data.length === 0 || !response.data[0].id) {
       response.success = false;
       response.status = 400;
-      response.message = 'No record found with provided id.'
+      response.message = 'No record found with provided id.';
     }
 
     return response;

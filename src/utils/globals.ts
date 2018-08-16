@@ -31,7 +31,7 @@ export class Globals {
     public static GET_PAYMENT_URL(): string {
         return '/payments';
     }
-
+    
     /**
      * @description Method for getting login api url 
      * @returns {string} url

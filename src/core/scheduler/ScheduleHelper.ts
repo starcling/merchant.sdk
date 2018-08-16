@@ -1,6 +1,6 @@
 import { Globals } from '../../utils/globals';
 import { IPaymentUpdateDetails } from '../payment/models';
-import { PaymentDbConnector } from '../../connector/dbconnector/PaymentDbConnector';
+import { PaymentController } from '../payment/PaymentController';
 
 /**
  * @description Scheduler, started and created through monitorTransaction function.
@@ -20,7 +20,7 @@ export class ScheduleHelper {
             reccuringDetails.startTimestamp = Math.floor(Number(currentTime + 1));
             reccuringDetails.nextPaymentDate = Math.floor(Number(currentTime + 1));
             reccuringDetails.endTimestamp = Math.floor(reccuringDetails.startTimestamp + reccuringDetails.frequency * reccuringDetails.numberOfPayments);
-            const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
+            const data = (await new PaymentController().updatePayment(reccuringDetails).catch((err) => {console.log(err)})).data[0];
             return Object.assign(reccuringDetails, data);
         }
     }
@@ -30,13 +30,13 @@ export class ScheduleHelper {
         reccuringDetails.startTimestamp = Math.floor(Number(reccuringDetails.startTimestamp));
         reccuringDetails.endTimestamp = Math.floor(Number(reccuringDetails.endTimestamp));
         reccuringDetails.amount = Math.floor(Number(reccuringDetails.amount));
-        const data = (await new PaymentDbConnector().updatePayment(reccuringDetails).catch(() => {})).data[0];
+        const data = (await new PaymentController().updatePayment(reccuringDetails).catch((err) => { console.log(err)})).data[0];
         return Object.assign(reccuringDetails, data);
     }
 
     public static async getPayment(paymentID: string) {
         try {
-            return (await new PaymentDbConnector().getPayment(paymentID).catch(() => {})).data[0];
+            return (await new PaymentController().getPayment(paymentID).catch((err) => {console.log(err)})).data[0];
         } catch(err) {
             return null;
         }
