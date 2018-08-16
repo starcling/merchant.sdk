@@ -39,7 +39,7 @@ export class BlockchainHelper {
      * */
     public isValidRegisterTx(receipt: any, payment_id: string) {
         try {
-            const data = DefaultConfig.settings.web3.eth.abi.decodeLog(['address', 'address', 'string'], receipt.logs[0].data, receipt.logs.topics);
+            const data = this.getProvider().abi.decodeLog(['address', 'address', 'string'], receipt.logs[0].data, receipt.logs.topics);
             return data[2] === payment_id ? true : false;
         } catch (err) {
             return false;
