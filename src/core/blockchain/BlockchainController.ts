@@ -9,7 +9,6 @@ import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
 import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
 
 export class BlockchainController {
-    private static queueCount = 0;
     private paymentDB;
 
     public constructor() {
@@ -94,8 +93,6 @@ export class BlockchainController {
                 executeTxStatus: executeTxStatus,
                 status: status
             });
-
-            if (BlockchainController.queueCount > 0 && executeTxStatus == Globals.GET_TRANSACTION_STATUS_ENUM().success) BlockchainController.queueCount--;
         }).catch((err) => {
             // TODO: Proper error handling 
             console.debug(err);
