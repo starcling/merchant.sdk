@@ -79,13 +79,13 @@ export class Scheduler {
             }
 
             if (numberOfPayments > 0) {
+                await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PAYMENT_STATUS_ENUM().running);
                 scheduler._schedule = await scheduler.scheduleJob(nextPayment);
             }
             scheduler._restarting = false;
 
             return payment_id;
         }
-
 
         return null;
     }

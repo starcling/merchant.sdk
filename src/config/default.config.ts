@@ -3,7 +3,10 @@ import { MerchantSDKSettings } from '../models/MerchantSDK';
 
 export class DefaultConfig {
 
-    private static _settings: MerchantSDKSettings = { web3: null, merchantApiUrl: null};
+    private static _settings: MerchantSDKSettings = {
+        web3: null, merchantApiUrl: null, createPayment: null, deletePayment: null,
+        getAllPayments: null, getPayment: null, updatePayment: null
+    };
 
     public static set settings(buildParams: MerchantSDKSettings) {
         Object.assign(this._settings, buildParams);
@@ -16,6 +19,11 @@ export class DefaultConfig {
             apiUrl: this._settings.apiUrl ? this._settings.apiUrl : Globals.GET_DEFAULT_CORE_API_URL(),
             generateQRApiUrl: this._settings.generateQRApiUrl ? this._settings.generateQRApiUrl : Globals.GET_QR_API_URL(),
             paymentsURL: this._settings.paymentsURL ? this._settings.paymentsURL : Globals.GET_PAYMENT_URL(),
+            createPayment: this._settings.createPayment,
+            deletePayment: this._settings.deletePayment,
+            getAllPayments: this._settings.getAllPayments,
+            getPayment: this._settings.getPayment,
+            updatePayment: this._settings.updatePayment,
             loginUrl: this._settings.loginUrl ? this._settings.loginUrl : Globals.GET_LOGIN_URL(),
             generateApiKeyUrl: this._settings.generateApiKeyUrl ? this._settings.generateApiKeyUrl : Globals.GET_API_KEY_URL(),
             pgUser: this._settings.pgUser ? this._settings.pgUser : Globals.GET_DEFAULT_PG_USER(),

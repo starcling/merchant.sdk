@@ -6,24 +6,23 @@ import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerial
 import { Scheduler } from '../scheduler/Scheduler';
 import { IPaymentUpdateDetails } from '../payment/models';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
-import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
+import { PaymentController } from '../payment/PaymentController';
 
 export class BlockchainController {
-    private static queueCount = 0;
     private paymentDB;
 
     public constructor() {
-        this.paymentDB = new PaymentDbConnector();
+        this.paymentDB = new PaymentController();
     }
 
     /**
     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
     * to create a scheduler that will execute the pull payment
     * @param {string} txHash: Hash of the transaction that needs to be monitored
-    * @param {string} paymentID: ID of the payment which status is to be updated
+    * @param {string} paymentID: ID of the payment registration which status is to be updated
     * @returns {boolean} success/fail response
     */
-    protected async monitorTransaction(txHash: string, paymentID: string) {
+    protected async monitorRegistrationTransaction(txHash: string, paymentID: string) {
         try {
             const sub = setInterval(async () => {
                 const bcHelper = new BlockchainHelper();
@@ -35,7 +34,7 @@ export class BlockchainController {
                     if (receipt.status && bcHelper.isValidRegisterTx(receipt, paymentID)) {
                         status = Globals.GET_TRANSACTION_STATUS_ENUM().success;
                         new Scheduler(paymentID, async () => {
-                            BlockchainController.executePullPayment(paymentID);
+                            this.executePullPayment(paymentID);
                         }).start();
                     }
 
@@ -43,7 +42,6 @@ export class BlockchainController {
                         id: paymentID,
                         registerTxStatus: status
                     });
-
                 }
             }, DefaultConfig.settings.txStatusInterval);
 
@@ -54,29 +52,57 @@ export class BlockchainController {
     }
 
     /**
+    * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
+    * to stop the scheduler that executes the pull payment
+    * @param {string} txHash: Hash of the transaction that needs to be monitored
+    * @param {string} paymentID: ID of the payment which cancellation status is to be updated
+    * @returns {boolean} success/fail response
+    */
+   protected async monitorCancellationTransaction(txHash: string, paymentID: string) {
+    try {
+        const sub = setInterval(async () => {
+            const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
+            if (result) {
+                clearInterval(sub);
+                const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                await this.paymentDB.updatePayment(<IPaymentUpdateDetails>{
+                    id: paymentID,
+                    cancelTxStatus: status
+                });
+                if (result.status) {
+                    const payment = (await this.paymentDB.getPayment(paymentID)).data[0];
+                    Scheduler.stop(payment.id);
+                }
+            }
+        }, DefaultConfig.settings.txStatusInterval);
+
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+    /**
     * @description Method for actual execution of pull payment
     * @returns {object} null
     */
-    protected static async executePullPayment(paymentID?: string) {
-        const paymentDbConnector = new PaymentDbConnector();
+    public async executePullPayment(paymentID?: string): Promise<void> {
+        const paymentDbConnector = new PaymentController();
         const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
         ErrorHandler.validatePullPaymentExecution(payment);
+        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(payment.pullPaymentAddress);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
-        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(Globals.GET_MASTER_PULL_PAYMENT_ADDRESSES(payment.networkID));
         const txCount: number = await blockchainHelper.getTxCount(payment.merchantAddress);
         const data: string = contract.methods.executePullPayment(payment.customerAddress, payment.id).encodeABI();
-        const serializedTx: string = await new RawTransactionSerializer(data, Globals.GET_MASTER_PULL_PAYMENT_ADDRESSES(payment.networkID), txCount).getSerializedTx();
-
+        const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAddress, txCount).getSerializedTx();
         await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
             const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;
-
             await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
                 id: payment.id,
                 executeTxHash: hash,
                 executeTxStatus: status
             });
         }).on('receipt', async (receipt) => {
-
             let numberOfPayments = payment.numberOfPayments;
             let lastPaymentDate = payment.lastPaymentDate;
             let nextPaymentDate = payment.nextPaymentDate;
@@ -101,18 +127,9 @@ export class BlockchainController {
                 executeTxStatus: executeTxStatus,
                 status: status
             });
-
-            if (BlockchainController.queueCount > 0 && executeTxStatus == Globals.GET_TRANSACTION_STATUS_ENUM().success) BlockchainController.queueCount--;
-        }).catch(() => {
-            if (BlockchainController.queueCount < DefaultConfig.settings.queueLimit) {
-                BlockchainController.queueCount++;
-                BlockchainController.executePullPayment(paymentID);
-            }
+        }).catch((err) => {
+            // TODO: Proper error handling 
+            console.debug(err);
         });
     }
-
-    protected executePullPayment(paymentID?: string) {
-        BlockchainController.executePullPayment(paymentID);
-    }
-
 }

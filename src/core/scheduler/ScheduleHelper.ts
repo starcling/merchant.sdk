@@ -1,6 +1,6 @@
 import { Globals } from '../../utils/globals';
 import { IPaymentUpdateDetails } from '../payment/models';
-import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
+import { PaymentController } from '../payment/PaymentController';
 
 /**
  * @description Scheduler, started and created through monitorTransaction function.
@@ -20,7 +20,7 @@ export class ScheduleHelper {
             reccuringDetails.startTimestamp = Math.floor(Number(currentTime + 1));
             reccuringDetails.nextPaymentDate = Math.floor(Number(currentTime + 1));
             reccuringDetails.endTimestamp = Math.floor(reccuringDetails.startTimestamp + reccuringDetails.frequency * reccuringDetails.numberOfPayments);
-            await new PaymentDbConnector().updatePayment(reccuringDetails);
+            await new PaymentController().updatePayment(reccuringDetails);
         }
     }
 
@@ -30,12 +30,12 @@ export class ScheduleHelper {
         reccuringDetails.endTimestamp = Math.floor(Number(reccuringDetails.endTimestamp));
         reccuringDetails.nextPaymentDate = Math.floor(Number(reccuringDetails.nextPaymentDate));
         reccuringDetails.amount = Math.floor(Number(reccuringDetails.amount));
-        await new PaymentDbConnector().updatePayment(reccuringDetails);
+        await new PaymentController().updatePayment(reccuringDetails);
     }
 
     public static async getPayment(paymentID: string) {
         try {
-            return (await new PaymentDbConnector().getPayment(paymentID).catch(() => {})).data[0];
+            return (await new PaymentController().getPayment(paymentID).catch((err) => {console.log(err)})).data[0];
         } catch(err) {
             return null;
         }

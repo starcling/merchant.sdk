@@ -24,7 +24,7 @@ export class SmartContractReader {
     public readABI(): any {
         const input = fs.readFileSync(this.smartContractPath, 'utf-8');
         const output = solc.compile(input.toString(), 1);
-
+        
         return  JSON.parse(output.contracts[`:${this.smartContractName}`].interface);
     }
 

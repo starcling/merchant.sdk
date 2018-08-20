@@ -1,5 +1,6 @@
-import { ISqlQuery, DataService } from '../../utils/datasource/DataService';
-import { IPaymentInsertDetails, IPaymentUpdateDetails } from '../../core/payment/models';
+import { IPaymentInsertDetails, IPaymentUpdateDetails } from "../../core/payment/models";
+import { DataService, ISqlQuery } from "./DataService";
+
 
 export class PaymentDbConnector {
   public createPayment(insertDetails: IPaymentInsertDetails) {
@@ -26,7 +27,7 @@ export class PaymentDbConnector {
 
   public async updatePayment(updateDetails: IPaymentUpdateDetails) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)',
+      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)',
       values: [
         updateDetails.id,
         updateDetails.title,
@@ -47,6 +48,8 @@ export class PaymentDbConnector {
         updateDetails.registerTxStatus,
         updateDetails.executeTxHash,
         updateDetails.executeTxStatus,
+        updateDetails.cancelTxHash,
+        updateDetails.cancelTxStatus,
         updateDetails.merchantAddress,
         updateDetails.pullPaymentAddress,
         updateDetails.userId,
@@ -54,11 +57,11 @@ export class PaymentDbConnector {
       ]
     };
     // Handling the case when no record exists with provided id
-    var response = await new DataService().executeQueryAsPromise(sqlQuery);
-    if(response.data.length === 0 || !response.data[0].id){
+    const response = await new DataService().executeQueryAsPromise(sqlQuery);
+    if (response.data.length === 0 || !response.data[0].id) {
       response.success = false;
       response.status = 400;
-      response.message = 'No record found with provided id.'
+      response.message = 'No record found with provided id.';
     }
 
     return response;

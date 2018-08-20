@@ -31,7 +31,7 @@ export class Globals {
     public static GET_PAYMENT_URL(): string {
         return '/payments';
     }
-
+    
     /**
      * @description Method for getting login api url 
      * @returns {string} url
@@ -110,7 +110,7 @@ export class Globals {
     }
 
     public static GET_SOLIDITY_FILE(): string {
-        return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
+        return `${__dirname.substring(0, __dirname.length - 15)}/contracts/Contracts.sol`;
     }
 
     public static GET_TRANSACTION_STATUS_ENUM(): any {
@@ -127,16 +127,6 @@ export class Globals {
 
     public static GET_PULL_PAYMENT_CONTRACT_NAME(): string {
         return 'MasterPullPayment';
-    }
-
-    public static GET_MASTER_PULL_PAYMENT_ADDRESSES(networkID: number): string {
-        switch (networkID) {
-            case(1):
-                // TODO: Update once deploy to ETH MAINNET
-                return '0x0f4aae2b099714a56f4a9ba4d09c9e94ae836636';
-            case(3):
-                return '0x0f4aae2b099714a56f4a9ba4d09c9e94ae836636';
-        }
     }
 
     public static GET_SCHEDULE_QUEUE_INTERVAL(): number {
