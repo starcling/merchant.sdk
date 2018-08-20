@@ -90,7 +90,7 @@ export class SchedulerBuffer {
         payment.nextPaymentDate = payment.numberOfPayments === 0 ?
             payment.nextPaymentDate : Number(payment.nextPaymentDate) + payment.frequency;
         payment.status = payment.numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : payment.status,
-        await paymentDbConnector.updatePayment(payment);
+            await paymentDbConnector.updatePayment(payment);
     }
 
     public static reconnectToRedis() {
@@ -123,8 +123,10 @@ export class SchedulerBuffer {
     };
 
     public static closeConnection() {
-        rclient.quit();
-        rclient = null;
+        if (rclient) {
+            rclient.quit();
+            rclient = null;
+        }
     };
 
 }

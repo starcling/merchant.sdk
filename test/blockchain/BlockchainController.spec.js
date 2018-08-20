@@ -3,7 +3,7 @@ import { MerchantSDK } from '../../dist/src/MerchantSDKClass';
 import { BlockchainController } from '../../dist/src/core/Blockchain/BlockchainController';
 import { BlockchainHelper } from '../../dist/src/core/Blockchain/BlockchainHelper';
 import { DataService, ISqlQuery } from '../../dist/src/utils/datasource/DataService';
-import { PaymentDbConnector } from '../../dist/src/connector/dbconnector/PaymentDbConnector';
+import { PaymentDbConnector } from '../../dist/src/utils/datasource/PaymentDbConnector';
 import {
     calcSignedMessageForRegistration,
     calcSignedMessageForDeletion,
@@ -51,9 +51,14 @@ const EUR_EXCHANGE_RATE = 100000000; // 0.010 * 1^10
 const USD_EXCHANGE_RATE = 120000000; // 0.012 * 1^10
 
 const settings = {
-    web3: web3API
+    web3: web3API,
+    getPayment: paymentDbConnector.getPayment,
+    deletePayment: paymentDbConnector.deletePayment,
+    createPayment: paymentDbConnector.createPayment,
+    updatePayment: paymentDbConnector.updatePayment,
+    getAllPayments: paymentDbConnector.getAllPayments
 };
-const sdk = new MerchantSDK().build(settings);
+let sdk;
 
 const CLIENT_PRIVATE_KEY = '0xfdfd2ca99b70a6299fff767b4ef0fe82f58c47119721c817046023a29354129c';
 const MERCHANT_PRIVATE_KEY = Globals.GET_MERCHANT_PRIVATE_KEY();
@@ -82,6 +87,9 @@ contract('Master Pull Payment  Contract', async (accounts) => {
         "networkID": 3
     };;
 
+    before(async () => {
+        sdk = new MerchantSDK().build(settings);
+    });
     after(async () => {
         sdk.disconnectRedis();
     });

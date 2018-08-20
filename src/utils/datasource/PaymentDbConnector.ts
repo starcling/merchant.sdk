@@ -1,5 +1,6 @@
-import { IPaymentInsertDetails, IPaymentUpdateDetails } from '../../../../src/core/payment/models';
-import { ISqlQuery, DataService } from '../../../../src/utils/datasource/DataService';
+import { IPaymentInsertDetails, IPaymentUpdateDetails } from "../../core/payment/models";
+import { DataService, ISqlQuery } from "./DataService";
+
 
 export class PaymentDbConnector {
   public createPayment(insertDetails: IPaymentInsertDetails) {
