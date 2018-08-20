@@ -34,6 +34,8 @@
             "registerTxStatus": 1,
             "executeTxHash": "string",
             "executeTxStatus": 1,
+            "cancelTxHash": "string",
+            "cancelTxStatus": 1,
             "merchantAddress": "string",
             "pullPaymentAddress": "string",
             "userId": "string",

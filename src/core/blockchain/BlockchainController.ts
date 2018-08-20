@@ -19,10 +19,10 @@ export class BlockchainController {
     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
     * to create a scheduler that will execute the pull payment
     * @param {string} txHash: Hash of the transaction that needs to be monitored
-    * @param {string} paymentID: ID of the payment which status is to be updated
+    * @param {string} paymentID: ID of the payment registration which status is to be updated
     * @returns {boolean} success/fail response
     */
-    protected async monitorTransaction(txHash: string, paymentID: string) {
+    protected async monitorRegistrationTransaction(txHash: string, paymentID: string) {
         try {
             const sub = setInterval(async () => {
                 const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
@@ -47,6 +47,37 @@ export class BlockchainController {
             return false;
         }
     }
+
+    /**
+    * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
+    * to stop the scheduler that executes the pull payment
+    * @param {string} txHash: Hash of the transaction that needs to be monitored
+    * @param {string} paymentID: ID of the payment which cancellation status is to be updated
+    * @returns {boolean} success/fail response
+    */
+   protected async monitorCancellationTransaction(txHash: string, paymentID: string) {
+    try {
+        const sub = setInterval(async () => {
+            const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
+            if (result) {
+                clearInterval(sub);
+                const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                await this.paymentDB.updatePayment(<IPaymentUpdateDetails>{
+                    id: paymentID,
+                    cancelTxStatus: status
+                });
+                if (result.status) {
+                    const payment = (await this.paymentDB.getPayment(paymentID)).data[0];
+                    Scheduler.stop(payment.id);
+                }
+            }
+        }, DefaultConfig.settings.txStatusInterval);
+
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
 
     /**
     * @description Method for actual execution of pull payment
