@@ -1,8 +1,7 @@
-import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
 import { IPaymentInsertDetails, IPaymentUpdateDetails } from './models';
+import { DefaultConfig } from '../../config/default.config';
 
 export class PaymentController {
-  private paymentDbConnector = new PaymentDbConnector();
 
   /**
   * @description Method for adding new payment to the database
@@ -11,7 +10,7 @@ export class PaymentController {
   */
   public async createPayment(payment: IPaymentInsertDetails) {
     //TODO: create a new merchant Address for every payment
-    return await this.paymentDbConnector.createPayment(payment);
+    return await DefaultConfig.settings.createPayment(payment);
   }
 
   /**
@@ -20,7 +19,7 @@ export class PaymentController {
    * @returns {HTTPResponse} Returns response with payment object in data
    */
   public async getPayment(paymentID: string) {
-    return await this.paymentDbConnector.getPayment(paymentID);
+    return await DefaultConfig.settings.getPayment(paymentID);
   }
 
   /**
@@ -29,7 +28,7 @@ export class PaymentController {
    * @returns {HTTPResponse} Returns success/fail response
    */
   public async deletePayment(paymentID: string) {
-    return await this.paymentDbConnector.deletePayment(paymentID);
+    return await DefaultConfig.settings.deletePayment(paymentID);
   }
 
   /**
@@ -37,7 +36,7 @@ export class PaymentController {
   * @returns {HTTPResponse} Returns response with array of payments in data
   */
   public async getAllPayments() {
-    return await this.paymentDbConnector.getAllPayments();
+    return await DefaultConfig.settings.getAllPayments();
   }
 
   /**
@@ -46,6 +45,6 @@ export class PaymentController {
    * @returns {HTTPResponse} Returns success feedback
    */
   public async updatePayment(payment: IPaymentUpdateDetails) {
-    return await this.paymentDbConnector.updatePayment(payment);
+    return await DefaultConfig.settings.updatePayment(payment);
   }
 }

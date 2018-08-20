@@ -6,13 +6,13 @@ import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerial
 import { Scheduler } from '../scheduler/Scheduler';
 import { IPaymentUpdateDetails } from '../payment/models';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
-import { PaymentDbConnector } from '../../connector/dbConnector/PaymentDbConnector';
+import { PaymentController } from '../payment/PaymentController';
 
 export class BlockchainController {
     private paymentDB;
 
     public constructor() {
-        this.paymentDB = new PaymentDbConnector();
+        this.paymentDB = new PaymentController();
     }
 
     /**
@@ -52,8 +52,8 @@ export class BlockchainController {
     * @description Method for actual execution of pull payment
     * @returns {object} null
     */
-   public async executePullPayment(paymentID?: string): Promise<void> {
-        const paymentDbConnector = new PaymentDbConnector();
+    public async executePullPayment(paymentID?: string): Promise<void> {
+        const paymentDbConnector = new PaymentController();
         const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
         ErrorHandler.validatePullPaymentExecution(payment);
         const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(payment.pullPaymentAddress);
