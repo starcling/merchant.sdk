@@ -299,7 +299,6 @@ describe('A Scheduler', () => {
                     }).start();
                 })
             }
-
             setTimeout(() => {
                 expect(count).to.be.equal(multipleInstances * numberOfPayments);
 

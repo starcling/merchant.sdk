@@ -9,7 +9,6 @@ import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
 import { PaymentController } from '../payment/PaymentController';
 
 export class BlockchainController {
-    private static queueCount = 0;
     private paymentDB;
 
     public constructor() {
@@ -37,7 +36,7 @@ export class BlockchainController {
                     if (result.status) {
                         const payment = (await this.paymentDB.getPayment(paymentID)).data[0];
                         new Scheduler(payment, async () => {
-                            BlockchainController.executePullPayment(paymentID);
+                            this.executePullPayment(paymentID);
                         }).start();
                     }
                 }
@@ -53,26 +52,23 @@ export class BlockchainController {
     * @description Method for actual execution of pull payment
     * @returns {object} null
     */
-    protected static async executePullPayment(paymentID?: string) {
+    public async executePullPayment(paymentID?: string): Promise<void> {
         const paymentDbConnector = new PaymentController();
         const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
         ErrorHandler.validatePullPaymentExecution(payment);
+        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(payment.pullPaymentAddress);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
-        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(Globals.GET_MASTER_PULL_PAYMENT_ADDRESSES(payment.networkID));
         const txCount: number = await blockchainHelper.getTxCount(payment.merchantAddress);
         const data: string = contract.methods.executePullPayment(payment.customerAddress, payment.id).encodeABI();
-        const serializedTx: string = await new RawTransactionSerializer(data, Globals.GET_MASTER_PULL_PAYMENT_ADDRESSES(payment.networkID), txCount).getSerializedTx();
-
+        const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAddress, txCount).getSerializedTx();
         await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
             const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;
-
             await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
                 id: payment.id,
                 executeTxHash: hash,
                 executeTxStatus: status
             });
         }).on('receipt', async (receipt) => {
-
             let numberOfPayments = payment.numberOfPayments;
             let lastPaymentDate = payment.lastPaymentDate;
             let nextPaymentDate = payment.nextPaymentDate;
@@ -97,18 +93,9 @@ export class BlockchainController {
                 executeTxStatus: executeTxStatus,
                 status: status
             });
-
-            if (BlockchainController.queueCount > 0 && executeTxStatus == Globals.GET_TRANSACTION_STATUS_ENUM().success) BlockchainController.queueCount--;
-        }).catch(() => {
-            if (BlockchainController.queueCount < DefaultConfig.settings.queueLimit) {
-                BlockchainController.queueCount++;
-                BlockchainController.executePullPayment(paymentID);
-            }
+        }).catch((err) => {
+            // TODO: Proper error handling 
+            console.debug(err);
         });
     }
-
-    protected executePullPayment(paymentID?: string) {
-        BlockchainController.executePullPayment(paymentID);
-    }
-
 }

@@ -4,6 +4,7 @@
             "title": "string",
             "description": "string",
             "amount": 43,
+            "customerAddress": "string",
             "currency": "string",
             "startTimestamp": 10,
             "endTimestamp": 13,
