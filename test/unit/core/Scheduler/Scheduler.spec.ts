@@ -2,8 +2,10 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Scheduler } from '../../../../src/core/scheduler/Scheduler';
 import { SchedulerBuffer } from '../../../../src/core/scheduler/ScheduleBuffer';
-import { PaymentDbConnector } from '../../../../src/connector/dbconnector/PaymentDbConnector';
 import { IPaymentInsertDetails } from '../../../../src/core/payment/models';
+import { PaymentController } from '../../../../src/core/payment/PaymentController';
+import { PaymentDbConnector } from './PaymentDbConnector';
+import { MerchantSDK } from '../../../../src/MerchantSDKClass';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -14,6 +16,7 @@ const paymentDbConnector = new PaymentDbConnector();
 const paymentsTestData: any = require('../../../../resources/testData.json').payments;
 const testPayment: IPaymentInsertDetails = paymentsTestData['insertTestPayment'];
 var testId: string;
+let sdk;
 
 const insertTestPayment = async () => {
     const result = await paymentDbConnector.createPayment(testPayment);
@@ -23,6 +26,16 @@ const insertTestPayment = async () => {
 describe('A Scheduler', () => {
 
     before(async () => {
+        sdk = new MerchantSDK().build({
+            web3: null,
+            merchantApiUrl: null,
+            createPayment: new PaymentDbConnector().createPayment,
+            deletePayment: new PaymentDbConnector().deletePayment,
+            getAllPayments: new PaymentDbConnector().getAllPayments,
+            getPayment: new PaymentDbConnector().getPayment,
+            updatePayment: new PaymentDbConnector().updatePayment
+        });
+
         SchedulerBuffer.reconnectToRedis();
     });
 
@@ -53,7 +66,7 @@ describe('A Scheduler', () => {
                 new Scheduler(payment, async () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 setTimeout(() => {
@@ -75,7 +88,7 @@ describe('A Scheduler', () => {
 
                 new Scheduler(payment, async () => {
                     payment.numberOfPayments = payment.numberOfPayments - 1;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 setTimeout(() => {
@@ -99,7 +112,7 @@ describe('A Scheduler', () => {
                 new Scheduler(payment, async () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 setTimeout(() => {
@@ -133,7 +146,7 @@ describe('A Scheduler', () => {
                 new Scheduler(payment, async () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 setTimeout(() => {
@@ -170,7 +183,7 @@ describe('A Scheduler', () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
                     payment.nextPaymentDate = Number(payment.nextPaymentDate) + payment.frequency;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 Scheduler.stop(payment.id);
@@ -204,7 +217,7 @@ describe('A Scheduler', () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
                     payment.nextPaymentDate = Number(payment.nextPaymentDate) + payment.frequency;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 setTimeout(() => {
@@ -240,7 +253,7 @@ describe('A Scheduler', () => {
                 new Scheduler(payment, async () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 setTimeout(() => {
@@ -282,7 +295,7 @@ describe('A Scheduler', () => {
                     new Scheduler(payment, async () => {
                         count++;
                         payment.numberOfPayments = payment.numberOfPayments - 1;
-                        await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                        await (new PaymentController().updatePayment(payment).catch(() => { }));
                     }).start();
                 })
             }
@@ -317,7 +330,7 @@ describe('A Scheduler', () => {
                     new Scheduler(payment, async () => {
                         count++;
                         payment.numberOfPayments = payment.numberOfPayments - 1;
-                        await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                        await (new PaymentController().updatePayment(payment).catch(() => { }));
                     }).start();
                 })
             }
@@ -360,7 +373,7 @@ describe('A Scheduler', () => {
                 new Scheduler(payment, async () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 setTimeout(() => {
@@ -385,7 +398,7 @@ describe('A Scheduler', () => {
                 new Scheduler(payment, async () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 setTimeout(() => {
@@ -431,7 +444,7 @@ describe('A Scheduler', () => {
                 new Scheduler(payment, async () => {
                     count++;
                     payment.numberOfPayments = payment.numberOfPayments - 1;
-                    await (new PaymentDbConnector().updatePayment(payment).catch(() => { }));
+                    await (new PaymentController().updatePayment(payment).catch(() => { }));
                 }).start();
 
                 setTimeout(() => {

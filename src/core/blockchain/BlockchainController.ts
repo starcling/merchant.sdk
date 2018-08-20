@@ -6,14 +6,14 @@ import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerial
 import { Scheduler } from '../scheduler/Scheduler';
 import { IPaymentUpdateDetails } from '../payment/models';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
-import { PaymentDbConnector } from '../../connector/dbconnector/PaymentDbConnector';
+import { PaymentController } from '../payment/PaymentController';
 
 export class BlockchainController {
     private static queueCount = 0;
     private paymentDB;
 
     public constructor() {
-        this.paymentDB = new PaymentDbConnector();
+        this.paymentDB = new PaymentController();
     }
 
     /**
@@ -54,7 +54,7 @@ export class BlockchainController {
     * @returns {object} null
     */
     protected static async executePullPayment(paymentID?: string) {
-        const paymentDbConnector = new PaymentDbConnector();
+        const paymentDbConnector = new PaymentController();
         const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
         ErrorHandler.validatePullPaymentExecution(payment);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
