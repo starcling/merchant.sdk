@@ -315,7 +315,7 @@ describe('A Scheduler', () => {
         it('should be able to stop & restart multiple instances', (done) => {
             let count = 0;
             const numberOfPayments = 8;
-            const multipleInstances = 12;
+            const multipleInstances = 10;
             const ids = [];
 
             for (let i = 0; i < multipleInstances; i++) {

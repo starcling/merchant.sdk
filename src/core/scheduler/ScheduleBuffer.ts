@@ -47,7 +47,7 @@ export class SchedulerBuffer {
 
                             if (payment.id != null) {
                                 new Scheduler(payment, async () => {
-                                    SchedulerBuffer.testScheduler(payment.id);
+                                    executePullPayment(payment.id);
                                 }).start(true);
 
                                 switch (payment.status) {

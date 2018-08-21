@@ -109,11 +109,11 @@ export class BlockchainController {
             if (receipt.status) {
                 numberOfPayments = numberOfPayments - 1;
                 lastPaymentDate = nextPaymentDate;
-                nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
+                nextPaymentDate = numberOfPayments == 0 ? numberOfPayments : Number(payment.nextPaymentDate) + Number(payment.frequency);
                 executeTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().success;
                 status = numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : status;
             } else {
-                status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                executeTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
             }
 
             await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
@@ -126,6 +126,11 @@ export class BlockchainController {
             });
         }).catch((err) => {
             // TODO: Proper error handling 
+
+            paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
+                id: payment.id,
+                executeTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().failed
+            });
             console.debug(err);
         });
     }
