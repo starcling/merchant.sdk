@@ -150,8 +150,8 @@ describe('A Scheduler', () => {
 
             paymentDbConnector.getPayment(testId).then(res => {
                 const tempPayment = res.data[0];
-                tempPayment.startTimestamp = Number(`${Math.floor(new Date(Date.now() + 20).getTime() / 1000)}`);
-                tempPayment.nextPaymentDate = Math.floor(new Date(Date.now() + 20).getTime() / 1000);
+                tempPayment.startTimestamp = Number(`${Math.floor(new Date(Date.now() + 100).getTime() / 1000)}`);
+                tempPayment.nextPaymentDate = Math.floor(new Date(Date.now() + 100).getTime() / 1000);
                 tempPayment.numberOfPayments = numberOfPayments;
                 tempPayment.frequency = 1;
 
@@ -324,6 +324,7 @@ describe('A Scheduler', () => {
                         const p = (await paymentDbConnector.getPayment(payment.id)).data[0];
                         count++;
                         p.numberOfPayments = p.numberOfPayments - 1;
+                        console.log('a: ', p.id, p.numberOfPayments);
                         await paymentDbConnector.updatePayment(p);
                     }).start();
                 }
@@ -339,7 +340,7 @@ describe('A Scheduler', () => {
                 }
 
                 done();
-            }, numberOfPayments * 1000 + delay);
+            }, numberOfPayments * 1000 + 2 * delay);
         });
 
         // it('should be able to stop & restart multiple instances', (done) => {

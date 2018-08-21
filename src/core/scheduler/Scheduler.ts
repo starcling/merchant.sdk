@@ -22,7 +22,6 @@ export class Scheduler {
 
     public async start(reinitialized: boolean = false) {
         const payment = await ScheduleHelper.getPayment(this.paymentID);
-        // console.debug(payment);
         if (!reinitialized) await ScheduleHelper.adjustStartTime(payment);
         this._schedule = await this.scheduleJob();
         return SchedulerBuffer.set(this.paymentID, this);
@@ -90,29 +89,6 @@ export class Scheduler {
         return null;
     }
 
-    /**
-    //  * @description Reschedules the scheduler with new payment details
-    //  * @param reccuringDetails ID of the payment and the scheduler aswell
-    //  * @returns {boolean} true if scheduler is rescheduled, false if scheduler was not found
-    //  */
-    // public static reschedule(reccuringDetails: any) {
-    //     (async () => {
-    //         const payment = await ScheduleHelper.getPayment(payment_id);
-
-    //         const scheduler = SchedulerBuffer.get(reccuringDetails.id);
-    //         if (scheduler) {
-    //             const callback = scheduler.callback;
-    //             const payload = Object.assign(scheduler.reccuringDetails, reccuringDetails);
-    //             SchedulerBuffer.delete(scheduler.reccuringDetails.id);
-    //             new Scheduler(payload, callback);
-
-    //             return true;
-    //         }
-
-    //         return false;
-    //     })();
-    // }
-
     public get interval() {
         return this._interval;
     }
@@ -124,12 +100,9 @@ export class Scheduler {
     private async scheduleJob(startTime: number = null) {
         const payment = await ScheduleHelper.getPayment(this.paymentID);
         startTime = startTime ? startTime : payment.startTimestamp;
-        // console.log('BPAYMENT ', payment.id, payment.numberOfPayments);
-        // console.log('--------------');
 
         return schedule.scheduleJob(new Date(Number(startTime) * 1000), async () => {
             const payment = await ScheduleHelper.getPayment(this.paymentID);
-            // console.log('SPAYMENT ', payment.id, payment.numberOfPayments);
             await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PAYMENT_STATUS_ENUM().running);
             await this.executeCallback();
             this._interval = this.startInterval(payment.frequency);
