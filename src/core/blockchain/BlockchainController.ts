@@ -94,36 +94,61 @@ export class BlockchainController {
         const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAddress, txCount).getSerializedTx();
         await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
             const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;
-            await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
-                id: payment.id,
-                executeTxHash: hash,
-                executeTxStatus: status
-            });
-        }).on('receipt', async (receipt) => {
-            let numberOfPayments = payment.numberOfPayments;
-            let lastPaymentDate = payment.lastPaymentDate;
-            let nextPaymentDate = payment.nextPaymentDate;
-            let executeTxStatus = payment.executeTxStatus;
-            let status = payment.status;
-
-            if (receipt.status) {
-                numberOfPayments = numberOfPayments - 1;
-                lastPaymentDate = nextPaymentDate;
-                nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
-                executeTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().success;
-                status = numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : status;
+            if (payment.initialPaymentAmount > 0) { 
+                await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
+                    id: payment.id,
+                    initialPaymentTxHash: hash,
+                    initialPaymentTxStatus: status
+                });
             } else {
-                status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
+                    id: payment.id,
+                    executeTxHash: hash,
+                    executeTxStatus: status
+                });
             }
+        }).on('receipt', async (receipt) => {
+            if (payment.type = Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial) { 
+                let status = payment.status;
+                let initialPaymentTxStatus = payment.initialPaymentTxStatus;
+                if (receipt.status) { 
+                    status = Globals.GET_TRANSACTION_STATUS_ENUM().success;
+                    initialPaymentTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().success;
+                } else {
+                    status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                    initialPaymentTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                }
+                await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
+                    id: payment.id,
+                    initialPaymentTxStatus: initialPaymentTxStatus,
+                    status: status
+                });
+            } else {
+                let numberOfPayments = payment.numberOfPayments;
+                let lastPaymentDate = payment.lastPaymentDate;
+                let nextPaymentDate = payment.nextPaymentDate;
+                let executeTxStatus = payment.executeTxStatus;
+                let status = payment.status;
 
-            await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
-                id: payment.id,
-                numberOfPayments: numberOfPayments,
-                lastPaymentDate: lastPaymentDate,
-                nextPaymentDate: nextPaymentDate,
-                executeTxStatus: executeTxStatus,
-                status: status
-            });
+                if (receipt.status) {
+                    numberOfPayments = numberOfPayments - 1;
+                    lastPaymentDate = nextPaymentDate;
+                    nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
+                    executeTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().success;
+                    status = numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : status;
+                } else {
+                    status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                }
+
+                await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
+                    id: payment.id,
+                    numberOfPayments: numberOfPayments,
+                    lastPaymentDate: lastPaymentDate,
+                    nextPaymentDate: nextPaymentDate,
+                    executeTxStatus: executeTxStatus,
+                    status: status
+                });
+            }
         }).catch((err) => {
             // TODO: Proper error handling 
             console.debug(err);

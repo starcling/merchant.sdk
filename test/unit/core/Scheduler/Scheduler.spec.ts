@@ -42,6 +42,7 @@ describe('A Scheduler', () => {
 
     after(async () => {
         sdk.disconnectRedis();
+        SchedulerBuffer.closeConnection();
     });
 
     describe('with correct parameters', () => {
