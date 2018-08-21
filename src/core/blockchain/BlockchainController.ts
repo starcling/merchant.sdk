@@ -29,19 +29,20 @@ export class BlockchainController {
                 const receipt = await bcHelper.getProvider().getTransactionReceipt(txHash);
                 if (receipt) {
                     clearInterval(sub);
-                    let status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-
-                    if (receipt.status && bcHelper.isValidRegisterTx(receipt, paymentID)) {
-                        status = Globals.GET_TRANSACTION_STATUS_ENUM().success;
-                        new Scheduler(paymentID, async () => {
-                            this.executePullPayment(paymentID);
-                        }).start();
-                    }
+                    const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
 
                     await this.paymentDB.updatePayment(<IPaymentUpdateDetails>{
                         id: paymentID,
                         registerTxStatus: status
                     });
+
+                    if (receipt.status && bcHelper.isValidRegisterTx(receipt, paymentID)) {
+                        new Scheduler(paymentID, async () => {
+                            this.executePullPayment(paymentID);
+                        }).start();
+                    }
+
+                    
                 }
             }, DefaultConfig.settings.txStatusInterval);
 
@@ -61,15 +62,15 @@ export class BlockchainController {
    protected async monitorCancellationTransaction(txHash: string, paymentID: string) {
     try {
         const sub = setInterval(async () => {
-            const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
-            if (result) {
+            const receipt = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
+            if (receipt) {
                 clearInterval(sub);
-                const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
                 await this.paymentDB.updatePayment(<IPaymentUpdateDetails>{
                     id: paymentID,
                     cancelTxStatus: status
                 });
-                if (result.status) {
+                if (receipt.status) {
                     const payment = (await this.paymentDB.getPayment(paymentID)).data[0];
                     Scheduler.stop(payment.id);
                 }
@@ -132,6 +133,7 @@ export class BlockchainController {
 
             paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
                 id: payment.id,
+                executeTxHash: 'failed',
                 executeTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().failed
             });
             console.debug(err);
