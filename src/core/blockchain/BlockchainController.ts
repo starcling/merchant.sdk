@@ -25,20 +25,24 @@ export class BlockchainController {
     protected async monitorRegistrationTransaction(txHash: string, paymentID: string) {
         try {
             const sub = setInterval(async () => {
-                const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
-                if (result) {
+                const bcHelper = new BlockchainHelper();
+                const receipt = await bcHelper.getProvider().getTransactionReceipt(txHash);
+                if (receipt) {
                     clearInterval(sub);
-                    const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                    const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+
                     await this.paymentDB.updatePayment(<IPaymentUpdateDetails>{
                         id: paymentID,
                         registerTxStatus: status
                     });
-                    if (result.status) {
-                        const payment = (await this.paymentDB.getPayment(paymentID)).data[0];
-                        new Scheduler(payment, async () => {
+
+                    if (receipt.status && bcHelper.isValidRegisterTx(receipt, paymentID)) {
+                        new Scheduler(paymentID, async () => {
                             this.executePullPayment(paymentID);
                         }).start();
                     }
+
+                    
                 }
             }, DefaultConfig.settings.txStatusInterval);
 
@@ -58,15 +62,15 @@ export class BlockchainController {
    protected async monitorCancellationTransaction(txHash: string, paymentID: string) {
     try {
         const sub = setInterval(async () => {
-            const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
-            if (result) {
+            const receipt = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
+            if (receipt) {
                 clearInterval(sub);
-                const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
                 await this.paymentDB.updatePayment(<IPaymentUpdateDetails>{
                     id: paymentID,
                     cancelTxStatus: status
                 });
-                if (result.status) {
+                if (receipt.status) {
                     const payment = (await this.paymentDB.getPayment(paymentID)).data[0];
                     Scheduler.stop(payment.id);
                 }
@@ -109,11 +113,11 @@ export class BlockchainController {
             if (receipt.status) {
                 numberOfPayments = numberOfPayments - 1;
                 lastPaymentDate = nextPaymentDate;
-                nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
+                nextPaymentDate = numberOfPayments == 0 ? numberOfPayments : Number(payment.nextPaymentDate) + Number(payment.frequency);
                 executeTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().success;
                 status = numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : status;
             } else {
-                status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                executeTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
             }
 
             await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
@@ -126,6 +130,12 @@ export class BlockchainController {
             });
         }).catch((err) => {
             // TODO: Proper error handling 
+
+            paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
+                id: payment.id,
+                executeTxHash: 'failed',
+                executeTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().failed
+            });
             console.debug(err);
         });
     }
