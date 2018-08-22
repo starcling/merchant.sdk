@@ -32,4 +32,17 @@ export class BlockchainHelper {
     public getProvider() {
         return this.provider.eth ? this.provider.eth : this.provider;
     }
+
+    /**
+     * @description Validates the receipt that the tx hash provided is actually a pull payment
+     * @returns {boolean} true if the receipt is from pull payment
+     * */
+    public isValidRegisterTx(receipt: any, payment_id: string) {
+        try {
+            const data = this.getProvider().abi.decodeLog(['address', 'address', 'string'], receipt.logs[0].data, receipt.logs.topics);
+            return data[2] === payment_id ? true : false;
+        } catch (err) {
+            return false;
+        }
+    }
 }

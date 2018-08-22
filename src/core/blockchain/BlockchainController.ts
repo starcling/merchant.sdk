@@ -7,6 +7,7 @@ import { Scheduler } from '../scheduler/Scheduler';
 import { IPaymentUpdateDetails } from '../payment/models';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
 import { PaymentController } from '../payment/PaymentController';
+import { BlockchainTxReceiptHandler } from './BlockchainTxReceiptHandler';
 
 export class BlockchainController {
     private paymentDB;
@@ -25,17 +26,25 @@ export class BlockchainController {
     protected async monitorRegistrationTransaction(txHash: string, paymentID: string) {
         try {
             const sub = setInterval(async () => {
-                const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
-                if (result) {
+                const bcHelper = new BlockchainHelper();
+                const receipt = await bcHelper.getProvider().getTransactionReceipt(txHash);
+                if (receipt) {
                     clearInterval(sub);
-                    const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                    await this.paymentDB.updatePayment(<IPaymentUpdateDetails>{
+                    const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+
+                    const paymentResponse = await this.paymentDB.updatePayment(<IPaymentUpdateDetails>{
                         id: paymentID,
                         registerTxStatus: status
                     });
-                    if (result.status) {
-                        const payment = (await this.paymentDB.getPayment(paymentID)).data[0];
-                        new Scheduler(payment, async () => {
+                    const payment = paymentResponse.data[0];
+
+                    if (receipt.status && bcHelper.isValidRegisterTx(receipt, paymentID)) {
+                        if (payment.type == Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial && 
+                            payment.initialPaymentTxStatus != Globals.GET_TRANSACTION_STATUS_ENUM().success) { 
+                                this.executePullPayment(paymentID);
+                            }
+
+                        new Scheduler(paymentID, async () => {
                             this.executePullPayment(paymentID);
                         }).start();
                     }
@@ -58,15 +67,15 @@ export class BlockchainController {
    protected async monitorCancellationTransaction(txHash: string, paymentID: string) {
     try {
         const sub = setInterval(async () => {
-            const result = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
-            if (result) {
+            const receipt = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
+            if (receipt) {
                 clearInterval(sub);
-                const status = result.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
                 await this.paymentDB.updatePayment(<IPaymentUpdateDetails>{
                     id: paymentID,
                     cancelTxStatus: status
                 });
-                if (result.status) {
+                if (receipt.status) {
                     const payment = (await this.paymentDB.getPayment(paymentID)).data[0];
                     Scheduler.stop(payment.id);
                 }
@@ -87,70 +96,42 @@ export class BlockchainController {
         const paymentDbConnector = new PaymentController();
         const payment: IPaymentUpdateDetails = (await paymentDbConnector.getPayment(paymentID)).data[0];
         ErrorHandler.validatePullPaymentExecution(payment);
+
         const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(payment.pullPaymentAddress);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
         const txCount: number = await blockchainHelper.getTxCount(payment.merchantAddress);
         const data: string = contract.methods.executePullPayment(payment.customerAddress, payment.id).encodeABI();
         const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAddress, txCount).getSerializedTx();
+
         await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
-            const status = Globals.GET_TRANSACTION_STATUS_ENUM().pending;
-            if (payment.initialPaymentAmount > 0) { 
+            if (payment.type == Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial && 
+            payment.initialPaymentTxStatus != Globals.GET_TRANSACTION_STATUS_ENUM().success) { 
                 await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
                     id: payment.id,
                     initialPaymentTxHash: hash,
-                    initialPaymentTxStatus: status
+                    initialPaymentTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().pending
                 });
             } else {
                 await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
                     id: payment.id,
                     executeTxHash: hash,
-                    executeTxStatus: status
+                    executeTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().pending
                 });
             }
         }).on('receipt', async (receipt) => {
-            if (payment.type = Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial) { 
-                let status = payment.status;
-                let initialPaymentTxStatus = payment.initialPaymentTxStatus;
-                if (receipt.status) { 
-                    status = Globals.GET_TRANSACTION_STATUS_ENUM().success;
-                    initialPaymentTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().success;
-                } else {
-                    status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                    initialPaymentTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                }
-                await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
-                    id: payment.id,
-                    initialPaymentTxStatus: initialPaymentTxStatus,
-                    status: status
-                });
+            if (payment.type == Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial && 
+            payment.initialPaymentTxStatus != Globals.GET_TRANSACTION_STATUS_ENUM().success) { 
+                await new BlockchainTxReceiptHandler().handleRecurringPaymentWithInitialReceipt(payment, receipt);
             } else {
-                let numberOfPayments = payment.numberOfPayments;
-                let lastPaymentDate = payment.lastPaymentDate;
-                let nextPaymentDate = payment.nextPaymentDate;
-                let executeTxStatus = payment.executeTxStatus;
-                let status = payment.status;
-
-                if (receipt.status) {
-                    numberOfPayments = numberOfPayments - 1;
-                    lastPaymentDate = nextPaymentDate;
-                    nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
-                    executeTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().success;
-                    status = numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : status;
-                } else {
-                    status = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                }
-
-                await paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
-                    id: payment.id,
-                    numberOfPayments: numberOfPayments,
-                    lastPaymentDate: lastPaymentDate,
-                    nextPaymentDate: nextPaymentDate,
-                    executeTxStatus: executeTxStatus,
-                    status: status
-                });
+                await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(payment, receipt);
             }
         }).catch((err) => {
             // TODO: Proper error handling 
+            paymentDbConnector.updatePayment(<IPaymentUpdateDetails>{
+                id: payment.id,
+                executeTxHash: 'failed',
+                executeTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().failed
+            });
             console.debug(err);
         });
     }

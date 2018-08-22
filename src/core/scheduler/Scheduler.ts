@@ -1,6 +1,5 @@
 import { SchedulerBuffer } from "./ScheduleBuffer";
 import { Globals } from "../../utils/globals";
-import { IPaymentUpdateDetails } from "../payment/models";
 import { ScheduleHelper } from "./ScheduleHelper";
 import { ScheduleQueue } from "./ScheduleQueue";
 const schedule = require('node-schedule');
@@ -15,15 +14,18 @@ const schedule = require('node-schedule');
 export class Scheduler {
     private _interval = null;
     private _schedule = null;
+    private _restarting = false;
 
-    public constructor(private reccuringDetails: IPaymentUpdateDetails, private callback: any) {
+    public constructor(private paymentID: string, private callback: any) {
 
     }
 
-    public start(reinitialized: boolean = false) {
-        if (!reinitialized) ScheduleHelper.adjustStartTime(this.reccuringDetails);
-        this._schedule = this.scheduleJob();
-        return SchedulerBuffer.set(this.reccuringDetails.id, this);
+    public async start(reinitialized: boolean = false) {
+        const payment = await ScheduleHelper.getPayment(this.paymentID);
+        if (!reinitialized) await ScheduleHelper.adjustStartTime(payment);
+        this._schedule = await this.scheduleJob();
+        
+        return SchedulerBuffer.set(this.paymentID, this);
     }
 
     /**
@@ -31,9 +33,10 @@ export class Scheduler {
      * @param payment_id ID of the payment and the scheduler aswell
      * @returns {object} ID of scheduler if it is stopped, null if scheduler was not found.
      */
-    public static stop(payment_id: string) {
+    public static async stop(payment_id: string) {
+        const payment = await ScheduleHelper.getPayment(payment_id);
         const scheduler = SchedulerBuffer.get(payment_id);
-        if (scheduler) {
+        if (scheduler && payment) {
 
             if (scheduler._schedule) {
                 scheduler._schedule.cancel();
@@ -43,9 +46,9 @@ export class Scheduler {
                 clearInterval(scheduler.interval);
             }
 
-            ScheduleHelper.updatePaymentStatus(scheduler.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().stopped);
+            await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PAYMENT_STATUS_ENUM().stopped);
 
-            return scheduler.reccuringDetails.id;
+            return payment_id;
         }
 
         return null;
@@ -56,53 +59,35 @@ export class Scheduler {
      * @param payment_id ID of the payment and the scheduler aswell
      * @returns {object} ID of scheduler if it is restarted, null if scheduler was not found or is already running or done.
      */
-    public static restart(payment_id: string) {
+    public static async restart(payment_id: string) {
         const scheduler = SchedulerBuffer.get(payment_id);
+        const payment = await ScheduleHelper.getPayment(payment_id);
 
-        if (scheduler && scheduler.reccuringDetails.status == Globals.GET_PAYMENT_STATUS_ENUM().stopped) {
+        if (scheduler && payment && payment.status == Globals.GET_PAYMENT_STATUS_ENUM().stopped && !scheduler._restarting) {
+            scheduler._restarting = true;
 
-            (async () => {
-                const data = await ScheduleHelper.updatePaymentStatus(scheduler.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().initial);
-                scheduler.reccuringDetails = data ? data : scheduler.reccuringDetails;
+            await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PAYMENT_STATUS_ENUM().initial);
 
-                const currentDate = Math.floor((new Date().getTime() / 1000));
-                let nextPayment = Math.floor(Number(scheduler.reccuringDetails.nextPaymentDate));
-                let numberOfPayments = Math.floor(Number(scheduler.reccuringDetails.numberOfPayments));
+            const currentDate = Math.floor((new Date().getTime() / 1000));
+            let nextPayment = Math.floor(Number(payment.nextPaymentDate));
+            let numberOfPayments = Math.floor(Number(payment.numberOfPayments));
 
-                while (nextPayment <= currentDate && numberOfPayments > 0) {
-                    numberOfPayments--;
-                    nextPayment = nextPayment + scheduler.reccuringDetails.frequency;
-                    ScheduleQueue.instance().queue(scheduler.reccuringDetails.id);
-                }
+            while (nextPayment <= currentDate && numberOfPayments > 0) {
+                numberOfPayments--;
+                nextPayment = nextPayment + payment.frequency;
+                ScheduleQueue.instance().queue(payment_id);
+            }
 
-                if (numberOfPayments > 0) {
-                    scheduler._schedule = scheduler.scheduleJob(nextPayment);
-                }
-            })();
+            if (numberOfPayments > 0) {
+                await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PAYMENT_STATUS_ENUM().running);
+                scheduler._schedule = await scheduler.scheduleJob(nextPayment);
+            }
+            scheduler._restarting = false;
 
-            return scheduler.reccuringDetails.id;
+            return payment_id;
         }
 
         return null;
-    }
-
-    /**
-     * @description Reschedules the scheduler with new payment details
-     * @param reccuringDetails ID of the payment and the scheduler aswell
-     * @returns {boolean} true if scheduler is rescheduled, false if scheduler was not found
-     */
-    public static reschedule(reccuringDetails: any) {
-        const scheduler = SchedulerBuffer.get(reccuringDetails.id);
-        if (scheduler) {
-            const callback = scheduler.callback;
-            const payload = Object.assign(scheduler.reccuringDetails, reccuringDetails);
-            SchedulerBuffer.delete(scheduler.reccuringDetails.id);
-            new Scheduler(payload, callback);
-
-            return true;
-        }
-
-        return false;
     }
 
     public get interval() {
@@ -113,28 +98,34 @@ export class Scheduler {
         return this._schedule;
     }
 
-    private scheduleJob(startTime: number = this.reccuringDetails.startTimestamp) {
+    private async scheduleJob(startTime: number = null) {
+        const payment = await ScheduleHelper.getPayment(this.paymentID);
+        startTime = startTime ? startTime : payment.startTimestamp;
+
         return schedule.scheduleJob(new Date(Number(startTime) * 1000), async () => {
-            this.reccuringDetails = await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().running);
+            const payment = await ScheduleHelper.getPayment(this.paymentID);
+            await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PAYMENT_STATUS_ENUM().running);
             await this.executeCallback();
-            this._interval = this.startInterval();
+            this._interval = this.startInterval(payment.frequency);
         });
     }
 
-    private startInterval() {
+    private startInterval(interval: number) {
         return setInterval(() => {
             this.executeCallback();
-        }, this.reccuringDetails.frequency * 1000);
+        }, interval * 1000);
     }
 
     public async executeCallback() {
-        this.reccuringDetails = await ScheduleHelper.getPayment(this.reccuringDetails.id);
-        if (this.reccuringDetails.numberOfPayments > 0 && (Number(this.reccuringDetails.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000))) {
+        let payment = await ScheduleHelper.getPayment(this.paymentID);
+        if (payment && (payment.numberOfPayments > 0 && (Number(payment.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000)))) {
             await this.callback();
-            this.reccuringDetails = await ScheduleHelper.getPayment(this.reccuringDetails.id);
-            if (this.reccuringDetails.numberOfPayments == 0) {
-                SchedulerBuffer.delete(this.reccuringDetails.id);
-                await ScheduleHelper.updatePaymentStatus(this.reccuringDetails, Globals.GET_PAYMENT_STATUS_ENUM().done);
+            payment = await ScheduleHelper.getPayment(this.paymentID);
+
+            if (payment.numberOfPayments == 0) {
+                Scheduler.stop(this.paymentID);
+                SchedulerBuffer.delete(this.paymentID);
+                await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PAYMENT_STATUS_ENUM().done);
             }
         }
     }
