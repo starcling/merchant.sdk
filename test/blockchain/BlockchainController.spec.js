@@ -10,6 +10,9 @@ import {
     getVRS
 } from '../helpers/signatureCalculator';
 import { Globals } from '../../dist/src/utils/globals';
+import {
+    timeTravel
+} from '../helpers/timeHelper';
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -70,12 +73,14 @@ contract('Master Pull Payment  Contract', async (accounts) => {
     const bank = accounts[9];         
 
     let recurringPullPayment;
+    let recurringPullPaymentWithInitial;
     let token;
     let masterPullPayment;
     let testPayment = {
         "title": "Test Payment",
         "description": "Payment description",
         "amount": 1000,
+        "initialPaymentAmount": 100,
         "customerAddress": client,
         "currency": "EUR",
         "startTimestamp": Math.floor(Date.now() / 1000),
@@ -106,11 +111,26 @@ contract('Master Pull Payment  Contract', async (accounts) => {
             customerAddress: client,
             beneficiary: beneficiary,
             currency: 'EUR',
-            fiatAmountInCents: 1000, // 0.20 USD in cents
+            initialPaymentAmount: 0,
+            fiatAmountInCents: 1000, // 10.00 USD in cents
             frequency: 10,
             numberOfPayments: 1,
             startTimestamp: Math.floor(Date.now() / 1000)
         };
+    });
+    beforeEach('set recurring pull payment with intial amount', () => {
+        recurringPullPaymentWithInitial = {
+            merchantID: "merchantID",
+            paymentID: testId,
+            customerAddress: client,
+            beneficiary: beneficiary,
+            currency: 'EUR',
+            initialPaymentAmount: 100, // 1.00 USD in cents
+            fiatAmountInCents: 1000, // 10.00 USD in cents
+            frequency: 10,
+            numberOfPayments: 1,
+            startTimestamp: Math.floor(Date.now() / 1000) + DAY
+        }
     });
     beforeEach('Deploying new PumaPayToken', async () => {
         token = await PumaPayToken.new({
@@ -160,33 +180,34 @@ contract('Master Pull Payment  Contract', async (accounts) => {
         });
     });
     describe('A Blockchain Controller', async () => {
-        beforeEach('register new pull payment', async () => {
-            const signature = await calcSignedMessageForRegistration(recurringPullPayment, CLIENT_PRIVATE_KEY);
-            const sigVRS = await getVRS(signature);
-            await masterPullPayment.registerPullPayment(
-                sigVRS.v,
-                sigVRS.r,
-                sigVRS.s,
-                recurringPullPayment.merchantID,
-                recurringPullPayment.paymentID,
-                recurringPullPayment.customerAddress,
-                recurringPullPayment.beneficiary,
-                recurringPullPayment.currency,
-                recurringPullPayment.fiatAmountInCents,
-                recurringPullPayment.frequency,
-                recurringPullPayment.numberOfPayments,
-                recurringPullPayment.startTimestamp,
-                {
-                    from: executor
-                });
-        });
-        describe('succefuly executing a pull payment', async () => {
+        describe('succefuly executing a pull payment with fixed amount', async () => {
+            beforeEach('register new pull payment', async () => {
+                const signature = await calcSignedMessageForRegistration(recurringPullPayment, CLIENT_PRIVATE_KEY);
+                const sigVRS = await getVRS(signature);
+                await masterPullPayment.registerPullPayment(
+                    sigVRS.v,
+                    sigVRS.r,
+                    sigVRS.s,
+                    recurringPullPayment.merchantID,
+                    recurringPullPayment.paymentID,
+                    recurringPullPayment.customerAddress,
+                    recurringPullPayment.beneficiary,
+                    recurringPullPayment.currency,
+                    recurringPullPayment.initialPaymentAmount,
+                    recurringPullPayment.fiatAmountInCents,
+                    recurringPullPayment.frequency,
+                    recurringPullPayment.numberOfPayments,
+                    recurringPullPayment.startTimestamp,
+                    {
+                        from: executor
+                    });
+            });
             beforeEach('Transfer funds to beneficiaty', async () => {
                 await web3API.eth.sendTransaction({
                     from: bank,
                     to: beneficiary,
                     value: '1000000000000000000'
-                })
+                });
             });
             it('should transfer PMA tokens to the beneficiary', async () => {
                 await sdk.executePullPayment(recurringPullPayment.paymentID);
@@ -194,7 +215,52 @@ contract('Master Pull Payment  Contract', async (accounts) => {
                 
                 Number(beneficiaryBalance).should.be.equal(1000 * ONE_ETHER);
             });
-        })
+        });
         // TODO: Add failling tests when all the flow is in place.
     });
+    describe('succefuly executing a pull payment with intial payment amount', async () => {
+        beforeEach('register new pull payment', async () => {
+            const signature = await calcSignedMessageForRegistration(recurringPullPaymentWithInitial, CLIENT_PRIVATE_KEY);
+            const sigVRS = await getVRS(signature);
+            await masterPullPayment.registerPullPayment(
+                sigVRS.v,
+                sigVRS.r,
+                sigVRS.s,
+                recurringPullPaymentWithInitial.merchantID,
+                recurringPullPaymentWithInitial.paymentID,
+                recurringPullPaymentWithInitial.customerAddress,
+                recurringPullPaymentWithInitial.beneficiary,
+                recurringPullPaymentWithInitial.currency,
+                recurringPullPaymentWithInitial.initialPaymentAmount,
+                recurringPullPaymentWithInitial.fiatAmountInCents,
+                recurringPullPaymentWithInitial.frequency,
+                recurringPullPaymentWithInitial.numberOfPayments,
+                recurringPullPaymentWithInitial.startTimestamp,
+                {
+                    from: executor
+                });
+        });
+        beforeEach('Transfer funds to beneficiaty', async () => {
+            await web3API.eth.sendTransaction({
+                from: bank,
+                to: beneficiary,
+                value: '1000000000000000000'
+            });
+        });
+        it('should transfer PMA tokens to the beneficiary', async () => {
+            await sdk.executePullPayment(recurringPullPayment.paymentID);
+            const beneficiaryBalance = await token.balanceOf(beneficiary);
+            
+            Number(beneficiaryBalance).should.be.equal(100 * ONE_ETHER);
+        });
+
+        it('should transfer PMA tokens to the beneficiary', async () => {
+            await sdk.executePullPayment(recurringPullPayment.paymentID);
+            await timeTravel(DAY);
+            await sdk.executePullPayment(recurringPullPayment.paymentID);
+            const beneficiaryBalance = await token.balanceOf(beneficiary);
+            Number(beneficiaryBalance).should.be.equal(1100 * ONE_ETHER);
+        });
+    });
+    // TODO: Add failling tests when all the flow is in place.
 });

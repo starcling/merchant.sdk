@@ -5,11 +5,12 @@ import { DataService, ISqlQuery } from "./DataService";
 export class PaymentDbConnector {
   public createPayment(insertDetails: IPaymentInsertDetails) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
       values: [
         insertDetails.title,
         insertDetails.description,
         insertDetails.amount,
+        insertDetails.initialPaymentAmount,
         insertDetails.currency,
         insertDetails.startTimestamp,
         insertDetails.endTimestamp,
@@ -27,7 +28,8 @@ export class PaymentDbConnector {
 
   public async updatePayment(updateDetails: IPaymentUpdateDetails) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)',
+      // tslint:disable-next-line:max-line-length
+      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28)',
       values: [
         updateDetails.id,
         updateDetails.title,
@@ -35,6 +37,7 @@ export class PaymentDbConnector {
         updateDetails.promo,
         updateDetails.status,
         updateDetails.customerAddress,
+        updateDetails.initialPaymentAmount,
         updateDetails.amount,
         updateDetails.currency,
         updateDetails.startTimestamp,
@@ -50,6 +53,8 @@ export class PaymentDbConnector {
         updateDetails.executeTxStatus,
         updateDetails.cancelTxHash,
         updateDetails.cancelTxStatus,
+        updateDetails.initialPaymentTxHash,
+        updateDetails.initialPaymentTxStatus,
         updateDetails.merchantAddress,
         updateDetails.pullPaymentAddress,
         updateDetails.userId,

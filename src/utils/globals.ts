@@ -121,6 +121,10 @@ export class Globals {
         return PaymentStatusEnum;
     }
 
+    public static GET_PAYMENT_TYPE_ENUM(): any {
+        return PaymentTypeEnum;
+    }
+
     public static GET_MERCHANT_PRIVATE_KEY(): string {
         return '4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387'; // Acc 4
     }
@@ -152,4 +156,11 @@ enum PaymentStatusEnum {
     running = 2,
     stopped = 3,
     done = 4,
+}
+
+enum PaymentTypeEnum {
+    push = 0,
+    singlePull = 1,
+    recurringPull = 2,
+    recurringWithInitial = 3
 }
