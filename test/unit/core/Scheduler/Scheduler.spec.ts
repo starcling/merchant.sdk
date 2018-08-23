@@ -307,44 +307,44 @@ describe('A Scheduler', () => {
         //     });
         // });
 
-        // it('should be able to run multiple instances', (done) => {
-        //     let count = 0;
-        //     const numberOfPayments = 4;
-        //     const multipleInstances = 10;
-        //     const ids = [];
+        it('should be able to run multiple instances', (done) => {
+            let count = 0;
+            const numberOfPayments = 4;
+            const multipleInstances = 10;
+            const ids = [];
 
-        //     (async () => {
-        //         for (let i = 0; i < multipleInstances; i++) {
-        //             const tempPayment = (await paymentDbConnector.createPayment(testPayment)).data[0];
-        //             ids.push(tempPayment.id);
-        //             tempPayment.startTimestamp = Math.floor(new Date(Date.now() + 2 * delay).getTime() / 1000);
-        //             tempPayment.nextPaymentDate = Math.floor(new Date(Date.now() + 2 * delay).getTime() / 1000);
-        //             tempPayment.numberOfPayments = numberOfPayments;
-        //             tempPayment.frequency = 1;
+            (async () => {
+                for (let i = 0; i < multipleInstances; i++) {
+                    const tempPayment = (await paymentDbConnector.createPayment(testPayment)).data[0];
+                    ids.push(tempPayment.id);
+                    tempPayment.startTimestamp = Math.floor(new Date(Date.now() + 2 * delay).getTime() / 1000);
+                    tempPayment.nextPaymentDate = Math.floor(new Date(Date.now() + 2 * delay).getTime() / 1000);
+                    tempPayment.numberOfPayments = numberOfPayments;
+                    tempPayment.frequency = 1;
 
-        //             await paymentDbConnector.updatePayment(tempPayment);
+                    await paymentDbConnector.updatePayment(tempPayment);
 
-        //             new Scheduler(ids[i], async () => {
+                    new Scheduler(ids[i], async () => {
 
-        //                 const p = (await paymentDbConnector.getPayment(ids[i])).data[0];
-        //                 count++;
-        //                 p.numberOfPayments = p.numberOfPayments - 1;
-        //                 await paymentDbConnector.updatePayment(p);
-        //             }).start();
-        //         }
-        //     })();
+                        const p = (await paymentDbConnector.getPayment(ids[i])).data[0];
+                        count++;
+                        p.numberOfPayments = p.numberOfPayments - 1;
+                        await paymentDbConnector.updatePayment(p);
+                    }).start();
+                }
+            })();
 
-        //     setTimeout(() => {
-        //         expect(count).to.be.equal(multipleInstances * numberOfPayments);
+            setTimeout(() => {
+                expect(count).to.be.equal(multipleInstances * numberOfPayments);
 
-        //         for (let i = 0; i < multipleInstances; i++) {
-        //             expect(SchedulerBuffer.delete(ids[i])).to.be.equal(false);
-        //             paymentDbConnector.deletePayment(ids[i]);
-        //         }
+                for (let i = 0; i < multipleInstances; i++) {
+                    expect(SchedulerBuffer.delete(ids[i])).to.be.equal(false);
+                    paymentDbConnector.deletePayment(ids[i]);
+                }
 
-        //         done();
-        //     }, numberOfPayments * 1000 + 3 * delay);
-        // });
+                done();
+            }, numberOfPayments * 1000 + 3 * delay);
+        });
 
         it('should be able to start if start timestamp is in the 5min window below current time', (done) => {
             let count = 0;
