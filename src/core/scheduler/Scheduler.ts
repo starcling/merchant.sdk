@@ -24,6 +24,7 @@ export class Scheduler {
         const payment = await ScheduleHelper.getPayment(this.paymentID);
         if (!reinitialized) await ScheduleHelper.adjustStartTime(payment);
         this._schedule = await this.scheduleJob();
+        
         return SchedulerBuffer.set(this.paymentID, this);
     }
 
@@ -122,6 +123,7 @@ export class Scheduler {
             payment = await ScheduleHelper.getPayment(this.paymentID);
 
             if (payment.numberOfPayments == 0) {
+                Scheduler.stop(this.paymentID);
                 SchedulerBuffer.delete(this.paymentID);
                 await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PAYMENT_STATUS_ENUM().done);
             }
