@@ -39,14 +39,18 @@ export class BlockchainController {
                     const payment = paymentResponse.data[0];
 
                     if (receipt.status && bcHelper.isValidRegisterTx(receipt, paymentID)) {
-                        if (payment.type == Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial && 
-                            payment.initialPaymentTxStatus != Globals.GET_TRANSACTION_STATUS_ENUM().success) { 
+                        if ((payment.type == Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial && 
+                            payment.initialPaymentTxStatus != Globals.GET_TRANSACTION_STATUS_ENUM().success)
+                            || payment.type == Globals.GET_PAYMENT_TYPE_ENUM().singlePull) { 
                                 this.executePullPayment(paymentID);
                             }
 
-                        new Scheduler(paymentID, async () => {
-                            this.executePullPayment(paymentID);
-                        }).start();
+                        if (payment.type !== Globals.GET_PAYMENT_TYPE_ENUM().singlePull) {
+                            new Scheduler(paymentID, async () => {
+                                this.executePullPayment(paymentID);
+                            }).start();
+                        }
+                        
                     }
                 }
             }, DefaultConfig.settings.txStatusInterval);
