@@ -1,3 +1,5 @@
+import { DefaultConfig } from "../config/default.config";
+
 export class Globals {
 
     /**
@@ -117,12 +119,56 @@ export class Globals {
         return TransactionStatusEnum;
     }
 
-    public static GET_PAYMENT_STATUS_ENUM(): any {
-        return PaymentStatusEnum;
+    public static GET_CONTRACT_STATUS_ENUM(): any {
+        return ContractStatusEnum;
     }
 
     public static GET_PAYMENT_TYPE_ENUM(): any {
         return PaymentTypeEnum;
+    }
+
+    public static GET_TRANSACTION_TYPE_ENUM(): any {
+        return TransactionTypeEnum;
+    }
+
+    public static GET_TRANSACTION_STATUS_ENUM_NAMES(): any {
+        return [
+            '',
+            'pending',
+            'failed',
+            'success'
+        ];
+    }
+
+    public static GET_CONTRACT_STATUS_ENUM_NAMES(): any {
+        return [
+            '',
+            'initial',
+            'running',
+            'stopped',
+            'cancelled',
+            'done',
+        ];
+    }
+
+    public static GET_PAYMENT_TYPE_ENUM_NAMES(): any {
+        return [
+            '',
+            'push',
+            'singlePull',
+            'recurringPull',
+            'recurringWithInitial'
+        ];
+    }
+
+    public static GET_TRANSACTION_TYPE_ENUM_NAMES(): any {
+        return [
+            '',
+            'register',
+            'initial',
+            'execute',
+            'cancel'
+        ];
     }
 
     public static GET_MERCHANT_PRIVATE_KEY(): string {
@@ -140,27 +186,37 @@ export class Globals {
     public static GET_PULL_FAILED_QUEUE_LIMIT(): number {
         return 100;
     }
+
+    public static async REFRESH_ENUMS(): Promise<any> {
+        return DefaultConfig.settings.getEnums();
+    }
+
 }
 
 enum TransactionStatusEnum {
-    failed = 0,
-    initial = 1,
-    scaned = 2,
-    pending = 3,
-    success = 4
+    pending = 1,
+    failed = 2,
+    success = 3
 }
 
-enum PaymentStatusEnum {
-    canceled = 0,
+enum TransactionTypeEnum {
+    register = 1,
+    initial = 2,
+    execute = 3,
+    cancel = 4
+}
+
+enum ContractStatusEnum {
     initial = 1,
     running = 2,
     stopped = 3,
+    cancelled = 4,
     done = 4,
 }
 
 enum PaymentTypeEnum {
-    push = 0,
-    singlePull = 1,
-    recurringPull = 2,
-    recurringWithInitial = 3
+    push = 1,
+    singlePull = 2,
+    recurringPull = 3,
+    recurringWithInitial = 4
 }
