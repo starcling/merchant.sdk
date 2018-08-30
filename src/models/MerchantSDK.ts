@@ -23,11 +23,17 @@ export class MerchantSDKBuild {
     redisHost?: string;
     redisPort?: string;
     queueLimit?: number;
+    keyDbUser?: string;
+    keyDbHost?: string;
+    keyDb?: string;
+    keyDbPass?: string;
+    keyDbPort?: string;
     createPayment: any;
     deletePayment: any;
     getAllPayments: any;
     getPayment: any;
     updatePayment: any;
+    getPrivateKey: any;
     
     public constructor(buildParams: MerchantSDKBuild) {
         this.web3 = buildParams.web3;
@@ -40,11 +46,17 @@ export class MerchantSDKBuild {
         this.pgPassword = buildParams.pgPassword ? buildParams.pgPassword : null;
         this.redisHost = buildParams.redisHost ? buildParams.redisHost : null;
         this.redisPort = buildParams.redisPort ? buildParams.redisPort : null;
+        this.keyDbUser = buildParams.keyDbUser ? buildParams.keyDbUser : null;
+        this.keyDbHost = buildParams.keyDbHost ? buildParams.keyDbHost : null;
+        this.keyDb = buildParams.keyDb ? buildParams.keyDb : null;
+        this.keyDbPass = buildParams.keyDbPass ? buildParams.keyDbPass : null;
+        this.keyDbPort = buildParams.keyDbPort ? buildParams.keyDbPort : null;
         this.queueLimit = buildParams.queueLimit ? buildParams.queueLimit : null;
         this.createPayment = buildParams.createPayment;
         this.deletePayment = buildParams.deletePayment;
         this.getAllPayments = buildParams.getAllPayments;
         this.getPayment = buildParams.getPayment;
         this.updatePayment = buildParams.updatePayment;
+        this.getPrivateKey = buildParams.getPrivateKey;
     }
 }

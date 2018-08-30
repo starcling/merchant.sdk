@@ -1,4 +1,3 @@
-import {Globals} from '../../../utils/globals';
 import { DefaultConfig } from '../../../config/default.config';
 const TX = require('ethereumjs-tx');
 
@@ -10,10 +9,10 @@ const TX = require('ethereumjs-tx');
  * @private {Buffer} privateKey - The private key of the account that is executing the transaction
  * */
 export class RawTransactionSerializer {
-    //TODO: Get from encrypted DB
-    private privateKey: Buffer = Buffer.from(Globals.GET_MERCHANT_PRIVATE_KEY(), 'hex');
+    private privateKey: Buffer;
 
-    public constructor(private data: any, private contractAddress: string, private txCount: number) {
+    public constructor(private data: any, private contractAddress: string, private txCount: number, privateKey: string) {
+        this.privateKey = Buffer.from(privateKey, 'hex');
     }
 
     /**
@@ -29,7 +28,6 @@ export class RawTransactionSerializer {
             data: this.data,
             nonce: this.txCount
         };
-
         const tx = new TX(rawTx);
         tx.sign(this.privateKey);
         

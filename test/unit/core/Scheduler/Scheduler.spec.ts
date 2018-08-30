@@ -3,9 +3,8 @@ import chaiAsPromised from 'chai-as-promised';
 import { Scheduler } from '../../../../src/core/scheduler/Scheduler';
 import { SchedulerBuffer } from '../../../../src/core/scheduler/ScheduleBuffer';
 import { IPaymentInsertDetails } from '../../../../src/core/payment/models';
-import { PaymentController } from '../../../../src/core/payment/PaymentController';
-import { PaymentDbConnector } from '../../../../src/utils/datasource/PaymentDbConnector';
 import { MerchantSDK } from '../../../../src/MerchantSDKClass';
+import { PaymentDbConnector } from '../../../../src/utils/datasource/PaymentDbConnector';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -25,7 +24,8 @@ const settings = {
     deletePayment: new PaymentDbConnector().deletePayment,
     getAllPayments: new PaymentDbConnector().getAllPayments,
     getPayment: new PaymentDbConnector().getPayment,
-    updatePayment: new PaymentDbConnector().updatePayment
+    updatePayment: new PaymentDbConnector().updatePayment,
+    getPrivateKey: null
 };
 
 let sdk;
@@ -418,7 +418,6 @@ describe('A Scheduler', () => {
     });
 
     describe('with incorrect parameters', () => {
-
         beforeEach(async () => {
             await insertTestPayment();
         });
