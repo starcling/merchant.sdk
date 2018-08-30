@@ -105,7 +105,9 @@ export class BlockchainController {
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
         const txCount: number = await blockchainHelper.getTxCount(payment.merchantAddress);
         const data: string = contract.methods.executePullPayment(payment.customerAddress, payment.id).encodeABI();
-        const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAddress, txCount).getSerializedTx();
+        let privateKey: string = await this.getPrivateKey(payment.merchantAddress);
+        const serializedTx: string = await new RawTransactionSerializer(data, payment.pullPaymentAddress, txCount, privateKey).getSerializedTx();
+        privateKey = null;
 
         await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
             if (payment.type == Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial && 
@@ -136,7 +138,10 @@ export class BlockchainController {
                 executeTxHash: 'failed',
                 executeTxStatus: Globals.GET_TRANSACTION_STATUS_ENUM().failed
             });
-            console.debug(err);
         });
+    }
+
+    private async getPrivateKey(address: string): Promise<string> {
+        return (await DefaultConfig.settings.getPrivateKey(address)).data[0]['@accountKey'];
     }
 }

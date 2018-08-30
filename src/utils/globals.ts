@@ -93,6 +93,26 @@ export class Globals {
         return '5431';
     }
 
+    public static GET_DEFAULT_MYSQL_HOST(): string {
+        return 'localhost';
+    }
+
+    public static GET_DEFAULT_MYSQL_USER(): string {
+        return 'db_service';
+    }
+
+    public static GET_DEFAULT_MYSQL_PASSWORD(): string {
+        return 'db_pass';
+    }
+
+    public static GET_DEFAULT_MYSQL_DATABASE(): string {
+        return 'keys';
+    }
+
+    public static GET_DEFAULT_MYSQL_PORT(): string {
+        return '3305';
+    }
+
     /**
      * @description Method for getting network used
      * @returns {string} url
@@ -123,10 +143,6 @@ export class Globals {
 
     public static GET_PAYMENT_TYPE_ENUM(): any {
         return PaymentTypeEnum;
-    }
-
-    public static GET_MERCHANT_PRIVATE_KEY(): string {
-        return '4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387'; // Acc 4
     }
 
     public static GET_PULL_PAYMENT_CONTRACT_NAME(): string {
