@@ -25,6 +25,8 @@ export class DefaultConfig {
             apiUrl: this._settings.apiUrl ? this._settings.apiUrl : Globals.GET_DEFAULT_CORE_API_URL(),
             generateQRApiUrl: this._settings.generateQRApiUrl ? this._settings.generateQRApiUrl : Globals.GET_QR_API_URL(),
             paymentsURL: this._settings.paymentsURL ? this._settings.paymentsURL : Globals.GET_PAYMENT_URL(),
+            contractURL: this._settings.contractURL ? this._settings.contractURL : Globals.GET_CONTRACT_URL(),
+            transactionURL: this._settings.transactionURL ? this._settings.transactionURL : Globals.GET_TRANSACTION_URL(),
             getContract: this._settings.getContract,
             updateContract: this._settings.updateContract,
             getTransactions: this._settings.getTransactions,

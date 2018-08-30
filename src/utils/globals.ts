@@ -33,6 +33,22 @@ export class Globals {
     public static GET_PAYMENT_URL(): string {
         return '/payments';
     }
+
+    /**
+     * @description Method for getting payment api url 
+     * @returns {string} url
+     */
+    public static GET_CONTRACT_URL(): string {
+        return '/contracts';
+    }
+
+    /**
+     * @description Method for getting payment api url 
+     * @returns {string} url
+     */
+    public static GET_TRANSACTION_URL(): string {
+        return '/transactions';
+    }
     
     /**
      * @description Method for getting login api url 
