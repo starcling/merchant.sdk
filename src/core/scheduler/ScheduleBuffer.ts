@@ -9,17 +9,17 @@ export class SchedulerBuffer {
     private static bufferName = 'scheduler_keys';
     public static SCHEDULER_BUFFER: Scheduler[] = [];
 
-    public static set(payment_id: string, scheduler: Scheduler) {
-        SchedulerBuffer.SCHEDULER_BUFFER[payment_id] = scheduler;
-        rclient.sadd(SchedulerBuffer.bufferName, payment_id);
+    public static set(contract_id: string, scheduler: Scheduler) {
+        SchedulerBuffer.SCHEDULER_BUFFER[contract_id] = scheduler;
+        rclient.sadd(SchedulerBuffer.bufferName, contract_id);
     }
 
-    public static get(payment_id: string): Scheduler {
-        return SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
+    public static get(contract_id: string): Scheduler {
+        return SchedulerBuffer.SCHEDULER_BUFFER[contract_id];
     }
 
-    public static delete(payment_id: string) {
-        const scheduler = SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
+    public static delete(contract_id: string) {
+        const scheduler = SchedulerBuffer.SCHEDULER_BUFFER[contract_id];
         if (scheduler) {
             if (scheduler.instance) {
                 scheduler.instance.cancel();
@@ -28,8 +28,8 @@ export class SchedulerBuffer {
                 clearInterval(scheduler.interval);
             }
             
-            delete SchedulerBuffer.SCHEDULER_BUFFER[payment_id];
-            rclient.srem(SchedulerBuffer.bufferName, payment_id);
+            delete SchedulerBuffer.SCHEDULER_BUFFER[contract_id];
+            rclient.srem(SchedulerBuffer.bufferName, contract_id);
             return true;
         }
 

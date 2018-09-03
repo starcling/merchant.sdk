@@ -39,10 +39,9 @@ export class BlockchainController {
                         hash: receipt.transactionHash,
                         statusID: status
                     })
-
-                    const contract: IPaymentContractView = (await this.contractDbController.getContract(contractID)).data[0];
+                    const contract: IPaymentContractView = (await this.contractDbController.getContract(contractID)).data;
                     const payment = contractResponse.data[0];
-
+                    
                     if (receipt.status && bcHelper.isValidRegisterTx(receipt, contractID)) {
                         if (contract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
                             contract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
@@ -54,8 +53,10 @@ export class BlockchainController {
                                 this.executePullPayment(contractID);
                             }).start();
                         }
-
+                    } else {
+                        return false;
                     }
+                    
                 }
             }, DefaultConfig.settings.txStatusInterval);
 
@@ -135,7 +136,6 @@ export class BlockchainController {
                 timestamp: Math.floor(new Date().getTime() / 1000)
             });
         }).on('receipt', async (receipt) => {
-
             if (paymentContract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) 
 
                 try {
