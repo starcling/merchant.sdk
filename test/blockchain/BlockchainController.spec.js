@@ -1,16 +1,11 @@
-import chaiAsPromised from 'chai-as-promised';
 import { MerchantSDK } from '../../dist/src/MerchantSDKClass';
-import { BlockchainController } from '../../dist/src/core/Blockchain/BlockchainController';
-import { BlockchainHelper } from '../../dist/src/core/Blockchain/BlockchainHelper';
-import { DataService, ISqlQuery } from '../../dist/src/utils/datasource/DataService';
-import { PaymentDbConnector } from '../../dist/src/utils/datasource/PaymentDbConnector';
+import { DataService } from '../../dist/src/utils/datasource/DataService';
 import { PrivateKeysDbConnector } from '../../dist/src/utils/datasource/PrivateKeysDbConnector';
+import { TestDbConnector } from '../../dist/src/utils/datasource/TestDbConnector';
 import {
     calcSignedMessageForRegistration,
-    calcSignedMessageForDeletion,
     getVRS
 } from '../helpers/signatureCalculator';
-import { Globals } from '../../dist/src/utils/globals';
 import {
     timeTravel
 } from '../helpers/timeHelper';
@@ -20,26 +15,26 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const paymentDbConnector = new PaymentDbConnector();
+const testDbConnector = new TestDbConnector();
 const dataservice = new DataService();
 const privateKeysDbConnector = new PrivateKeysDbConnector();
 const dataServiceEncrypted = new DataServiceEncrypted();
+let paymentID;
 let testId;
 
 const insertTestPayment = async (testPayment) => {
-  const result = await paymentDbConnector.createPayment(testPayment);
-  testId = result.data[0].id;
+    const result = await testDbConnector.createPayment(testPayment);
+    paymentID = result.data[0].id;
 };
-const updateTestPayment = async (testPayment) => {
-    const result = await paymentDbConnector.updatePayment(testPayment);
-    testId = result.data[0].id;
+const updateTestContract = async (testContract) => {
+    await testDbConnector.updateContract(testContract);
 };
 const clearTestPayment = async (paymentID) => {
-  const sqlQuery = {
-    text: 'DELETE FROM public.tb_payments WHERE id = $1;',
-    values: [paymentID]
-  };
-  await dataservice.executeQueryAsPromise(sqlQuery);
+    const sqlQuery = {
+        text: 'DELETE FROM public.tb_payments WHERE id = $1;',
+        values: [paymentID]
+    };
+    await dataservice.executeQueryAsPromise(sqlQuery);
 };
 
 const addKeys = async (address, key) =>{
@@ -71,11 +66,11 @@ const USD_EXCHANGE_RATE = 120000000; // 0.012 * 1^10
 
 const settings = {
     web3: web3API,
-    getPayment: paymentDbConnector.getPayment,
-    deletePayment: paymentDbConnector.deletePayment,
-    createPayment: paymentDbConnector.createPayment,
-    updatePayment: paymentDbConnector.updatePayment,
-    getAllPayments: paymentDbConnector.getAllPayments,
+    getContract: testDbConnector.getContract,
+    updateContract: testDbConnector.updateContract,
+    getTransactions: testDbConnector.getTransactionsByContractID,
+    createTransaction: testDbConnector.createTransaction,
+    updateTransaction: testDbConnector.updateTransaction,
     getPrivateKey: privateKeysDbConnector.getPrivateKey
 };
 let sdk;
@@ -93,37 +88,67 @@ contract('Master Pull Payment Contract', async (accounts) => {
     let token;
     let masterPullPayment;
     let testPayment = {
-        "title": "Test Payment",
-        "description": "Payment description",
-        "amount": 1000,
-        "initialPaymentAmount": 100,
+        "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
+        "title": "test payment",
+        "description": "test description",
+        "amount": "20",
+        "initialPaymentAmount": "23",
+        "currency": "PMA",
+        "numberOfPayments": 5,
+        "trialPeriod": 23, 
+        "frequency": 3,
+        "typeID": 1,
+        "networkID": 3
+    }
+    let testContract = {
+        "hdWalletIndex": 0,
+        "paymentID": "adsfads",
+        "numberOfPayments": 4,
+        "nextPaymentDate": 10,
+        "lastPaymentDate": 20,
+        "startTimestamp": 100,
         "customerAddress": client,
-        "currency": "EUR",
-        "startTimestamp": Math.floor(Date.now() / 1000),
-        "endTimestamp": Math.floor(Date.now() / 1000) + 10 * DAY,
-        "numberOfPayments": 1,
-        "type": 1,
-        "frequency": 10,
         "merchantAddress": beneficiary,
+        "pullPaymentAddress": "24234234",
+        "statusID": 1,
+        "userID": "2342934",
         "networkID": 3
     };
-    before(async () => {
+
+    before('add Key', async () => {
         await addKeys(beneficiary,'4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387')
     });
-    after(async()=> {
+    after('remove key', async()=> {
         await clearKey(beneficiary);
     })
-    before(async () => {
+    before('build sdk and insert payment', async () => {
         sdk = new MerchantSDK().build(settings);
+        await insertTestPayment(testPayment);
     });
-    after(async () => {
+    after('disconnect redis', async () => {
         sdk.disconnectRedis();
     });
-    afterEach(async () => {
+    afterEach('clear test payment', async () => {
         await clearTestPayment(testId);
+
+    });
+
+    beforeEach('Deploying new PumaPayToken', async () => {
+        token = await PumaPayToken.new({
+            from: owner
+        });
+    });
+    beforeEach('Deploying new Master Pull Payment  ', async () => {
+        masterPullPayment = await MasterPullPayment
+            .new(token.address, {
+                from: owner
+            });
     });
     beforeEach(async () => {
-        await insertTestPayment(testPayment);
+        testContract.paymentID = paymentID;
+        testContract.pullPaymentAddress = masterPullPayment.address;
+        const result = await testDbConnector.createContract(testContract);
+        testId = result.data[0].id;
     });
     beforeEach(async () => {
         await insertTestPayment(testPayment);
@@ -156,17 +181,6 @@ contract('Master Pull Payment Contract', async (accounts) => {
             startTimestamp: Math.floor(Date.now() / 1000) + DAY
         }
     });
-    beforeEach('Deploying new PumaPayToken', async () => {
-        token = await PumaPayToken.new({
-            from: owner
-        });
-    });
-    beforeEach('Deploying new Master Pull Payment  ', async () => {
-        masterPullPayment = await MasterPullPayment
-            .new(token.address, {
-                from: owner
-            });
-    });
     beforeEach('Issue tokens to the clients', async () => {
         const tokens = MINTED_TOKENS;
         await token.mint(client, tokens, {
@@ -185,22 +199,15 @@ contract('Master Pull Payment Contract', async (accounts) => {
     });
     beforeEach('set the rate for multiple fiat currencies', async () => {
         await masterPullPayment.setRate('EUR', EUR_EXCHANGE_RATE, {
-            from:owner
+            from: owner
         });
         await masterPullPayment.setRate('USD', USD_EXCHANGE_RATE, {
             from: owner
         });
     });
     beforeEach('approve pull payment contract', async () => {
-        await token.approve(masterPullPayment.address, MINTED_TOKENS,{
+        await token.approve(masterPullPayment.address, MINTED_TOKENS, {
             from: client
-        });
-    });
-    beforeEach(async () => {
-        await updateTestPayment({
-            "id": testId,
-            "customerAddress": client,
-            "pullPaymentAddress": masterPullPayment.address
         });
     });
     describe('A Blockchain Controller', async () => {
@@ -208,6 +215,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
             beforeEach('register new pull payment', async () => {
                 const signature = await calcSignedMessageForRegistration(recurringPullPayment, CLIENT_PRIVATE_KEY);
                 const sigVRS = await getVRS(signature);
+
                 await masterPullPayment.registerPullPayment(
                     sigVRS.v,
                     sigVRS.r,
@@ -236,7 +244,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
             it('should transfer PMA tokens to the beneficiary', async () => {
                 await sdk.executePullPayment(recurringPullPayment.paymentID);
                 const beneficiaryBalance = await token.balanceOf(beneficiary);
-                
+
                 Number(beneficiaryBalance).should.be.equal(1000 * ONE_ETHER);
             });
         });
@@ -274,7 +282,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         it('should transfer PMA tokens to the beneficiary', async () => {
             await sdk.executePullPayment(recurringPullPayment.paymentID);
             const beneficiaryBalance = await token.balanceOf(beneficiary);
-            
+
             Number(beneficiaryBalance).should.be.equal(100 * ONE_ETHER);
         });
 

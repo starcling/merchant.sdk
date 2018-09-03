@@ -1,6 +1,6 @@
 import { HTTPResponseCodes } from '../../utils/web/HTTPResponseCodes';
 import { MerchantSDKBuild } from '../../models/MerchantSDK';
-import { IPaymentUpdateDetails } from '../../core/payment/models';
+import { IPaymentContractView } from '../../core/database/models';
 
 export class ErrorHandler extends Error {
     public message: string;
@@ -38,33 +38,33 @@ export class ErrorHandler extends Error {
 
     /**
      * @description Validates executePullPayment parameters, throws error if there vere any errors found
-     * @param {IPaymentUpdateDetails} payment - payment to be executed
+     * @param {IPaymentUpdateDetails} contract - contract to be executed
      */
-    public static validatePullPaymentExecution(payment: IPaymentUpdateDetails): any {
+    public static validatePullPaymentExecution(contract: IPaymentContractView): any {
         const errors = {};
 
-        if (!payment.id) {
-            errors['payment_id'] = 'No payment ID provided.';
+        if (!contract.id) {
+            errors['contract_id'] = 'No contract ID provided.';
         }
 
-        if (!payment.customerAddress) {
+        if (!contract.customerAddress) {
             errors['customer_address'] = 'No customer address provided.';
         }
         
-        if (!payment.merchantAddress) {
+        if (!contract.merchantAddress) {
             errors['merchant_address'] = 'No merchant address provided.';
         }
         
-        if (!payment.nextPaymentDate) {
-            errors['next_payment_date'] = 'No next payment date provided.';
+        if (!contract.nextPaymentDate) {
+            errors['next_payment_date'] = 'No next contract date provided.';
         }
         
-        if (!payment.frequency) {
-            errors['payment_frequency'] = 'No payment frequency provided.';
+        if (!contract.frequency) {
+            errors['payment_frequency'] = 'No contract frequency provided.';
         }
         
         if (Object.keys(errors).length > 0) {
-            throw new ErrorHandler('Incorrect pull payment execution parameters.', errors);
+            throw new ErrorHandler('Incorrect pull contract execution parameters.', errors);
         }
     }
 }
