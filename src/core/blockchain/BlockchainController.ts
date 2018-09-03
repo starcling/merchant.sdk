@@ -128,7 +128,7 @@ export class BlockchainController {
                 } catch (err) {
                     typeID = Globals.GET_TRANSACTION_TYPE_ENUM().initial;
                 }
-            }
+            } 
             await transactionDbController.createTransaction(<ITransactionInsert>{
                 hash: hash,
                 typeID: typeID,
@@ -136,8 +136,7 @@ export class BlockchainController {
                 timestamp: Math.floor(new Date().getTime() / 1000)
             });
         }).on('receipt', async (receipt) => {
-            if (paymentContract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) 
-
+            if (paymentContract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                 try {
                     await transactionDbController.getTransactions(<ITransactionGet>{
                         contractID: paymentContract.id,
@@ -147,7 +146,10 @@ export class BlockchainController {
                     await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(paymentContract, receipt.transactionHash, receipt);
                 } catch (err) {
                     await new BlockchainTxReceiptHandler().handleRecurringPaymentWithInitialReceipt(paymentContract, receipt.transactionHash, receipt);
-                }
+                }   
+            } else {
+                await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(paymentContract, receipt.transactionHash, receipt);
+            }
         }).catch((err) => {
             // TODO: Proper error handling 
             console.debug(err);
