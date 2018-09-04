@@ -3,14 +3,15 @@ import { DefaultConfig } from './config/default.config';
 import { QrCode } from './core/qr/QrCode';
 import { MerchantSDKBuild, MerchantSDKSettings } from './models/MerchantSDK';
 import { HTTPHelper } from './utils/web/HTTPHelper';
-import { PaymentController } from './core/payment/PaymentController';
 import { BlockchainController } from './core/blockchain/BlockchainController';
 import { MultipleInheritance } from './utils/MultipleInheritance/MultipleInheritance';
 import { ErrorHandler } from './utils/handlers/ErrorHandler';
 import { Scheduler } from './core/scheduler/Scheduler';
 import { SchedulerBuffer } from './core/scheduler/ScheduleBuffer';
+import { PaymentContractController } from './core/database/PaymentContractController';
+import { TransactionController } from './core/database/TransactionController';
 
-export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PaymentController) {
+export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PaymentContractController, TransactionController) {
 
     public constructor() {
         super();

@@ -5,6 +5,8 @@ export interface MerchantSDKSettings extends MerchantSDKBuild {
     pmaUserToken?: string;
     generateQRApiUrl?: string;
     paymentsURL?: string;
+    contractURL?: string;
+    transactionURL?: string;
     loginUrl?: string;
     generateApiKeyUrl?: string;
     generateAccessTokenUrl?: string;
@@ -22,19 +24,20 @@ export class MerchantSDKBuild {
     pgPassword?: string;
     redisHost?: string;
     redisPort?: string;
-    queueLimit?: number;
     keyDbUser?: string;
     keyDbHost?: string;
     keyDb?: string;
     keyDbPass?: string;
     keyDbPort?: string;
-    createPayment: any;
-    deletePayment: any;
-    getAllPayments: any;
-    getPayment: any;
-    updatePayment: any;
+    queueLimit?: number;
+    getEnums: any;
+    getContract: any;
+    updateContract: any;
+    getTransactions: any;
+    createTransaction: any;
+    updateTransaction: any;
     getPrivateKey: any;
-    
+
     public constructor(buildParams: MerchantSDKBuild) {
         this.web3 = buildParams.web3;
         this.merchantApiUrl = buildParams.merchantApiUrl;
@@ -52,11 +55,12 @@ export class MerchantSDKBuild {
         this.keyDbPass = buildParams.keyDbPass ? buildParams.keyDbPass : null;
         this.keyDbPort = buildParams.keyDbPort ? buildParams.keyDbPort : null;
         this.queueLimit = buildParams.queueLimit ? buildParams.queueLimit : null;
-        this.createPayment = buildParams.createPayment;
-        this.deletePayment = buildParams.deletePayment;
-        this.getAllPayments = buildParams.getAllPayments;
-        this.getPayment = buildParams.getPayment;
-        this.updatePayment = buildParams.updatePayment;
+        this.getEnums = buildParams.getEnums;
+        this.getContract = buildParams.getContract;
+        this.updateContract = buildParams.updateContract;
+        this.getTransactions = buildParams.getTransactions;
+        this.createTransaction = buildParams.createTransaction;
+        this.updateTransaction = buildParams.updateTransaction;
         this.getPrivateKey = buildParams.getPrivateKey;
     }
 }
