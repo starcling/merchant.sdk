@@ -3,7 +3,6 @@ node_modules
 package-lock.json
 .vscode
 .vs/
-dist
 docs
 dump.rdb
 build/

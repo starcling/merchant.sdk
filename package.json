@@ -1,17 +1,26 @@
 {
-    "name": "pumapay_merchant_sdk",
-    "version": "2.0.0-alpha01",
-    "private": true,
+    "name": "@pumapay/merchant_sdk",
+    "version": "0.0.2",
+    "private": false,
     "engines": {
         "npm": "~5.4.2",
         "node": "~6.11.2"
     },
+    "keywords": [
+        "cryptocurrency",
+        "crypto-payments",
+        "pumapay",
+        "Pull Payment Protocol"
+    ],
+    "author": "developers@pumapay.io",
+    "license": "MIT",
     "scripts": {
         "pack-local": "tsc && npm link",
         "build": "tsc",
         "test": "npm run test-unit && npm run test-blockchain",
         "test-unit": "mocha --timeout 15000 -r ts-node/register test/unit/**/*.ts",
-        "test-blockchain": "tsc && truffle test test/blockchain/*.spec.js"
+        "test-blockchain": "tsc && truffle test test/blockchain/*.spec.js",
+        "publish-sdk": "tsc && npm publish --access=public"
     },
     "dependencies": {
         "ethereumjs-tx": "^1.3.6",
