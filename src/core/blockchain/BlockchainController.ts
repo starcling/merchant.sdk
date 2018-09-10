@@ -111,7 +111,7 @@ export class BlockchainController {
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
         const txCount: number = await blockchainHelper.getTxCount(paymentContract.merchantAddress);
         const data: string = contract.methods.executePullPayment(paymentContract.customerAddress, paymentContract.id).encodeABI();
-        let privateKey: string = await this.getPrivateKey(paymentContract.merchantAddress);
+        let privateKey: string = (await DefaultConfig.settings.getPrivateKey(paymentContract.merchantAddress)).data[0]['@accountKey'];
         const serializedTx: string = await new RawTransactionSerializer(data, paymentContract.pullPaymentAddress, txCount, privateKey).getSerializedTx();
         privateKey = null;
 
@@ -154,9 +154,5 @@ export class BlockchainController {
             // TODO: Proper error handling 
             console.debug(err);
         });
-    }
-
-    private async getPrivateKey(address: string): Promise<string> {
-        return (await DefaultConfig.settings.getPrivateKey(address)).data[0]['@accountKey'];
     }
 }
