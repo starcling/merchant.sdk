@@ -1,11 +1,19 @@
 {
-    "name": "@pumapay/pumapay_merchant_sdk",
-    "version": "0.0.3",
+    "name": "@pumapay/merchant_sdk",
+    "version": "0.0.1",
     "private": false,
     "engines": {
         "npm": "~5.4.2",
         "node": "~6.11.2"
     },
+    "keywords": [
+        "cryptocurrency",
+        "crypto-payments",
+        "pumapay",
+        "Pull Payment Protocol"
+    ],
+    "author": "developers@pumapay.io",
+    "license": "MIT",
     "scripts": {
         "pack-local": "tsc && npm link",
         "build": "tsc",
