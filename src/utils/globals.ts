@@ -1,10 +1,6 @@
 import { DefaultConfig } from "../config/default.config";
 
 export class Globals {
-    static GET_PAYMENT_STATUS_ENUM(): any {
-        throw new Error("Method not implemented.");
-    }
-
     /**
      * @description Method for getting core backend api url 
      * @returns {string} url
@@ -158,8 +154,8 @@ export class Globals {
         return TransactionStatusEnum;
     }
 
-    public static GET_CONTRACT_STATUS_ENUM(): any {
-        return ContractStatusEnum;
+    public static GET_PAYMENT_STATUS_ENUM(): any {
+        return PaymentStatusEnum;
     }
 
     public static GET_PAYMENT_TYPE_ENUM(): any {
@@ -241,7 +237,7 @@ enum TransactionTypeEnum {
     cancel = 4
 }
 
-enum ContractStatusEnum {
+enum PaymentStatusEnum {
     initial = 1,
     running = 2,
     stopped = 3,

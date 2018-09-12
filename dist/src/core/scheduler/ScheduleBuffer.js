@@ -52,18 +52,18 @@ class SchedulerBuffer {
                                         executePullPayment(paymentContract.id);
                                     })).start(true);
                                     switch (paymentContract.status) {
-                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_CONTRACT_STATUS_ENUM().initial]):
+                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_PAYMENT_STATUS_ENUM().initial]):
                                             Scheduler_1.Scheduler.stop(paymentContract.id);
                                             Scheduler_1.Scheduler.restart(paymentContract.id);
                                             break;
-                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_CONTRACT_STATUS_ENUM().running]):
+                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_PAYMENT_STATUS_ENUM().running]):
                                             Scheduler_1.Scheduler.stop(paymentContract.id);
                                             Scheduler_1.Scheduler.restart(paymentContract.id);
                                             break;
-                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_CONTRACT_STATUS_ENUM().stopped]):
+                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_PAYMENT_STATUS_ENUM().stopped]):
                                             Scheduler_1.Scheduler.stop(paymentContract.id);
                                             break;
-                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_CONTRACT_STATUS_ENUM().canceled]):
+                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_PAYMENT_STATUS_ENUM().canceled]):
                                             Scheduler_1.Scheduler.stop(paymentContract.id);
                                             break;
                                     }
@@ -85,7 +85,7 @@ class SchedulerBuffer {
             paymentContract.lastPaymentDate = paymentContract.nextPaymentDate;
             paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0 ?
                 paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + paymentContract.frequency;
-            paymentContract.status = paymentContract.numberOfPayments === 0 ? globals_1.Globals.GET_CONTRACT_STATUS_ENUM().done : globals_1.Globals.GET_CONTRACT_STATUS_ENUM()[paymentContract.status],
+            paymentContract.status = paymentContract.numberOfPayments === 0 ? globals_1.Globals.GET_PAYMENT_STATUS_ENUM().done : globals_1.Globals.GET_PAYMENT_STATUS_ENUM()[paymentContract.status],
                 yield contractDbConnector.updateContract(paymentContract);
         });
     }
