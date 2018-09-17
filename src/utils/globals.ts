@@ -207,7 +207,7 @@ export class Globals {
     }
 
     public static GET_PULL_PAYMENT_CONTRACT_NAME(): string {
-        return 'MasterPullPayment';
+        return 'PumaPayPullPayment';
     }
 
     public static GET_SCHEDULE_QUEUE_INTERVAL(): number {
