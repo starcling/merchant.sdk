@@ -37,7 +37,8 @@ const clearTestPayment = async (paymentID) => {
     await dataservice.executeQueryAsPromise(sqlQuery);
 };
 
-const addKeys = async (address, key) =>{
+const addKeys = async (address, key) => {
+    await privateKeysDbConnector.addKeyName();
     await privateKeysDbConnector.addAddress(address, key);
 }
 
@@ -45,8 +46,8 @@ const clearKey = async (address) => {
     const sqlQuery = {
         text: 'DELETE FROM account WHERE address = ?;',
         values: [address]
-      };
-      await dataServiceEncrypted.executeQueryAsPromise(sqlQuery);
+    };
+    await dataServiceEncrypted.executeQueryAsPromise(sqlQuery);
 }
 
 // TEST MNEMONIC - chase eagle blur snack pass version raven awesome wisdom embrace wood example
@@ -95,7 +96,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         "initialPaymentAmount": "23",
         "currency": "PMA",
         "numberOfPayments": 5,
-        "trialPeriod": 23, 
+        "trialPeriod": 23,
         "frequency": 3,
         "typeID": 1,
         "networkID": 3
@@ -116,9 +117,9 @@ contract('Master Pull Payment Contract', async (accounts) => {
     };
 
     before('add Key', async () => {
-        await addKeys(beneficiary,'4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387')
+        await addKeys(beneficiary, '4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387')
     });
-    after('remove key', async()=> {
+    after('remove key', async () => {
         await clearKey(beneficiary);
     })
     before('build sdk and insert payment', async () => {

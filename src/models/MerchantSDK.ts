@@ -11,6 +11,7 @@ export interface MerchantSDKSettings extends MerchantSDKBuild {
     generateApiKeyUrl?: string;
     generateAccessTokenUrl?: string;
     txStatusInterval?: number;
+    networkID?: number;
 }
 
 export class MerchantSDKBuild {

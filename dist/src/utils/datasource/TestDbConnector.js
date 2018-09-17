@@ -30,7 +30,7 @@ class TestDbConnector {
     updateContract(updateDetails) {
         return __awaiter(this, void 0, void 0, function* () {
             const sqlQuery = {
-                text: 'SELECT * FROM fc_update_payment_contract($1, $2, $3, $4, $5, $6, $7, $8)',
+                text: 'SELECT * FROM fc_update_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
                 values: [
                     updateDetails.id,
                     updateDetails.hdWalletIndex,
@@ -38,6 +38,7 @@ class TestDbConnector {
                     updateDetails.nextPaymentDate,
                     updateDetails.lastPaymentDate,
                     updateDetails.startTimestamp,
+                    updateDetails.merchantAddress,
                     updateDetails.statusID,
                     updateDetails.userID
                 ]

@@ -50,9 +50,19 @@ export class DefaultConfig {
             keyDbPort: this._settings.keyDbPort ? this._settings.keyDbPort : Globals.GET_DEFAULT_MYSQL_PORT(),
             generateAccessTokenUrl: this._settings.generateAccessTokenUrl ? this._settings.generateAccessTokenUrl : Globals.GET_ACCESS_TOKEN_URL(),
             network: this._settings.network ? this._settings.network : Globals.GET_DEFAULT_NETWORK(),
+            networkID: this.getNetworkID(this._settings.network ? this._settings.network : Globals.GET_DEFAULT_NETWORK()),
             txStatusInterval: this._settings.txStatusInterval ? this._settings.txStatusInterval : Globals.GET_TX_STATUS_INTERVAL(),
             queueLimit: this._settings.queueLimit ? this._settings.queueLimit : Globals.GET_PULL_FAILED_QUEUE_LIMIT(),
             getPrivateKey: this._settings.getPrivateKey
         };
+    }
+
+    private static getNetworkID(network: string) {
+        switch(network) {
+            case('ropsten'):
+                return 1;
+            case('mainnet'):
+                return 3;
+        }
     }
 }

@@ -5,6 +5,7 @@ export interface IPaymentContractUpdate {
   nextPaymentDate: number;
   lastPaymentDate: number;
   startTimestamp: number;
+  merchantAddress: string;
   statusID: number;
   userID: string;
 }
@@ -29,6 +30,8 @@ export interface IPaymentContractView {
   customerAddress: string;
   merchantAddress: string;
   pullPaymentAddress: string;
+  automatedCashOut: boolean;
+  cashOutFrequency: number;
   userID: string;
 }
 

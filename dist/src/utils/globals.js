@@ -85,6 +85,32 @@ class Globals {
     static GET_TX_STATUS_INTERVAL() {
         return 2000;
     }
+    static GET_SMART_CONTRACT_ADDRESSES(networkID) {
+        switch (networkID) {
+            case (1):
+                return {
+                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
+                    masterPullPayment: '0x7990fc1d2527d00c22db4c2b72e3e74f80b97d9c'
+                };
+            case (3):
+                return {
+                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
+                    masterPullPayment: '0x7990fc1d2527d00c22db4c2b72e3e74f80b97d9c'
+                };
+        }
+    }
+    static GET_PULL_PAYMENT_TOPICS(networkID) {
+        switch (networkID) {
+            case (1):
+                return {
+                    execute: ['0x13492443fb72a9a7d56cc1aa2e262bcf2442d4b084def464b7934b3485114e59']
+                };
+            case (3):
+                return {
+                    execute: ['0x13492443fb72a9a7d56cc1aa2e262bcf2442d4b084def464b7934b3485114e59']
+                };
+        }
+    }
     static GET_SOLIDITY_FILE() {
         return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
     }

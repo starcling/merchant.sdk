@@ -52,7 +52,7 @@ export class Globals {
     public static GET_TRANSACTION_URL(): string {
         return '/transactions';
     }
-    
+
     /**
      * @description Method for getting login api url 
      * @returns {string} url
@@ -93,7 +93,7 @@ export class Globals {
     public static GET_DEFAULT_REDIS_PORT(): string {
         return '6379';
     }
-    
+
     public static GET_DEFAULT_PG_HOST(): string {
         return 'localhost';
     }
@@ -148,6 +148,37 @@ export class Globals {
      */
     public static GET_TX_STATUS_INTERVAL(): number {
         return 2000;
+    }
+
+    public static GET_SMART_CONTRACT_ADDRESSES(networkID: number): ISmartContracts {
+        switch (networkID) {
+            // TODO: Update once deploy to ETH MAINNET
+            case (1):
+                return {
+                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
+                    masterPullPayment: '0x7990fc1d2527d00c22db4c2b72e3e74f80b97d9c'
+                };
+            case (3):
+                return {
+                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
+                    masterPullPayment: '0x7990fc1d2527d00c22db4c2b72e3e74f80b97d9c'
+                };
+        }
+    }
+
+    public static GET_PULL_PAYMENT_TOPICS(networkID: number): IPullPaymentContract {
+        switch (networkID) {
+            // TODO: Update once deploy to ETH MAINNET
+            case (1):
+                return {
+                    execute: ['0x13492443fb72a9a7d56cc1aa2e262bcf2442d4b084def464b7934b3485114e59']
+                };
+            case (3):
+                return {
+                    execute: ['0x13492443fb72a9a7d56cc1aa2e262bcf2442d4b084def464b7934b3485114e59']
+                };
+        }
+
     }
 
     public static GET_SOLIDITY_FILE(): string {
@@ -254,4 +285,13 @@ enum PaymentTypeEnum {
     singlePull = 2,
     recurringPull = 3,
     recurringWithInitial = 4
+}
+
+interface ISmartContracts {
+    token: string;
+    masterPullPayment: string;
+}
+
+interface IPullPaymentContract {
+    execute: string[];
 }

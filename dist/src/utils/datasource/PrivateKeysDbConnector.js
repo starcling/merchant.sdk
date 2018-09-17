@@ -16,6 +16,13 @@ class PrivateKeysDbConnector {
         };
         return new DataServiceEncrypted_1.DataServiceEncrypted().executeQueryAsPromise(sqlQuery);
     }
+    addKeyName() {
+        const sqlQuery = {
+            text: 'CALL add_table_keys(?)',
+            values: ['merchantBackendEncrKey']
+        };
+        return new DataServiceEncrypted_1.DataServiceEncrypted().executeQueryAsPromise(sqlQuery);
+    }
 }
 exports.PrivateKeysDbConnector = PrivateKeysDbConnector;
 //# sourceMappingURL=PrivateKeysDbConnector.js.map
