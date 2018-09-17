@@ -134,7 +134,7 @@ class Globals {
         ];
     }
     static GET_PULL_PAYMENT_CONTRACT_NAME() {
-        return 'MasterPullPayment';
+        return 'PumaPayPullPayment';
     }
     static GET_SCHEDULE_QUEUE_INTERVAL() {
         return 10;
