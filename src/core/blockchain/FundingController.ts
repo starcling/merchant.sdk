@@ -94,6 +94,7 @@ export class FundingController {
                 }
 
                 rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
+                await rclient.setAsync(this.maxGasFeeName, Number(max));
                 resolve(Number(await rclient.getAsync(this.maxGasFeeName)));
                 rclient.quit();
             });
