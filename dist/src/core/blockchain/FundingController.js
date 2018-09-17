@@ -10,9 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const globals_1 = require("../../utils/globals");
 const PaymentContractController_1 = require("../database/PaymentContractController");
-const SmartContractReader_1 = require("./SmartContractReader");
-const BlockchainHelper_1 = require("./BlockchainHelper");
+const SmartContractReader_1 = require("./utils/SmartContractReader");
+const BlockchainHelper_1 = require("./utils/BlockchainHelper");
 const default_config_1 = require("../../config/default.config");
+const HTTPHelper_1 = require("../../utils/web/HTTPHelper");
 const redis = require('redis');
 const bluebird = require('bluebird');
 class FundingController {
@@ -20,16 +21,26 @@ class FundingController {
         this.maxGasFeeName = "k_max_gas_fee";
         this.lastBlock = "k_last_block";
     }
-    calculateEth(numberOfPayments, paymentID) {
+    fund() {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    calculateEthToFund(numberOfPayments, paymentID) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    calculateTransferFee(paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 const paymentContract = (yield new PaymentContractController_1.PaymentContractController().getContract(paymentID)).data[0];
-                const contract = yield new SmartContractReader_1.SmartContractReader(globals_1.Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(paymentContract.pullPaymentAddress);
+                const contract = yield new SmartContractReader_1.SmartContractReader(globals_1.Globals.GET_TOKEN_CONTRACT_NAME()).readContract(globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token);
                 const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();
-                const data = contract.methods.executePullPayment(paymentContract.customerAddress, paymentContract.id).encodeABI();
+                const rate = yield new HTTPHelper_1.HTTPHelper().request(`${globals_1.Globals.GET_CRYPTOCOMPARE_URL()}data/price?fsym=PMA&tsyms=${paymentContract.currency.toUpperCase()}`, 'GET');
+                const value = blockchainHelper.parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
+                const data = contract.methods.transfer(paymentContract.customerAddress, value).encodeABI();
                 try {
                     blockchainHelper.getProvider().estimateGas({
-                        to: paymentContract.pullPaymentAddress,
+                        to: globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token,
                         from: paymentContract.merchantAddress,
                         data: data,
                     }).then((res) => {
@@ -44,7 +55,7 @@ class FundingController {
             }));
         });
     }
-    calculateMaxGasFee() {
+    calculateMaxExecutionFee() {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 const rclient = redis.createClient({
@@ -79,6 +90,7 @@ class FundingController {
                         }
                     }
                     rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
+                    yield rclient.setAsync(this.maxGasFeeName, Number(max));
                     resolve(Number(yield rclient.getAsync(this.maxGasFeeName)));
                     rclient.quit();
                 }));

@@ -10,12 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const default_config_1 = require("../../config/default.config");
 const globals_1 = require("../../utils/globals");
-const SmartContractReader_1 = require("./SmartContractReader");
-const BlockchainHelper_1 = require("./BlockchainHelper");
-const RawTransactionSerializer_1 = require("./signatureHelper/RawTransactionSerializer");
+const SmartContractReader_1 = require("./utils/SmartContractReader");
+const BlockchainHelper_1 = require("./utils/BlockchainHelper");
+const RawTransactionSerializer_1 = require("./utils/RawTransactionSerializer");
 const Scheduler_1 = require("../scheduler/Scheduler");
 const ErrorHandler_1 = require("../../utils/handlers/ErrorHandler");
-const BlockchainTxReceiptHandler_1 = require("./BlockchainTxReceiptHandler");
+const BlockchainTxReceiptHandler_1 = require("./utils/BlockchainTxReceiptHandler");
 const TransactionController_1 = require("../database/TransactionController");
 const PaymentContractController_1 = require("../database/PaymentContractController");
 class BlockchainController {

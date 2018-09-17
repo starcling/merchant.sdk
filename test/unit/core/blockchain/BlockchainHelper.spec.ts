@@ -1,6 +1,6 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { BlockchainHelper } from '../../../../src/core/Blockchain/BlockchainHelper';
+import { BlockchainHelper } from '../../../../src/core/Blockchain/utils/BlockchainHelper';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

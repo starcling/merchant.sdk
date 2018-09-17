@@ -1,4 +1,4 @@
-import { DefaultConfig } from '../../config/default.config';
+import { DefaultConfig } from '../../../config/default.config';
 import { PromiEvent } from 'web3/types';
 
 export class BlockchainHelper {
@@ -44,5 +44,38 @@ export class BlockchainHelper {
         } catch (err) {
             return false;
         }
+    }
+
+
+    public parseUnits(value, decimals: number) {
+        if (typeof (value) !== 'string' || !value.match(/^-?[0-9.,]+$/)) {
+            throw new Error('invalid value');
+        }
+        // Remove commas
+        let _value = value.replace(/,/g, '');
+        // Is it negative?
+        const negative = (_value.substring(0, 1) === '-');
+        if (negative) { _value = _value.substring(1); }
+        if (_value === '.') { throw new Error('invalid value'); }
+        // Split it into a whole and fractional part
+        const comps = _value.split('.');
+        if (comps.length > 2) { throw new Error('too many decimal points'); }
+        let whole: any = comps[0], fraction: any = comps[1];
+        if (!whole) { whole = '0'; }
+        if (!fraction) { fraction = '0'; }
+        // Prevent underflow
+        if (fraction.length > decimals) {
+            throw new Error('too many decimal places');
+        }
+        while (fraction.length < decimals) { fraction += '0'; }
+
+        whole = DefaultConfig.settings.web3.utils.toBN(whole);
+        fraction = DefaultConfig.settings.web3.utils.toBN(fraction);
+        const tenPower = DefaultConfig.settings.web3.utils.toBN('1' + Array(decimals + 1).join('0'));
+        let res = (whole.mul(tenPower)).add(fraction);
+
+        if (negative) { res = res.mul(DefaultConfig.settings.web3.utils.toBN(-1)); }
+
+        return res;
     }
 }

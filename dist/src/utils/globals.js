@@ -114,6 +114,9 @@ class Globals {
     static GET_SOLIDITY_FILE() {
         return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
     }
+    static GET_CRYPTOCOMPARE_URL() {
+        return 'https://min-api.cryptocompare.com/';
+    }
     static GET_TRANSACTION_STATUS_ENUM() {
         return TransactionStatusEnum;
     }
@@ -161,6 +164,9 @@ class Globals {
             'execute',
             'cancel'
         ];
+    }
+    static GET_TOKEN_CONTRACT_NAME() {
+        return 'ERC20Basic';
     }
     static GET_PULL_PAYMENT_CONTRACT_NAME() {
         return 'MasterPullPayment';

@@ -1,6 +1,6 @@
 import * as solc from 'solc';
 import fs = require('fs');
-import { Globals } from '../../utils/globals';
+import { Globals } from '../../../utils/globals';
 import { BlockchainHelper } from './BlockchainHelper';
 
 /**

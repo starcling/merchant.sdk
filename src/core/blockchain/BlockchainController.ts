@@ -1,11 +1,11 @@
 import { DefaultConfig } from '../../config/default.config';
 import { Globals } from '../../utils/globals';
-import { SmartContractReader } from './SmartContractReader';
-import { BlockchainHelper } from './BlockchainHelper';
-import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerializer';
+import { SmartContractReader } from './utils/SmartContractReader';
+import { BlockchainHelper } from './utils/BlockchainHelper';
+import { RawTransactionSerializer } from './utils/RawTransactionSerializer';
 import { Scheduler } from '../scheduler/Scheduler';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
-import { BlockchainTxReceiptHandler } from './BlockchainTxReceiptHandler';
+import { BlockchainTxReceiptHandler } from './utils/BlockchainTxReceiptHandler';
 import { TransactionController } from '../database/TransactionController';
 import { PaymentContractController } from '../database/PaymentContractController';
 import { ITransactionUpdate, IPaymentContractView, ITransactionGet, ITransactionInsert } from '../database/models';

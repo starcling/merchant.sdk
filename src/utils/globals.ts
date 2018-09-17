@@ -185,6 +185,10 @@ export class Globals {
         return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
     }
 
+    public static GET_CRYPTOCOMPARE_URL(): string {
+        return 'https://min-api.cryptocompare.com/';
+    }
+
     public static GET_TRANSACTION_STATUS_ENUM(): any {
         return TransactionStatusEnum;
     }
@@ -239,6 +243,10 @@ export class Globals {
             'execute',
             'cancel'
         ];
+    }
+
+    public static GET_TOKEN_CONTRACT_NAME(): string {
+        return 'ERC20Basic';
     }
 
     public static GET_PULL_PAYMENT_CONTRACT_NAME(): string {

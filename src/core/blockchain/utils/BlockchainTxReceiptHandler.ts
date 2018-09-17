@@ -1,8 +1,8 @@
 
-import { Globals } from '../../utils/globals';
-import { IPaymentContractView, ITransactionUpdate, IPaymentContractUpdate } from '../database/models';
-import { TransactionController } from '../database/TransactionController';
-import { PaymentContractController } from '../database/PaymentContractController';
+import { Globals } from '../../../utils/globals';
+import { IPaymentContractView, ITransactionUpdate, IPaymentContractUpdate } from '../../database/models';
+import { TransactionController } from '../../database/TransactionController';
+import { PaymentContractController } from '../../database/PaymentContractController';
 
 export class BlockchainTxReceiptHandler {
     public async handleRecurringPaymentReceipt(paymentContract: IPaymentContractView, transactionHash: string, receipt: any): Promise<void> {
