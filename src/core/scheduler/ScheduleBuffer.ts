@@ -54,18 +54,18 @@ export class SchedulerBuffer {
                                 }).start(true);
 
                                 switch (paymentContract.status) {
-                                    case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_CONTRACT_STATUS_ENUM().initial]):
+                                    case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_PAYMENT_STATUS_ENUM().initial]):
                                         Scheduler.stop(paymentContract.id);
                                         Scheduler.restart(paymentContract.id);
                                         break;
-                                    case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_CONTRACT_STATUS_ENUM().running]):
+                                    case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_PAYMENT_STATUS_ENUM().running]):
                                         Scheduler.stop(paymentContract.id);
                                         Scheduler.restart(paymentContract.id);
                                         break;
-                                    case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_CONTRACT_STATUS_ENUM().stopped]):
+                                    case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_PAYMENT_STATUS_ENUM().stopped]):
                                         Scheduler.stop(paymentContract.id);
                                         break;
-                                    case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_CONTRACT_STATUS_ENUM().canceled]):
+                                    case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_PAYMENT_STATUS_ENUM().canceled]):
                                         Scheduler.stop(paymentContract.id);
                                         break;
                                 }
@@ -92,7 +92,7 @@ export class SchedulerBuffer {
         paymentContract.lastPaymentDate = paymentContract.nextPaymentDate;
         paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0 ?
             paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + paymentContract.frequency;
-        paymentContract.status = paymentContract.numberOfPayments === 0 ? Globals.GET_CONTRACT_STATUS_ENUM().done : Globals.GET_CONTRACT_STATUS_ENUM()[paymentContract.status],
+        paymentContract.status = paymentContract.numberOfPayments === 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : Globals.GET_PAYMENT_STATUS_ENUM()[paymentContract.status],
             await contractDbConnector.updateContract(paymentContract);
     }
 

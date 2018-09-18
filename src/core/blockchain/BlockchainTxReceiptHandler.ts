@@ -17,7 +17,7 @@ export class BlockchainTxReceiptHandler {
             lastPaymentDate = Math.floor(new Date().getTime() / 1000); // TODO: get from BC ?
             nextPaymentDate = Number(paymentContract.nextPaymentDate) + Number(paymentContract.frequency);
             executeTxStatusID = Globals.GET_TRANSACTION_STATUS_ENUM().success;
-            statusID = numberOfPayments == 0 ? Globals.GET_CONTRACT_STATUS_ENUM().done : Globals.GET_CONTRACT_STATUS_ENUM()[paymentContract.status]
+            statusID = numberOfPayments == 0 ? Globals.GET_PAYMENT_STATUS_ENUM().done : Globals.GET_PAYMENT_STATUS_ENUM()[paymentContract.status]
         } else {
             executeTxStatusID = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
         }

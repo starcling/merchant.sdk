@@ -10,9 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const default_config_1 = require("../config/default.config");
 class Globals {
-    static GET_PAYMENT_STATUS_ENUM() {
-        throw new Error("Method not implemented.");
-    }
     static GET_DEFAULT_CORE_API_URL() {
         return 'http://52.29.233.47:8081/api/v1/';
     }
@@ -91,8 +88,8 @@ class Globals {
     static GET_TRANSACTION_STATUS_ENUM() {
         return TransactionStatusEnum;
     }
-    static GET_CONTRACT_STATUS_ENUM() {
-        return ContractStatusEnum;
+    static GET_PAYMENT_STATUS_ENUM() {
+        return PaymentStatusEnum;
     }
     static GET_PAYMENT_TYPE_ENUM() {
         return PaymentTypeEnum;
@@ -137,7 +134,7 @@ class Globals {
         ];
     }
     static GET_PULL_PAYMENT_CONTRACT_NAME() {
-        return 'MasterPullPayment';
+        return 'PumaPayPullPayment';
     }
     static GET_SCHEDULE_QUEUE_INTERVAL() {
         return 10;
@@ -165,14 +162,14 @@ var TransactionTypeEnum;
     TransactionTypeEnum[TransactionTypeEnum["execute"] = 3] = "execute";
     TransactionTypeEnum[TransactionTypeEnum["cancel"] = 4] = "cancel";
 })(TransactionTypeEnum || (TransactionTypeEnum = {}));
-var ContractStatusEnum;
-(function (ContractStatusEnum) {
-    ContractStatusEnum[ContractStatusEnum["initial"] = 1] = "initial";
-    ContractStatusEnum[ContractStatusEnum["running"] = 2] = "running";
-    ContractStatusEnum[ContractStatusEnum["stopped"] = 3] = "stopped";
-    ContractStatusEnum[ContractStatusEnum["cancelled"] = 4] = "cancelled";
-    ContractStatusEnum[ContractStatusEnum["done"] = 4] = "done";
-})(ContractStatusEnum || (ContractStatusEnum = {}));
+var PaymentStatusEnum;
+(function (PaymentStatusEnum) {
+    PaymentStatusEnum[PaymentStatusEnum["initial"] = 1] = "initial";
+    PaymentStatusEnum[PaymentStatusEnum["running"] = 2] = "running";
+    PaymentStatusEnum[PaymentStatusEnum["stopped"] = 3] = "stopped";
+    PaymentStatusEnum[PaymentStatusEnum["cancelled"] = 4] = "cancelled";
+    PaymentStatusEnum[PaymentStatusEnum["done"] = 4] = "done";
+})(PaymentStatusEnum || (PaymentStatusEnum = {}));
 var PaymentTypeEnum;
 (function (PaymentTypeEnum) {
     PaymentTypeEnum[PaymentTypeEnum["push"] = 1] = "push";

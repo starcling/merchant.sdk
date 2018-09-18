@@ -110,6 +110,7 @@ class BlockchainController {
                     }
                     catch (err) {
                         typeID = globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().initial;
+                        console.debug('Disregard the DB error. TODO: To be fixed');
                     }
                 }
                 yield transactionDbController.createTransaction({
@@ -130,6 +131,7 @@ class BlockchainController {
                     }
                     catch (err) {
                         yield new BlockchainTxReceiptHandler_1.BlockchainTxReceiptHandler().handleRecurringPaymentWithInitialReceipt(paymentContract, receipt.transactionHash, receipt);
+                        console.debug('Disregard the DB error. TODO: To be fixed');
                     }
                 }
                 else {
