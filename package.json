@@ -49,6 +49,7 @@
         "mocha": "^5.2.0",
         "mysql": "^2.16.0",
         "nodemon": "^1.17.3",
+        "simple-mock": "^0.8.0",
         "truffle": "^4.1.13",
         "truffle-assertions": "^0.1.3",
         "ts-node": "~4.1.0",
