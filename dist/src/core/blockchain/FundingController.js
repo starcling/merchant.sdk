@@ -22,12 +22,11 @@ class FundingController {
         this.lastBlock = "k_last_block";
         this.multiplier = 1.5;
     }
-    fund(fromAddress, toAddress, paymentID, tokenAddress = null, pullPaymentAddress = null) {
+    fundEth(fromAddress, toAddress, value = null, paymentID = null, tokenAddress = null, pullPaymentAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
             tokenAddress = tokenAddress ? tokenAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token;
             pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).masterPullPayment;
-            const paymentContract = (yield new PaymentContractController_1.PaymentContractController().getContract(paymentID)).data[0];
-            const value = yield this.calculateWeiToFund(paymentContract.numberOfPayments, paymentContract.id, fromAddress, tokenAddress, pullPaymentAddress);
+            value = value ? value : yield this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
             const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();
             const rawTx = {
                 to: toAddress,
@@ -37,7 +36,7 @@ class FundingController {
             return blockchainHelper.getProvider().sendTransaction(rawTx);
         });
     }
-    calculateWeiToFund(numberOfPayments, paymentID, bankAddress, tokenAddress = null, pullPaymentAddress = null) {
+    calculateWeiToFund(paymentID, bankAddress, tokenAddress = null, pullPaymentAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -48,7 +47,7 @@ class FundingController {
                     const value = blockchainHelper.parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
                     const transferFee = yield this.calculateTransferFee(paymentContract.merchantAddress, bankAddress, value, tokenAddress);
                     const executionFee = yield this.calculateMaxExecutionFee(pullPaymentAddress);
-                    const calculation = (numberOfPayments * (transferFee + executionFee)) * this.multiplier;
+                    const calculation = (paymentContract.numberOfPayments * (transferFee + executionFee)) * this.multiplier;
                     resolve(calculation);
                 }
                 catch (err) {

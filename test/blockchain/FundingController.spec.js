@@ -235,7 +235,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
         describe('successfuly calculate the amount needed to fund', async () => {
             it('should return calculated value in wei for final calculation', async () => {
-                const amount = await sdk.calculateWeiToFund(recurringPullPayment.numberOfPayments, recurringPullPayment.paymentID, bank, token.address, masterPullPayment.address);
+                const amount = await sdk.calculateWeiToFund(recurringPullPayment.paymentID, bank, token.address, masterPullPayment.address);
                 expect(amount).to.be.greaterThan(0);
             });
         });
@@ -243,7 +243,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         describe('successfuly funding the beneficiary address', async () => {
             it('should transfer calculated ETH to the beneficiary', async () => {
                 const oldBeneficiaryBalance = await web3API.eth.getBalance(beneficiary);
-                await sdk.fund(bank, beneficiary, recurringPullPayment.paymentID, token.address, masterPullPayment.address);
+                await sdk.fundEth(bank, beneficiary, recurringPullPayment.paymentID, null, token.address, masterPullPayment.address);
                 const newBeneficiaryBalance = await web3API.eth.getBalance(beneficiary);
                 Number(newBeneficiaryBalance).should.be.greaterThan(Number(oldBeneficiaryBalance));
             });

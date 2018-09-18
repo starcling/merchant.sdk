@@ -14,12 +14,10 @@ export class FundingController {
     private lastBlock = "k_last_block";
     private multiplier = 1.5;
 
-    public async fund(fromAddress: string, toAddress: string, paymentID: string, tokenAddress: string = null, pullPaymentAddress: string = null) {
+    public async fundEth(fromAddress: string, toAddress: string, paymentID: string = null, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
         tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
         pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).masterPullPayment;
-
-        const paymentContract: IPaymentContractView = (await new PaymentContractController().getContract(paymentID)).data[0];
-        const value = await this.calculateWeiToFund(paymentContract.numberOfPayments, paymentContract.id, fromAddress, tokenAddress, pullPaymentAddress);
+        value = value ? value : await this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
         const rawTx = {
             to: toAddress,
@@ -30,7 +28,9 @@ export class FundingController {
         return blockchainHelper.getProvider().sendTransaction(rawTx);
     }
 
-    public async calculateWeiToFund(numberOfPayments: number, paymentID: string, bankAddress: string, tokenAddress: string = null, pullPaymentAddress: string = null) {
+
+
+    public async calculateWeiToFund(paymentID: string, bankAddress: string, tokenAddress: string = null, pullPaymentAddress: string = null) {
         return new Promise(async (resolve, reject) => {
             try {
                 tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
@@ -42,7 +42,7 @@ export class FundingController {
                 const transferFee = await this.calculateTransferFee(paymentContract.merchantAddress, bankAddress, value, tokenAddress);
                 const executionFee = await this.calculateMaxExecutionFee(pullPaymentAddress);
 
-                const calculation = (numberOfPayments * (transferFee + executionFee)) * this.multiplier;
+                const calculation = (paymentContract.numberOfPayments * (transferFee + executionFee)) * this.multiplier;
                 resolve(calculation);
             } catch (err) {
                 reject(err);
