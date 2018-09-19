@@ -245,8 +245,12 @@ export class Globals {
         ];
     }
 
+    public static GET_MAX_GAS_FEE(): number {
+        return 90000;
+    }
+
     public static GET_TOKEN_CONTRACT_NAME(): string {
-        return 'ERC20Basic';
+        return 'PumaPayToken';
     }
 
     public static GET_PULL_PAYMENT_CONTRACT_NAME(): string {

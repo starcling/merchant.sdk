@@ -166,7 +166,7 @@ class Globals {
         ];
     }
     static GET_TOKEN_CONTRACT_NAME() {
-        return 'ERC20Basic';
+        return 'PumaPayToken';
     }
     static GET_PULL_PAYMENT_CONTRACT_NAME() {
         return 'MasterPullPayment';

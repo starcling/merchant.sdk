@@ -14,6 +14,7 @@ const SmartContractReader_1 = require("./utils/SmartContractReader");
 const BlockchainHelper_1 = require("./utils/BlockchainHelper");
 const default_config_1 = require("../../config/default.config");
 const HTTPHelper_1 = require("../../utils/web/HTTPHelper");
+const RawTransactionSerializer_1 = require("./utils/RawTransactionSerializer");
 const redis = require('redis');
 const bluebird = require('bluebird');
 class FundingController {
@@ -22,18 +23,33 @@ class FundingController {
         this.lastBlock = "k_last_block";
         this.multiplier = 1.5;
     }
-    fundEth(fromAddress, toAddress, value = null, paymentID = null, tokenAddress = null, pullPaymentAddress = null) {
+    fundETH(fromAddress, toAddress, paymentID = null, value = null, tokenAddress = null, pullPaymentAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
             tokenAddress = tokenAddress ? tokenAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token;
             pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).masterPullPayment;
             value = value ? value : yield this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
+            const gasValue = value * default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
             const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();
             const rawTx = {
                 to: toAddress,
                 from: fromAddress,
-                value: value
+                value: default_config_1.DefaultConfig.settings.web3.utils.toHex(gasValue)
             };
             return blockchainHelper.getProvider().sendTransaction(rawTx);
+        });
+    }
+    fundPMA(fromAddress, toAddress, value, tokenAddress = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            tokenAddress = tokenAddress ? tokenAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token;
+            const contract = yield new SmartContractReader_1.SmartContractReader(globals_1.Globals.GET_TOKEN_CONTRACT_NAME()).readContract(tokenAddress);
+            const gasLimit = yield this.calculateTransferFee(fromAddress, toAddress, value, tokenAddress);
+            const data = contract.methods.transfer(toAddress, value).encodeABI();
+            const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();
+            const txCount = yield blockchainHelper.getTxCount(fromAddress);
+            let privateKey = (yield default_config_1.DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'];
+            const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit).getSerializedTx();
+            privateKey = null;
+            return blockchainHelper.getProvider().sendSignedTransaction(serializedTx);
         });
     }
     calculateWeiToFund(paymentID, bankAddress, tokenAddress = null, pullPaymentAddress = null) {
@@ -69,6 +85,7 @@ class FundingController {
                         from: fromAddress,
                         gasPrice: default_config_1.DefaultConfig.settings.web3.utils.toHex(default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei')),
                         gasLimit: default_config_1.DefaultConfig.settings.web3.utils.toHex(4000000),
+                        value: '0x00',
                         data: data
                     }).then((res) => {
                         resolve(res);

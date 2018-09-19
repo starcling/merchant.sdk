@@ -18,6 +18,7 @@ const ErrorHandler_1 = require("../../utils/handlers/ErrorHandler");
 const BlockchainTxReceiptHandler_1 = require("./utils/BlockchainTxReceiptHandler");
 const TransactionController_1 = require("../database/TransactionController");
 const PaymentContractController_1 = require("../database/PaymentContractController");
+const FundingController_1 = require("./FundingController");
 class BlockchainController {
     constructor() {
         this.transactionDbController = new TransactionController_1.TransactionController();
@@ -97,7 +98,8 @@ class BlockchainController {
             const txCount = yield blockchainHelper.getTxCount(paymentContract.merchantAddress);
             const data = contract.methods.executePullPayment(paymentContract.customerAddress, paymentContract.id).encodeABI();
             let privateKey = (yield default_config_1.DefaultConfig.settings.getPrivateKey(paymentContract.merchantAddress)).data[0]['@accountKey'];
-            const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, paymentContract.pullPaymentAddress, txCount, privateKey).getSerializedTx();
+            const gasLimit = yield new FundingController_1.FundingController().calculateMaxExecutionFee();
+            const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, paymentContract.pullPaymentAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
             privateKey = null;
             yield blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => __awaiter(this, void 0, void 0, function* () {
                 let typeID = globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().execute;

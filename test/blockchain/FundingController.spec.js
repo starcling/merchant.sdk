@@ -81,6 +81,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     const owner = accounts[0];          // 0xe689c075c808404C9A0d84bE10d2E960CC61c497
     const executor = accounts[1];       // 0xf52DBA6fe86D2f80c13F2e2565F521Ad0C18Efc0
     const client = accounts[2];         // 0xf52DBA6fe86D2f80c13F2e2565F521Ad0C18Efc0
+    const client2 = accounts[3];         // 0xf52DBA6fe86D2f80c13F2e2565F521Ad0C18Efc0
     const beneficiary = '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
     const bank = accounts[9];
 
@@ -181,13 +182,13 @@ contract('Master Pull Payment Contract', async (accounts) => {
         });
     });
     beforeEach('Issue tokens to the beneficiery', async () => {
-        const tokens = MINTED_TOKENS;
+        const tokens = MINTED_TOKENS / 100000000;
         await token.mint(beneficiary, tokens, {
             from: owner
         });
     });
     beforeEach('Issue tokens to the bank', async () => {
-        const tokens = MINTED_TOKENS;
+        const tokens = MINTED_TOKENS / 100000000;
         await token.mint(bank, tokens, {
             from: owner
         });
@@ -197,28 +198,9 @@ contract('Master Pull Payment Contract', async (accounts) => {
             from: owner
         });
     });
-    beforeEach('add executor', async () => {
-        await masterPullPayment.addExecutor(executor, {
-            from: owner
-        });
-    });
-    beforeEach('set the rate for multiple fiat currencies', async () => {
-        await masterPullPayment.setRate('EUR', EUR_EXCHANGE_RATE, {
-            from: owner
-        });
-        await masterPullPayment.setRate('USD', USD_EXCHANGE_RATE, {
-            from: owner
-        });
-    });
-    beforeEach('approve pull payment contract', async () => {
-        await token.approve(masterPullPayment.address, MINTED_TOKENS, {
-            from: client
-        });
-    });
 
 
     describe('A Funding Controller', async () => {
-
         describe('successfuly calculate the transfer fee', async () => {
             it('should return calculated value in wei for transfer fee', async () => {
                 const amount = await sdk.calculateTransferFee(beneficiary, bank, 400000, token.address);
@@ -243,9 +225,20 @@ contract('Master Pull Payment Contract', async (accounts) => {
         describe('successfuly funding the beneficiary address', async () => {
             it('should transfer calculated ETH to the beneficiary', async () => {
                 const oldBeneficiaryBalance = await web3API.eth.getBalance(beneficiary);
-                await sdk.fundEth(bank, beneficiary, recurringPullPayment.paymentID, null, token.address, masterPullPayment.address);
+                await sdk.fundETH(bank, beneficiary, recurringPullPayment.paymentID, null, token.address, masterPullPayment.address);
                 const newBeneficiaryBalance = await web3API.eth.getBalance(beneficiary);
                 Number(newBeneficiaryBalance).should.be.greaterThan(Number(oldBeneficiaryBalance));
+            });
+        });
+
+        describe('successfuly funding the beneficiary address', async () => {
+            it('should transfer PMA to the beneficiary', async () => {
+                const amountInPMA = 200000000000;
+                const oldBankBalance = await token.balanceOf(bank);
+                await sdk.fundPMA(beneficiary, bank, amountInPMA, token.address);
+                const newBankBalance = await token.balanceOf(bank);
+                const difference = Number(newBankBalance) - Number(oldBankBalance);
+                Number(difference).should.be.equal(amountInPMA);
             });
         });
         // TODO: Add failling tests when all the flow is in place.

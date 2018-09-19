@@ -5,30 +5,44 @@ import { SmartContractReader } from "./utils/SmartContractReader";
 import { BlockchainHelper } from "./utils/BlockchainHelper";
 import { DefaultConfig } from "../../config/default.config";
 import { HTTPHelper } from "../../utils/web/HTTPHelper";
+import { RawTransactionSerializer } from "./utils/RawTransactionSerializer";
 const redis = require('redis');
 const bluebird = require('bluebird');
 
 export class FundingController {
-
     private maxGasFeeName = "k_max_gas_fee";
     private lastBlock = "k_last_block";
     private multiplier = 1.5;
 
-    public async fundEth(fromAddress: string, toAddress: string, paymentID: string = null, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
+    public async fundETH(fromAddress: string, toAddress: string, paymentID: string = null, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
         tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
         pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).masterPullPayment;
         value = value ? value : await this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
+        const gasValue = value * DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
         const rawTx = {
             to: toAddress,
             from: fromAddress,
-            value: value
+            value: DefaultConfig.settings.web3.utils.toHex(gasValue)
         };
 
         return blockchainHelper.getProvider().sendTransaction(rawTx);
     }
 
+    public async fundPMA(fromAddress: string, toAddress: string, value: number, tokenAddress: string = null) {
+        tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
 
+        const contract: any = await new SmartContractReader(Globals.GET_TOKEN_CONTRACT_NAME()).readContract(tokenAddress);
+        const gasLimit = await this.calculateTransferFee(fromAddress, toAddress, value, tokenAddress);
+        const data = contract.methods.transfer(toAddress, value).encodeABI();
+        const blockchainHelper: BlockchainHelper = new BlockchainHelper();
+        const txCount: number = await blockchainHelper.getTxCount(fromAddress);
+        let privateKey: string = (await DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'];
+        const serializedTx: string = await new RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit).getSerializedTx();
+        privateKey = null;
+        
+        return blockchainHelper.getProvider().sendSignedTransaction(serializedTx);
+    }
 
     public async calculateWeiToFund(paymentID: string, bankAddress: string, tokenAddress: string = null, pullPaymentAddress: string = null) {
         return new Promise(async (resolve, reject) => {
@@ -47,7 +61,6 @@ export class FundingController {
             } catch (err) {
                 reject(err);
             }
-
         });
     }
 
@@ -65,6 +78,7 @@ export class FundingController {
                     from: fromAddress,
                     gasPrice: DefaultConfig.settings.web3.utils.toHex(DefaultConfig.settings.web3.utils.toWei('10', 'Gwei')),
                     gasLimit: DefaultConfig.settings.web3.utils.toHex(4000000),
+                    value: '0x00',
                     data: data
                 }).then((res) => {
                     resolve(res);
@@ -74,7 +88,6 @@ export class FundingController {
             } catch (err) {
                 reject(err);
             }
-
         });
     }
 
@@ -96,7 +109,7 @@ export class FundingController {
                 fromBlock = 0;
                 await rclient.setAsync(this.lastBlock, fromBlock);
             }
-            max = max ? max : 0;
+            max = max ? max : Globals.GET_MAX_GAS_FEE();
             await rclient.setAsync(this.maxGasFeeName, max);
             const latestBlock = Number(await bcHelper.getProvider().getBlockNumber());
 
@@ -123,6 +136,5 @@ export class FundingController {
                 rclient.quit();
             });
         });
-
     }
 }

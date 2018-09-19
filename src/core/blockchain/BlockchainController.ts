@@ -9,6 +9,7 @@ import { BlockchainTxReceiptHandler } from './utils/BlockchainTxReceiptHandler';
 import { TransactionController } from '../database/TransactionController';
 import { PaymentContractController } from '../database/PaymentContractController';
 import { ITransactionUpdate, IPaymentContractView, ITransactionGet, ITransactionInsert } from '../database/models';
+import { FundingController } from './FundingController';
 
 export class BlockchainController {
     private transactionDbController: TransactionController;
@@ -41,7 +42,7 @@ export class BlockchainController {
                     })
                     const contract: IPaymentContractView = (await this.contractDbController.getContract(contractID)).data;
                     const payment = contractResponse.data[0];
-                    
+
                     if (receipt.status && bcHelper.isValidRegisterTx(receipt, contractID)) {
                         if (contract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
                             contract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
@@ -56,7 +57,7 @@ export class BlockchainController {
                     } else {
                         return false;
                     }
-                    
+
                 }
             }, DefaultConfig.settings.txStatusInterval);
 
@@ -112,7 +113,8 @@ export class BlockchainController {
         const txCount: number = await blockchainHelper.getTxCount(paymentContract.merchantAddress);
         const data: string = contract.methods.executePullPayment(paymentContract.customerAddress, paymentContract.id).encodeABI();
         let privateKey: string = (await DefaultConfig.settings.getPrivateKey(paymentContract.merchantAddress)).data[0]['@accountKey'];
-        const serializedTx: string = await new RawTransactionSerializer(data, paymentContract.pullPaymentAddress, txCount, privateKey).getSerializedTx();
+        const gasLimit = await new FundingController().calculateMaxExecutionFee();
+        const serializedTx: string = await new RawTransactionSerializer(data, paymentContract.pullPaymentAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
         privateKey = null;
 
         await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
@@ -128,7 +130,7 @@ export class BlockchainController {
                 } catch (err) {
                     typeID = Globals.GET_TRANSACTION_TYPE_ENUM().initial;
                 }
-            } 
+            }
             await transactionDbController.createTransaction(<ITransactionInsert>{
                 hash: hash,
                 typeID: typeID,
@@ -146,7 +148,7 @@ export class BlockchainController {
                     await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(paymentContract, receipt.transactionHash, receipt);
                 } catch (err) {
                     await new BlockchainTxReceiptHandler().handleRecurringPaymentWithInitialReceipt(paymentContract, receipt.transactionHash, receipt);
-                }   
+                }
             } else {
                 await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(paymentContract, receipt.transactionHash, receipt);
             }

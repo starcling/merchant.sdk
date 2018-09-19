@@ -150,6 +150,10 @@ contract('Master Pull Payment Contract', async (accounts) => {
         testContract.pullPaymentAddress = masterPullPayment.address;
         const result = await testDbConnector.createContract(testContract);
         testId = result.data[0].id;
+        await testDbConnector.updateContract({
+            id: result.data[0].id,
+            merchantAddress: beneficiary
+        });
     });
     beforeEach(async () => {
         await insertTestPayment(testPayment);
