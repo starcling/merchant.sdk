@@ -165,6 +165,9 @@ class Globals {
             'cancel'
         ];
     }
+    static GET_MAX_GAS_FEE() {
+        return 90000;
+    }
     static GET_TOKEN_CONTRACT_NAME() {
         return 'PumaPayToken';
     }

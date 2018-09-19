@@ -19,6 +19,7 @@ const BlockchainTxReceiptHandler_1 = require("./utils/BlockchainTxReceiptHandler
 const TransactionController_1 = require("../database/TransactionController");
 const PaymentContractController_1 = require("../database/PaymentContractController");
 const FundingController_1 = require("./FundingController");
+const CashOutController_1 = require("./CashOutController");
 class BlockchainController {
     constructor() {
         this.transactionDbController = new TransactionController_1.TransactionController();
@@ -136,6 +137,9 @@ class BlockchainController {
                 }
                 else {
                     yield new BlockchainTxReceiptHandler_1.BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(paymentContract, receipt.transactionHash, receipt);
+                }
+                if (paymentContract.automatedCashOut && receipt.status) {
+                    yield new CashOutController_1.CashOutController().cashOutPMA(contractID);
                 }
             })).catch((err) => {
                 console.debug(err);

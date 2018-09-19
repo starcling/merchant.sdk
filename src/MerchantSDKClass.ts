@@ -11,8 +11,9 @@ import { SchedulerBuffer } from './core/scheduler/ScheduleBuffer';
 import { PaymentContractController } from './core/database/PaymentContractController';
 import { TransactionController } from './core/database/TransactionController';
 import { FundingController } from './core/blockchain/FundingController';
+import { CashOutController } from './core/blockchain/CashOutController';
 
-export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PaymentContractController, TransactionController, FundingController) {
+export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PaymentContractController, TransactionController, FundingController, CashOutController) {
 
     public constructor() {
         super();

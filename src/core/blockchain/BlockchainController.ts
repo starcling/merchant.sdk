@@ -10,6 +10,7 @@ import { TransactionController } from '../database/TransactionController';
 import { PaymentContractController } from '../database/PaymentContractController';
 import { ITransactionUpdate, IPaymentContractView, ITransactionGet, ITransactionInsert } from '../database/models';
 import { FundingController } from './FundingController';
+import { CashOutController } from './CashOutController';
 
 export class BlockchainController {
     private transactionDbController: TransactionController;
@@ -152,6 +153,11 @@ export class BlockchainController {
             } else {
                 await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(paymentContract, receipt.transactionHash, receipt);
             }
+
+            if (paymentContract.automatedCashOut && receipt.status) {
+                await new CashOutController().cashOutPMA(contractID);
+            }
+
         }).catch((err) => {
             // TODO: Proper error handling 
             console.debug(err);

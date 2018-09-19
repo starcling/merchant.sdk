@@ -13,7 +13,8 @@ const ScheduleBuffer_1 = require("./core/scheduler/ScheduleBuffer");
 const PaymentContractController_1 = require("./core/database/PaymentContractController");
 const TransactionController_1 = require("./core/database/TransactionController");
 const FundingController_1 = require("./core/blockchain/FundingController");
-class MerchantSDK extends MultipleInheritance_1.MultipleInheritance(BlockchainController_1.BlockchainController, HTTPHelper_1.HTTPHelper, QrCode_1.QrCode, AuthenticationController_1.AuthenticationController, PaymentContractController_1.PaymentContractController, TransactionController_1.TransactionController, FundingController_1.FundingController) {
+const CashOutController_1 = require("./core/blockchain/CashOutController");
+class MerchantSDK extends MultipleInheritance_1.MultipleInheritance(BlockchainController_1.BlockchainController, HTTPHelper_1.HTTPHelper, QrCode_1.QrCode, AuthenticationController_1.AuthenticationController, PaymentContractController_1.PaymentContractController, TransactionController_1.TransactionController, FundingController_1.FundingController, CashOutController_1.CashOutController) {
     constructor() {
         super();
     }

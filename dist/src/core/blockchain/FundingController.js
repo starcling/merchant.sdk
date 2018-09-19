@@ -25,17 +25,16 @@ class FundingController {
     }
     fundETH(fromAddress, toAddress, paymentID = null, value = null, tokenAddress = null, pullPaymentAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            tokenAddress = tokenAddress ? tokenAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token;
-            pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).masterPullPayment;
-            value = value ? value : yield this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
-            const gasValue = value * default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
-            const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();
+            if (!value) {
+                value = yield this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
+                value = value * default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
+            }
             const rawTx = {
                 to: toAddress,
                 from: fromAddress,
-                value: default_config_1.DefaultConfig.settings.web3.utils.toHex(gasValue)
+                value: default_config_1.DefaultConfig.settings.web3.utils.toHex(value)
             };
-            return blockchainHelper.getProvider().sendTransaction(rawTx);
+            return new BlockchainHelper_1.BlockchainHelper().getProvider().sendTransaction(rawTx);
         });
     }
     fundPMA(fromAddress, toAddress, value, tokenAddress = null) {
@@ -47,7 +46,7 @@ class FundingController {
             const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();
             const txCount = yield blockchainHelper.getTxCount(fromAddress);
             let privateKey = (yield default_config_1.DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'];
-            const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit).getSerializedTx();
+            const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
             privateKey = null;
             return blockchainHelper.getProvider().sendSignedTransaction(serializedTx);
         });
@@ -58,9 +57,8 @@ class FundingController {
                 try {
                     tokenAddress = tokenAddress ? tokenAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token;
                     const paymentContract = (yield new PaymentContractController_1.PaymentContractController().getContract(paymentID)).data[0];
-                    const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();
                     const rate = yield new HTTPHelper_1.HTTPHelper().request(`${globals_1.Globals.GET_CRYPTOCOMPARE_URL()}data/price?fsym=PMA&tsyms=${paymentContract.currency.toUpperCase()}`, 'GET');
-                    const value = blockchainHelper.parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
+                    const value = new BlockchainHelper_1.BlockchainHelper().parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
                     const transferFee = yield this.calculateTransferFee(paymentContract.merchantAddress, bankAddress, value, tokenAddress);
                     const executionFee = yield this.calculateMaxExecutionFee(pullPaymentAddress);
                     const calculation = (paymentContract.numberOfPayments * (transferFee + executionFee)) * this.multiplier;
@@ -75,12 +73,11 @@ class FundingController {
     calculateTransferFee(fromAddress, toAddress, value, tokenAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();
                 tokenAddress = tokenAddress ? tokenAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token;
                 const contract = yield new SmartContractReader_1.SmartContractReader(globals_1.Globals.GET_TOKEN_CONTRACT_NAME()).readContract(tokenAddress);
                 const data = contract.methods.transfer(toAddress, value).encodeABI();
                 try {
-                    blockchainHelper.getProvider().estimateGas({
+                    new BlockchainHelper_1.BlockchainHelper().getProvider().estimateGas({
                         to: tokenAddress,
                         from: fromAddress,
                         gasPrice: default_config_1.DefaultConfig.settings.web3.utils.toHex(default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei')),
@@ -115,7 +112,7 @@ class FundingController {
                     fromBlock = 0;
                     yield rclient.setAsync(this.lastBlock, fromBlock);
                 }
-                max = max ? max : 0;
+                max = max ? max : globals_1.Globals.GET_MAX_GAS_FEE();
                 yield rclient.setAsync(this.maxGasFeeName, max);
                 const latestBlock = Number(yield bcHelper.getProvider().getBlockNumber());
                 bcHelper.getProvider().getPastLogs({

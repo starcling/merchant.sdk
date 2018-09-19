@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const globals_1 = require("../../../utils/globals");
 const TransactionController_1 = require("../../database/TransactionController");
 const PaymentContractController_1 = require("../../database/PaymentContractController");
+const CashOutController_1 = require("../CashOutController");
 class BlockchainTxReceiptHandler {
     handleRecurringPaymentReceipt(paymentContract, transactionHash, receipt) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -40,6 +41,11 @@ class BlockchainTxReceiptHandler {
                 hash: transactionHash,
                 statusID: executeTxStatusID
             });
+            if (numberOfPayments === 0) {
+                const cashOutController = new CashOutController_1.CashOutController();
+                yield cashOutController.cashOutPMA(paymentContract.id);
+                yield cashOutController.cashOutETH(paymentContract.id);
+            }
         });
     }
     handleRecurringPaymentWithInitialReceipt(paymentContract, transactionHash, receipt) {

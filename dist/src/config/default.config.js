@@ -39,7 +39,8 @@ class DefaultConfig {
             networkID: this.getNetworkID(this._settings.network ? this._settings.network : globals_1.Globals.GET_DEFAULT_NETWORK()),
             txStatusInterval: this._settings.txStatusInterval ? this._settings.txStatusInterval : globals_1.Globals.GET_TX_STATUS_INTERVAL(),
             queueLimit: this._settings.queueLimit ? this._settings.queueLimit : globals_1.Globals.GET_PULL_FAILED_QUEUE_LIMIT(),
-            getPrivateKey: this._settings.getPrivateKey
+            getPrivateKey: this._settings.getPrivateKey,
+            bankAddress: this._settings.bankAddress,
         };
     }
     static getNetworkID(network) {
@@ -60,7 +61,8 @@ DefaultConfig._settings = {
     createTransaction: null,
     updateTransaction: null,
     getEnums: null,
-    getPrivateKey: null
+    getPrivateKey: null,
+    bankAddress: null
 };
 exports.DefaultConfig = DefaultConfig;
 //# sourceMappingURL=default.config.js.map

@@ -38,6 +38,7 @@ export class MerchantSDKBuild {
     createTransaction: any;
     updateTransaction: any;
     getPrivateKey: any;
+    bankAddress: any;
 
     public constructor(buildParams: MerchantSDKBuild) {
         this.web3 = buildParams.web3;
@@ -63,5 +64,6 @@ export class MerchantSDKBuild {
         this.createTransaction = buildParams.createTransaction;
         this.updateTransaction = buildParams.updateTransaction;
         this.getPrivateKey = buildParams.getPrivateKey;
+        this.bankAddress = buildParams.bankAddress;
     }
 }

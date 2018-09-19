@@ -12,7 +12,8 @@ export class DefaultConfig {
         createTransaction: null, 
         updateTransaction: null, 
         getEnums: null,
-        getPrivateKey: null
+        getPrivateKey: null,
+        bankAddress: null
     };
 
     public static set settings(buildParams: MerchantSDKSettings) {
@@ -53,7 +54,8 @@ export class DefaultConfig {
             networkID: this.getNetworkID(this._settings.network ? this._settings.network : Globals.GET_DEFAULT_NETWORK()),
             txStatusInterval: this._settings.txStatusInterval ? this._settings.txStatusInterval : Globals.GET_TX_STATUS_INTERVAL(),
             queueLimit: this._settings.queueLimit ? this._settings.queueLimit : Globals.GET_PULL_FAILED_QUEUE_LIMIT(),
-            getPrivateKey: this._settings.getPrivateKey
+            getPrivateKey: this._settings.getPrivateKey,
+            bankAddress: this._settings.bankAddress,
         };
     }
 

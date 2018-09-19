@@ -14,21 +14,36 @@ export class FundingController {
     private lastBlock = "k_last_block";
     private multiplier = 1.5;
 
+    /**
+     * @description Method for transfering ETH from one address to another
+     * @param fromAddress Address from wich you want to send ETH's
+     * @param toAddress Address to wich you want to receive ETH's
+     * @param paymentID (optional) ID of the payment entity that you want to fund
+     * @param value (optional) ** Must send paymentID as well with this param ** Amount that you want to fund
+     * @param tokenAddress (optional) Address of the token contract
+     * @param pullPaymentAddress (optional) Address of the master pull payment contract
+     */
     public async fundETH(fromAddress: string, toAddress: string, paymentID: string = null, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
-        tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
-        pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).masterPullPayment;
-        value = value ? value : await this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
-        const gasValue = value * DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
-        const blockchainHelper: BlockchainHelper = new BlockchainHelper();
+        if (!value) {
+            value = await this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
+            value = value * DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
+        }
         const rawTx = {
             to: toAddress,
             from: fromAddress,
-            value: DefaultConfig.settings.web3.utils.toHex(gasValue)
+            value: DefaultConfig.settings.web3.utils.toHex(value)
         };
 
-        return blockchainHelper.getProvider().sendTransaction(rawTx);
+        return new BlockchainHelper().getProvider().sendTransaction(rawTx);
     }
 
+    /**
+     * @description Method for transfering PMA tokens from one address to another
+     * @param fromAddress Address from wich you want to send PMA's
+     * @param toAddress Address to wich you want to receive PMA's
+     * @param value Value of PMA's that you want to transfer in WEI
+     * @param tokenAddress (optional) Address of the token contract
+     */
     public async fundPMA(fromAddress: string, toAddress: string, value: number, tokenAddress: string = null) {
         tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
 
@@ -38,9 +53,9 @@ export class FundingController {
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
         const txCount: number = await blockchainHelper.getTxCount(fromAddress);
         let privateKey: string = (await DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'];
-        const serializedTx: string = await new RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit).getSerializedTx();
+        const serializedTx: string = await new RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
         privateKey = null;
-        
+
         return blockchainHelper.getProvider().sendSignedTransaction(serializedTx);
     }
 
@@ -49,9 +64,8 @@ export class FundingController {
             try {
                 tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
                 const paymentContract: IPaymentContractView = (await new PaymentContractController().getContract(paymentID)).data[0];
-                const blockchainHelper: BlockchainHelper = new BlockchainHelper();
                 const rate = await new HTTPHelper().request(`${Globals.GET_CRYPTOCOMPARE_URL()}data/price?fsym=PMA&tsyms=${paymentContract.currency.toUpperCase()}`, 'GET');
-                const value = blockchainHelper.parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
+                const value = new BlockchainHelper().parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
 
                 const transferFee = await this.calculateTransferFee(paymentContract.merchantAddress, bankAddress, value, tokenAddress);
                 const executionFee = await this.calculateMaxExecutionFee(pullPaymentAddress);
@@ -67,13 +81,12 @@ export class FundingController {
     public async calculateTransferFee(fromAddress: string, toAddress: string, value: number, tokenAddress: string = null): Promise<number> {
         return new Promise<number>(async (resolve, reject) => {
 
-            const blockchainHelper: BlockchainHelper = new BlockchainHelper();
             tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
             const contract: any = await new SmartContractReader(Globals.GET_TOKEN_CONTRACT_NAME()).readContract(tokenAddress);
             const data = contract.methods.transfer(toAddress, value).encodeABI();
 
             try {
-                blockchainHelper.getProvider().estimateGas({
+                new BlockchainHelper().getProvider().estimateGas({
                     to: tokenAddress,
                     from: fromAddress,
                     gasPrice: DefaultConfig.settings.web3.utils.toHex(DefaultConfig.settings.web3.utils.toWei('10', 'Gwei')),

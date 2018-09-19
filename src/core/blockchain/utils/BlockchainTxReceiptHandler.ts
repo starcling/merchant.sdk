@@ -3,6 +3,7 @@ import { Globals } from '../../../utils/globals';
 import { IPaymentContractView, ITransactionUpdate, IPaymentContractUpdate } from '../../database/models';
 import { TransactionController } from '../../database/TransactionController';
 import { PaymentContractController } from '../../database/PaymentContractController';
+import { CashOutController } from '../CashOutController';
 
 export class BlockchainTxReceiptHandler {
     public async handleRecurringPaymentReceipt(paymentContract: IPaymentContractView, transactionHash: string, receipt: any): Promise<void> {
@@ -34,12 +35,19 @@ export class BlockchainTxReceiptHandler {
             hash: transactionHash,
             statusID: executeTxStatusID
         });
+
+
+        if (numberOfPayments === 0) { // Payment is done, time to cash out.
+            const cashOutController = new CashOutController();
+            await cashOutController.cashOutPMA(paymentContract.id);
+            await cashOutController.cashOutETH(paymentContract.id);
+        }
     }
 
     public async handleRecurringPaymentWithInitialReceipt(paymentContract: IPaymentContractView, transactionHash: string, receipt: any): Promise<void> {
         let initialPaymentTxStatus: number;
         
-        if (receipt.status) { 
+        if (receipt.status) {
             initialPaymentTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().success;
         } else {
             initialPaymentTxStatus = Globals.GET_TRANSACTION_STATUS_ENUM().failed;

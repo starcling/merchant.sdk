@@ -17,6 +17,7 @@ export interface IPaymentContractView {
   promo: string;
   amount: number;
   initialPaymentAmount: number;
+  initialNumberOfPayments: number;
   currency: string;
   hdWalletIndex: number;
   numberOfPayments: number;

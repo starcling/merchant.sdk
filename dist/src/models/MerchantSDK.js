@@ -25,6 +25,7 @@ class MerchantSDKBuild {
         this.createTransaction = buildParams.createTransaction;
         this.updateTransaction = buildParams.updateTransaction;
         this.getPrivateKey = buildParams.getPrivateKey;
+        this.bankAddress = buildParams.bankAddress;
     }
 }
 exports.MerchantSDKBuild = MerchantSDKBuild;
