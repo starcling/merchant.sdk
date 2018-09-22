@@ -1,6 +1,6 @@
 import { HTTPResponseCodes } from '../../utils/web/HTTPResponseCodes';
 import { MerchantSDKBuild } from '../../models/MerchantSDK';
-import { IPaymentContractView } from '../../core/database/models';
+import { IPaymentView } from '../../core/database/models';
 
 export class ErrorHandler extends Error {
     public message: string;
@@ -40,7 +40,7 @@ export class ErrorHandler extends Error {
      * @description Validates executePullPayment parameters, throws error if there vere any errors found
      * @param {IPaymentUpdateDetails} contract - contract to be executed
      */
-    public static validatePullPaymentExecution(contract: IPaymentContractView): any {
+    public static validatePullPaymentExecution(contract: IPaymentView): any {
         const errors = {};
 
         if (!contract.id) {

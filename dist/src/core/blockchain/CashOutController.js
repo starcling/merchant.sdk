@@ -22,7 +22,7 @@ class CashOutController {
     }
     cashOutPMA(paymentID, tokenAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const payment = (yield this.paymentDbController.getContract(paymentID)).data[0];
+            const payment = (yield this.paymentDbController.getPayment(paymentID)).data[0];
             if (!((payment.initialNumberOfPayments - payment.numberOfPayments) % payment.cashOutFrequency)) {
                 const balance = yield this.getBalance(payment.merchantAddress, tokenAddress);
                 yield new FundingController_1.FundingController().fundPMA(payment.merchantAddress, default_config_1.DefaultConfig.settings.bankAddress, balance, tokenAddress);
@@ -31,7 +31,7 @@ class CashOutController {
     }
     cashOutETH(paymentID, tokenAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const payment = (yield this.paymentDbController.getContract(paymentID)).data[0];
+            const payment = (yield this.paymentDbController.getPayment(paymentID)).data[0];
             const fundingController = new FundingController_1.FundingController();
             const balance = yield new BlockchainHelper_1.BlockchainHelper().getProvider().getBalance(payment.merchantAddress);
             const initalFee = Math.floor(Math.random() * (this.max - this.min) + this.min) * default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');

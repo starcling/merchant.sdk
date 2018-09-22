@@ -9,17 +9,17 @@ export class SchedulerBuffer {
     private static bufferName = 'scheduler_keys';
     public static SCHEDULER_BUFFER: Scheduler[] = [];
 
-    public static set(contract_id: string, scheduler: Scheduler) {
-        SchedulerBuffer.SCHEDULER_BUFFER[contract_id] = scheduler;
-        rclient.sadd(SchedulerBuffer.bufferName, contract_id);
+    public static set(paymentID: string, scheduler: Scheduler) {
+        SchedulerBuffer.SCHEDULER_BUFFER[paymentID] = scheduler;
+        rclient.sadd(SchedulerBuffer.bufferName, paymentID);
     }
 
-    public static get(contract_id: string): Scheduler {
-        return SchedulerBuffer.SCHEDULER_BUFFER[contract_id];
+    public static get(paymentID: string): Scheduler {
+        return SchedulerBuffer.SCHEDULER_BUFFER[paymentID];
     }
 
-    public static delete(contract_id: string) {
-        const scheduler = SchedulerBuffer.SCHEDULER_BUFFER[contract_id];
+    public static delete(paymentID: string) {
+        const scheduler = SchedulerBuffer.SCHEDULER_BUFFER[paymentID];
         if (scheduler) {
             if (scheduler.instance) {
                 scheduler.instance.cancel();
@@ -28,8 +28,8 @@ export class SchedulerBuffer {
                 clearInterval(scheduler.interval);
             }
             
-            delete SchedulerBuffer.SCHEDULER_BUFFER[contract_id];
-            rclient.srem(SchedulerBuffer.bufferName, contract_id);
+            delete SchedulerBuffer.SCHEDULER_BUFFER[paymentID];
+            rclient.srem(SchedulerBuffer.bufferName, paymentID);
             return true;
         }
 
@@ -43,30 +43,30 @@ export class SchedulerBuffer {
         rclient.smembers(SchedulerBuffer.bufferName, async (err, ids) => {
             if (!err) {
                 for (let i = 0; i < ids.length; i++) {
-                    new PaymentContractController().getContract(ids[i]).then(async response => {
-                        const paymentContract = response.data[0];
-                        if (!SchedulerBuffer.SCHEDULER_BUFFER[paymentContract.id]) {
+                    new PaymentContractController().getPayment(ids[i]).then(async response => {
+                        const payment = response.data[0];
+                        if (!SchedulerBuffer.SCHEDULER_BUFFER[payment.id]) {
                             rclient.srem(SchedulerBuffer.bufferName, ids[i]);
 
-                            if (paymentContract.id != null) {
-                                new Scheduler(paymentContract.id, async () => {
-                                    executePullPayment(paymentContract.id);
+                            if (payment.id != null) {
+                                new Scheduler(payment.id, async () => {
+                                    executePullPayment(payment.id);
                                 }).start(true);
 
-                                switch (paymentContract.status) {
+                                switch (payment.status) {
                                     case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_CONTRACT_STATUS_ENUM().initial]):
-                                        Scheduler.stop(paymentContract.id);
-                                        Scheduler.restart(paymentContract.id);
+                                        Scheduler.stop(payment.id);
+                                        Scheduler.restart(payment.id);
                                         break;
                                     case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_CONTRACT_STATUS_ENUM().running]):
-                                        Scheduler.stop(paymentContract.id);
-                                        Scheduler.restart(paymentContract.id);
+                                        Scheduler.stop(payment.id);
+                                        Scheduler.restart(payment.id);
                                         break;
                                     case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_CONTRACT_STATUS_ENUM().stopped]):
-                                        Scheduler.stop(paymentContract.id);
+                                        Scheduler.stop(payment.id);
                                         break;
                                     case (Globals.GET_CONTRACT_STATUS_ENUM_NAMES[Globals.GET_CONTRACT_STATUS_ENUM().canceled]):
-                                        Scheduler.stop(paymentContract.id);
+                                        Scheduler.stop(payment.id);
                                         break;
                                 }
                             }
@@ -84,16 +84,16 @@ export class SchedulerBuffer {
     * @description Method for actual execution of pull paymentContract
     * @returns {object} null
     */
-    protected static async testScheduler(contractID?: string) {
+    protected static async testScheduler(paymentID?: string) {
         const contractDbConnector = new PaymentContractController();
-        const paymentContract = (await contractDbConnector.getContract(contractID)).data[0];
+        const paymentContract = (await contractDbConnector.getPayment(paymentID)).data[0];
 
         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
         paymentContract.lastPaymentDate = paymentContract.nextPaymentDate;
         paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0 ?
             paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + paymentContract.frequency;
         paymentContract.status = paymentContract.numberOfPayments === 0 ? Globals.GET_CONTRACT_STATUS_ENUM().done : Globals.GET_CONTRACT_STATUS_ENUM()[paymentContract.status],
-            await contractDbConnector.updateContract(paymentContract);
+            await contractDbConnector.updatePayment(paymentContract);
     }
 
     public static reconnectToRedis() {

@@ -13,25 +13,25 @@ const TransactionController_1 = require("../../database/TransactionController");
 const PaymentContractController_1 = require("../../database/PaymentContractController");
 const CashOutController_1 = require("../CashOutController");
 class BlockchainTxReceiptHandler {
-    handleRecurringPaymentReceipt(paymentContract, transactionHash, receipt) {
+    handleRecurringPaymentReceipt(payment, transactionHash, receipt) {
         return __awaiter(this, void 0, void 0, function* () {
-            let numberOfPayments = paymentContract.numberOfPayments;
-            let lastPaymentDate = paymentContract.lastPaymentDate;
-            let nextPaymentDate = paymentContract.nextPaymentDate;
+            let numberOfPayments = payment.numberOfPayments;
+            let lastPaymentDate = payment.lastPaymentDate;
+            let nextPaymentDate = payment.nextPaymentDate;
             let executeTxStatusID;
             let statusID;
             if (receipt.status) {
                 numberOfPayments = numberOfPayments - 1;
                 lastPaymentDate = Math.floor(new Date().getTime() / 1000);
-                nextPaymentDate = Number(paymentContract.nextPaymentDate) + Number(paymentContract.frequency);
+                nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
                 executeTxStatusID = globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().success;
-                statusID = numberOfPayments == 0 ? globals_1.Globals.GET_CONTRACT_STATUS_ENUM().done : globals_1.Globals.GET_CONTRACT_STATUS_ENUM()[paymentContract.status];
+                statusID = numberOfPayments == 0 ? globals_1.Globals.GET_CONTRACT_STATUS_ENUM().done : globals_1.Globals.GET_CONTRACT_STATUS_ENUM()[payment.status];
             }
             else {
                 executeTxStatusID = globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed;
             }
-            yield new PaymentContractController_1.PaymentContractController().updateContract({
-                id: paymentContract.id,
+            yield new PaymentContractController_1.PaymentContractController().updatePayment({
+                id: payment.id,
                 numberOfPayments: numberOfPayments,
                 lastPaymentDate: lastPaymentDate,
                 nextPaymentDate: nextPaymentDate,
@@ -43,12 +43,12 @@ class BlockchainTxReceiptHandler {
             });
             if (numberOfPayments === 0) {
                 const cashOutController = new CashOutController_1.CashOutController();
-                yield cashOutController.cashOutPMA(paymentContract.id);
-                yield cashOutController.cashOutETH(paymentContract.id);
+                yield cashOutController.cashOutPMA(payment.id);
+                yield cashOutController.cashOutETH(payment.id);
             }
         });
     }
-    handleRecurringPaymentWithInitialReceipt(paymentContract, transactionHash, receipt) {
+    handleRecurringPaymentWithInitialReceipt(payment, transactionHash, receipt) {
         return __awaiter(this, void 0, void 0, function* () {
             let initialPaymentTxStatus;
             if (receipt.status) {

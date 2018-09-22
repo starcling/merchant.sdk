@@ -11,25 +11,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const globals_1 = require("../../utils/globals");
 const PaymentContractController_1 = require("../database/PaymentContractController");
 class ScheduleHelper {
-    static adjustStartTime(contract) {
+    static adjustStartTime(payment) {
         return __awaiter(this, void 0, void 0, function* () {
             const currentTime = Number(new Date().getTime() / 1000);
-            if (Number(contract.startTimestamp) <= currentTime && Number(contract.startTimestamp) + globals_1.Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
-                contract.startTimestamp = Math.floor(Number(currentTime + 1));
-                yield new PaymentContractController_1.PaymentContractController().updateContract(contract);
+            if (Number(payment.startTimestamp) <= currentTime && Number(payment.startTimestamp) + globals_1.Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
+                payment.startTimestamp = Math.floor(Number(currentTime + 1));
+                yield new PaymentContractController_1.PaymentContractController().updatePayment(payment);
             }
         });
     }
-    static updateContractStatus(contract, status) {
+    static updatePaymentStatus(payment, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            contract.statusID = status;
-            yield new PaymentContractController_1.PaymentContractController().updateContract(contract);
+            payment.statusID = status;
+            yield new PaymentContractController_1.PaymentContractController().updatePayment(payment);
         });
     }
-    static getContract(contractID) {
+    static getPayment(paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return (yield new PaymentContractController_1.PaymentContractController().getContract(contractID).catch((err) => { console.log(err); })).data[0];
+                return (yield new PaymentContractController_1.PaymentContractController().getPayment(paymentID).catch((err) => { console.log(err); })).data[0];
             }
             catch (err) {
                 return null;

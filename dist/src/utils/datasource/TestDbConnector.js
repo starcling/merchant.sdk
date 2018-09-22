@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const DataService_1 = require("../../utils/datasource/DataService");
 class TestDbConnector {
-    createContract(insertDetails) {
+    createPayment(insertDetails) {
         const sqlQuery = {
             text: 'SELECT * FROM fc_create_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
             values: [
@@ -27,7 +27,7 @@ class TestDbConnector {
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery, true);
     }
-    updateContract(updateDetails) {
+    updatePayment(updateDetails) {
         return __awaiter(this, void 0, void 0, function* () {
             const sqlQuery = {
                 text: 'SELECT * FROM fc_update_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
@@ -52,27 +52,14 @@ class TestDbConnector {
             return response;
         });
     }
-    getContract(contractID) {
+    getPayment(contractID) {
         const sqlQuery = {
             text: 'SELECT * FROM public.fc_get_payment_contract($1);',
             values: [contractID]
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
     }
-    getAllContracts() {
-        const sqlQuery = {
-            text: 'SELECT * FROM public.fc_get_payment_contracts();'
-        };
-        return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
-    }
-    deleteContract(contractID) {
-        const sqlQuery = {
-            text: 'SELECT * FROM public.fc_delete_payment_contract($1);',
-            values: [contractID]
-        };
-        return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
-    }
-    createPayment(insertDetails) {
+    createPaymentTemplate(insertDetails) {
         const sqlQuery = {
             text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
             values: [
@@ -92,7 +79,7 @@ class TestDbConnector {
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery, true);
     }
-    updatePayment(updateDetails) {
+    updatePaymentTemplate(updateDetails) {
         return __awaiter(this, void 0, void 0, function* () {
             const sqlQuery = {
                 text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
@@ -120,14 +107,14 @@ class TestDbConnector {
             return response;
         });
     }
-    getPayment(paymentID) {
+    getPaymentTemplate(paymentID) {
         const sqlQuery = {
             text: 'SELECT * FROM public.fc_get_payment_details($1);',
             values: [paymentID]
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
     }
-    deletePayment(paymentId) {
+    deletePaymentTemplate(paymentId) {
         const sqlQuery = {
             text: 'SELECT * FROM public.fc_delete_payment($1);',
             values: [paymentId]

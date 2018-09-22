@@ -1,8 +1,8 @@
-import { IPaymentContractUpdate, ITransactionInsert, ITransactionUpdate, ITransactionGet } from "../../core/database/models";
+import { IPaymentUpdate, ITransactionInsert, ITransactionUpdate, ITransactionGet } from "../../core/database/models";
 import { ISqlQuery, DataService } from '../../utils/datasource/DataService';
 
 export class TestDbConnector {
-  public createContract(insertDetails: any) {
+  public createPayment(insertDetails: any) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM fc_create_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       values: [
@@ -21,7 +21,7 @@ export class TestDbConnector {
     return new DataService().executeQueryAsPromise(sqlQuery, true);
   }
 
-  public async updateContract(updateDetails: IPaymentContractUpdate) {
+  public async updatePayment(updateDetails: IPaymentUpdate) {
     const sqlQuery: ISqlQuery = {
       // tslint:disable-next-line:max-line-length
       text: 'SELECT * FROM fc_update_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
@@ -48,7 +48,7 @@ export class TestDbConnector {
     return response;
   }
 
-  public getContract(contractID: string) {
+  public getPayment(contractID: string) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM public.fc_get_payment_contract($1);',
       values: [contractID]
@@ -57,24 +57,7 @@ export class TestDbConnector {
     return new DataService().executeQueryAsPromise(sqlQuery);
   }
 
-  public getAllContracts() {
-    const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM public.fc_get_payment_contracts();'
-    };
-
-    return new DataService().executeQueryAsPromise(sqlQuery);
-  }
-
-  public deleteContract(contractID: string) {
-    const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM public.fc_delete_payment_contract($1);',
-      values: [contractID]
-    };
-
-    return new DataService().executeQueryAsPromise(sqlQuery);
-  }
-
-  public createPayment(insertDetails: any) {
+  public createPaymentTemplate(insertDetails: any) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
       values: [
@@ -96,7 +79,7 @@ export class TestDbConnector {
     return new DataService().executeQueryAsPromise(sqlQuery, true);
   }
 
-  public async updatePayment(updateDetails: any) {
+  public async updatePaymentTemplate(updateDetails: any) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
       values: [
@@ -125,7 +108,7 @@ export class TestDbConnector {
     return response;
   }
 
-  public getPayment(paymentID: string) {
+  public getPaymentTemplate(paymentID: string) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM public.fc_get_payment_details($1);',
       values: [paymentID]
@@ -134,7 +117,7 @@ export class TestDbConnector {
     return new DataService().executeQueryAsPromise(sqlQuery);
   }
 
-  public deletePayment(paymentId: string) {
+  public deletePaymentTemplate(paymentId: string) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM public.fc_delete_payment($1);',
       values: [paymentId]

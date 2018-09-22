@@ -1,5 +1,5 @@
 import { DefaultConfig } from '../../config/default.config';
-import { IPaymentContractUpdate } from './models';
+import { IPaymentUpdate } from './models';
 
 export class PaymentContractController {
 
@@ -8,8 +8,8 @@ export class PaymentContractController {
   * @param {string} contractID: ID of the contract
   * @returns {boolean} success/fail response
   */
-  public async getContract(contractID: string) {
-    return await DefaultConfig.settings.getContract(contractID);
+  public async getPayment(contractID: string) {
+    return await DefaultConfig.settings.getPayment(contractID);
   }
 
   /**
@@ -17,7 +17,7 @@ export class PaymentContractController {
    * @param {IPaymentUpdateDetails} contract contract object
    * @returns {HTTPResponse} Returns success feedback
    */
-  public async updateContract(contract: IPaymentContractUpdate) {
-    return await DefaultConfig.settings.updateContract(contract);
+  public async updatePayment(contract: IPaymentUpdate) {
+    return await DefaultConfig.settings.updatePayment(contract);
   }
 }

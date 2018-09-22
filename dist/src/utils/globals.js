@@ -22,11 +22,11 @@ class Globals {
     static GET_QR_API_URL() {
         return '/qr/url/';
     }
+    static GET_PAYMENT_TEMPLATE_URL() {
+        return '/payment-templates';
+    }
     static GET_PAYMENT_URL() {
         return '/payments';
-    }
-    static GET_CONTRACT_URL() {
-        return '/contracts';
     }
     static GET_TRANSACTION_URL() {
         return '/transactions';

@@ -1,4 +1,4 @@
-export interface IPaymentContractUpdate {
+export interface IPaymentUpdate {
   id: string;
   hdWalletIndex: number;
   numberOfPayments: number;
@@ -10,7 +10,7 @@ export interface IPaymentContractUpdate {
   userID: string;
 }
 
-export interface IPaymentContractView {
+export interface IPaymentView {
   id: string;
   title: string;
   description: string;

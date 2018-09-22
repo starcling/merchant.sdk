@@ -23,11 +23,11 @@ let paymentID;
 let testId;
 
 const insertTestPayment = async (testPayment) => {
-    const result = await testDbConnector.createPayment(testPayment);
+    const result = await testDbConnector.createPaymentTemplate(testPayment);
     paymentID = result.data[0].id;
 };
 const updateTestContract = async (testContract) => {
-    await testDbConnector.updateContract(testContract);
+    await testDbConnector.updatePayment(testContract);
 };
 const clearTestPayment = async (paymentID) => {
     const sqlQuery = {
@@ -67,8 +67,8 @@ const USD_EXCHANGE_RATE = 120000000; // 0.012 * 1^10
 
 const settings = {
     web3: web3API,
-    getContract: testDbConnector.getContract,
-    updateContract: testDbConnector.updateContract,
+    getPayment: testDbConnector.getPayment,
+    updatePayment: testDbConnector.updatePayment,
     getTransactions: testDbConnector.getTransactionsByContractID,
     createTransaction: testDbConnector.createTransaction,
     updateTransaction: testDbConnector.updateTransaction,
@@ -153,9 +153,9 @@ contract('Master Pull Payment Contract', async (accounts) => {
     beforeEach(async () => {
         testContract.paymentID = paymentID;
         testContract.pullPaymentAddress = masterPullPayment.address;
-        const result = await testDbConnector.createContract(testContract);
+        const result = await testDbConnector.createPayment(testContract);
         testId = result.data[0].id;
-        await testDbConnector.updateContract({
+        await testDbConnector.updatePayment({
             id: result.data[0].id,
             merchantAddress: beneficiary
         });
@@ -231,7 +231,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
         describe('successfuly execute cash out ETH', async () => {
             it('should cash out ETHs from beneficiery to the bank', async () => {
-                await testDbConnector.updateContract({
+                await testDbConnector.updatePayment({
                     id: recurringPullPayment.paymentID,
                     merchantAddress: beneficiary2
                 });

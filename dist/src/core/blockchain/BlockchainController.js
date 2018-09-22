@@ -25,7 +25,7 @@ class BlockchainController {
         this.transactionDbController = new TransactionController_1.TransactionController();
         this.contractDbController = new PaymentContractController_1.PaymentContractController();
     }
-    monitorRegistrationTransaction(txHash, contractID) {
+    monitorRegistrationTransaction(txHash, paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const sub = setInterval(() => __awaiter(this, void 0, void 0, function* () {
@@ -38,16 +38,16 @@ class BlockchainController {
                             hash: receipt.transactionHash,
                             statusID: status
                         });
-                        const contract = (yield this.contractDbController.getContract(contractID)).data;
+                        const contract = (yield this.contractDbController.getPayment(paymentID)).data;
                         const payment = contractResponse.data[0];
-                        if (receipt.status && bcHelper.isValidRegisterTx(receipt, contractID)) {
+                        if (receipt.status && bcHelper.isValidRegisterTx(receipt, paymentID)) {
                             if (contract.type == globals_1.Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
                                 contract.type == globals_1.Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
-                                this.executePullPayment(contractID);
+                                this.executePullPayment(paymentID);
                             }
                             if (payment.type !== globals_1.Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().singlePull]) {
-                                new Scheduler_1.Scheduler(contractID, () => __awaiter(this, void 0, void 0, function* () {
-                                    this.executePullPayment(contractID);
+                                new Scheduler_1.Scheduler(paymentID, () => __awaiter(this, void 0, void 0, function* () {
+                                    this.executePullPayment(paymentID);
                                 })).start();
                             }
                         }
@@ -63,7 +63,7 @@ class BlockchainController {
             }
         });
     }
-    monitorCancellationTransaction(txHash, contractID) {
+    monitorCancellationTransaction(txHash, paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const sub = setInterval(() => __awaiter(this, void 0, void 0, function* () {
@@ -76,7 +76,7 @@ class BlockchainController {
                             statusID: status
                         });
                         if (receipt.status) {
-                            const contract = (yield this.contractDbController.getContract(contractID)).data[0];
+                            const contract = (yield this.contractDbController.getPayment(paymentID)).data[0];
                             Scheduler_1.Scheduler.stop(contract.id);
                         }
                     }
@@ -92,7 +92,7 @@ class BlockchainController {
         return __awaiter(this, void 0, void 0, function* () {
             const transactionDbController = new TransactionController_1.TransactionController();
             const contractDbController = new PaymentContractController_1.PaymentContractController();
-            const paymentContract = (yield contractDbController.getContract(contractID)).data[0];
+            const paymentContract = (yield contractDbController.getPayment(contractID)).data[0];
             ErrorHandler_1.ErrorHandler.validatePullPaymentExecution(paymentContract);
             const contract = yield new SmartContractReader_1.SmartContractReader(globals_1.Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(paymentContract.pullPaymentAddress);
             const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();

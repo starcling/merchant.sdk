@@ -10,14 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const default_config_1 = require("../../config/default.config");
 class PaymentContractController {
-    getContract(contractID) {
+    getPayment(contractID) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield default_config_1.DefaultConfig.settings.getContract(contractID);
+            return yield default_config_1.DefaultConfig.settings.getPayment(contractID);
         });
     }
-    updateContract(contract) {
+    updatePayment(contract) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield default_config_1.DefaultConfig.settings.updateContract(contract);
+            return yield default_config_1.DefaultConfig.settings.updatePayment(contract);
         });
     }
 }

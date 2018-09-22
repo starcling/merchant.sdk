@@ -13,13 +13,13 @@ export class QrCode {
 
     /**
     * @description generate QR Code object
-    * @param {string} paymentID: ID of the specific payment
+    * @param {string} paymentTemplateID: ID of the specific payment
     * @returns {object} QR code object
     */
-    public generateQRCode(paymentID: string) {
+    public generateQRCode(paymentTemplateID: string) {
         return {
-            paymentURL: this.generateURL(DefaultConfig.settings.paymentsURL, paymentID),
-            contractURL: this.generateURL(DefaultConfig.settings.contractURL, ''),
+            paymentTemplateURL: this.generateURL(DefaultConfig.settings.paymentTemplateURL, paymentTemplateID),
+            paymentURL: this.generateURL(DefaultConfig.settings.paymentURL, ''),
             transactionURL: this.generateURL(DefaultConfig.settings.transactionURL, '')
         };
     }

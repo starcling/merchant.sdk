@@ -1,6 +1,6 @@
 import { Globals } from "../../utils/globals";
 import { PaymentContractController } from "../database/PaymentContractController";
-import { IPaymentContractView } from "../database/models";
+import { IPaymentView } from "../database/models";
 import { SmartContractReader } from "./utils/SmartContractReader";
 import { BlockchainHelper } from "./utils/BlockchainHelper";
 import { DefaultConfig } from "../../config/default.config";
@@ -63,7 +63,7 @@ export class FundingController {
         return new Promise(async (resolve, reject) => {
             try {
                 tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
-                const paymentContract: IPaymentContractView = (await new PaymentContractController().getContract(paymentID)).data[0];
+                const paymentContract: IPaymentView = (await new PaymentContractController().getPayment(paymentID)).data[0];
                 const rate = await new HTTPHelper().request(`${Globals.GET_CRYPTOCOMPARE_URL()}data/price?fsym=PMA&tsyms=${paymentContract.currency.toUpperCase()}`, 'GET');
                 const value = new BlockchainHelper().parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
 

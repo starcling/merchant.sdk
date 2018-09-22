@@ -8,7 +8,7 @@ import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
 import { BlockchainTxReceiptHandler } from './utils/BlockchainTxReceiptHandler';
 import { TransactionController } from '../database/TransactionController';
 import { PaymentContractController } from '../database/PaymentContractController';
-import { ITransactionUpdate, IPaymentContractView, ITransactionGet, ITransactionInsert } from '../database/models';
+import { ITransactionUpdate, IPaymentView, ITransactionGet, ITransactionInsert } from '../database/models';
 import { FundingController } from './FundingController';
 import { CashOutController } from './CashOutController';
 
@@ -25,10 +25,10 @@ export class BlockchainController {
     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
     * to create a scheduler that will execute the pull payment
     * @param {string} txHash: Hash of the transaction that needs to be monitored
-    * @param {string} contractID: ID of the contract registration which status is to be updated
+    * @param {string} paymentID: ID of the contract registration which status is to be updated
     * @returns {boolean} success/fail response
     */
-    protected async monitorRegistrationTransaction(txHash: string, contractID: string) {
+    protected async monitorRegistrationTransaction(txHash: string, paymentID: string) {
         try {
             const sub = setInterval(async () => {
                 const bcHelper = new BlockchainHelper();
@@ -40,19 +40,19 @@ export class BlockchainController {
                     const contractResponse = await this.transactionDbController.updateTransaction(<ITransactionUpdate>{
                         hash: receipt.transactionHash,
                         statusID: status
-                    })
-                    const contract: IPaymentContractView = (await this.contractDbController.getContract(contractID)).data;
+                    });
+                    const contract: IPaymentView = (await this.contractDbController.getPayment(paymentID)).data;
                     const payment = contractResponse.data[0];
 
-                    if (receipt.status && bcHelper.isValidRegisterTx(receipt, contractID)) {
+                    if (receipt.status && bcHelper.isValidRegisterTx(receipt, paymentID)) {
                         if (contract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
                             contract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
-                            this.executePullPayment(contractID);
+                            this.executePullPayment(paymentID);
                         }
 
                         if (payment.type !== Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull]) {
-                            new Scheduler(contractID, async () => {
-                                this.executePullPayment(contractID);
+                            new Scheduler(paymentID, async () => {
+                                this.executePullPayment(paymentID);
                             }).start();
                         }
                     } else {
@@ -72,10 +72,10 @@ export class BlockchainController {
     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
     * to stop the scheduler that executes the pull payment
     * @param {string} txHash: Hash of the transaction that needs to be monitored
-    * @param {string} contractID: ID of the payment which cancellation status is to be updated
+    * @param {string} paymentID: ID of the payment which cancellation status is to be updated
     * @returns {boolean} success/fail response
     */
-    protected async monitorCancellationTransaction(txHash: string, contractID: string) {
+    protected async monitorCancellationTransaction(txHash: string, paymentID: string) {
         try {
             const sub = setInterval(async () => {
                 const receipt = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
@@ -87,7 +87,7 @@ export class BlockchainController {
                         statusID: status
                     });
                     if (receipt.status) {
-                        const contract = (await this.contractDbController.getContract(contractID)).data[0];
+                        const contract = (await this.contractDbController.getPayment(paymentID)).data[0];
                         Scheduler.stop(contract.id);
                     }
                 }
@@ -106,7 +106,7 @@ export class BlockchainController {
     public async executePullPayment(contractID?: string): Promise<void> {
         const transactionDbController = new TransactionController();
         const contractDbController = new PaymentContractController();
-        const paymentContract: IPaymentContractView = (await contractDbController.getContract(contractID)).data[0];
+        const paymentContract: IPaymentView = (await contractDbController.getPayment(contractID)).data[0];
         ErrorHandler.validatePullPaymentExecution(paymentContract);
 
         const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(paymentContract.pullPaymentAddress);

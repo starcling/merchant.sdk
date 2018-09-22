@@ -1,5 +1,5 @@
 import { Globals } from '../../utils/globals';
-import { IPaymentContractUpdate } from '../database/models';
+import { IPaymentUpdate } from '../database/models';
 import { PaymentContractController } from '../database/PaymentContractController';
 
 /**
@@ -14,22 +14,22 @@ export class ScheduleHelper {
     /**
      * @description Adjusts the start timestamp if the start timestamp is in the 5 min window in past of the current time
      */
-    public static async adjustStartTime(contract: IPaymentContractUpdate) {
+    public static async adjustStartTime(payment: IPaymentUpdate) {
         const currentTime = Number(new Date().getTime() / 1000);
-        if (Number(contract.startTimestamp) <= currentTime && Number(contract.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
-            contract.startTimestamp = Math.floor(Number(currentTime + 1));
-            await new PaymentContractController().updateContract(contract);
+        if (Number(payment.startTimestamp) <= currentTime && Number(payment.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
+            payment.startTimestamp = Math.floor(Number(currentTime + 1));
+            await new PaymentContractController().updatePayment(payment);
         }
     }
 
-    public static async updateContractStatus(contract: IPaymentContractUpdate, status: number) {
-        contract.statusID = status;
-        await new PaymentContractController().updateContract(contract);
+    public static async updatePaymentStatus(payment: IPaymentUpdate, status: number) {
+        payment.statusID = status;
+        await new PaymentContractController().updatePayment(payment);
     }
 
-    public static async getContract(contractID: string) {
+    public static async getPayment(paymentID: string) {
         try {
-            return (await new PaymentContractController().getContract(contractID).catch((err) => {console.log(err)})).data[0];
+            return (await new PaymentContractController().getPayment(paymentID).catch((err) => {console.log(err)})).data[0];
         } catch(err) {
             return null;
         }

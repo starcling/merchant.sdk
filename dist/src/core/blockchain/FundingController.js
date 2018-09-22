@@ -56,7 +56,7 @@ class FundingController {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     tokenAddress = tokenAddress ? tokenAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token;
-                    const paymentContract = (yield new PaymentContractController_1.PaymentContractController().getContract(paymentID)).data[0];
+                    const paymentContract = (yield new PaymentContractController_1.PaymentContractController().getPayment(paymentID)).data[0];
                     const rate = yield new HTTPHelper_1.HTTPHelper().request(`${globals_1.Globals.GET_CRYPTOCOMPARE_URL()}data/price?fsym=PMA&tsyms=${paymentContract.currency.toUpperCase()}`, 'GET');
                     const value = new BlockchainHelper_1.BlockchainHelper().parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
                     const transferFee = yield this.calculateTransferFee(paymentContract.merchantAddress, bankAddress, value, tokenAddress);

@@ -13,10 +13,10 @@ const delay = 1000; //1 second
 
 const testDbConnector = new TestDbConnector();
 const dataservice = new DataService();
-const contractsTestData: any = require('../../../../resources/testData.json').contracts;
 const paymentsTestData: any = require('../../../../resources/testData.json').payments;
-const testContract: any = contractsTestData['insertTestContract'];
+const paymentTemplatesTestData: any = require('../../../../resources/testData.json').paymentTemplates;
 const testPayment: any = paymentsTestData['insertTestPayment'];
+const testPaymentTemplate: any = paymentTemplatesTestData['insertTestPaymentTemplate'];
 
 var testId: string;
 
@@ -24,26 +24,27 @@ const settings = {
     web3: null,
     merchantApiUrl: null,
     getEnums: null,
-    getContract: new TestDbConnector().getContract,
-    updateContract: new TestDbConnector().updateContract,
+    getPayment: new TestDbConnector().getPayment,
+    updatePayment: new TestDbConnector().updatePayment,
     getTransactions: new TestDbConnector().getTransactionsByContractID,
     createTransaction: new TestDbConnector().createTransaction,
     updateTransaction: new TestDbConnector().updateTransaction,
-    getPrivateKey: null
+    getPrivateKey: null,
+    bankAddress: null
 };
 
 let sdk;
 
 const insertTestPayment = async () => {
-    testPayment.frequency = 1;
-    const result = await testDbConnector.createPayment(testPayment);
-    testContract.paymentID = result.data[0].id;
+    testPaymentTemplate.frequency = 1;
+    const result = await testDbConnector.createPaymentTemplate(testPaymentTemplate);
+    testPayment.paymentID = result.data[0].id;
 };
 
 const clearTestPayment = async () => {
     const sqlQuery: ISqlQuery = {
         text: 'DELETE FROM public.tb_payments WHERE id = $1;',
-        values: [testContract.paymentID]
+        values: [testPayment.paymentID]
     };
     await dataservice.executeQueryAsPromise(sqlQuery);
 };
@@ -64,8 +65,8 @@ describe('A Scheduler', () => {
     describe('with correct parameters', () => {
 
         beforeEach(async () => {
-            testContract.customerAddress = (Math.floor(Math.random() * 1e+30 + 1e20)).toString();
-            const result = await testDbConnector.createContract(testContract);
+            testPayment.customerAddress = (Math.floor(Math.random() * 1e+30 + 1e20)).toString();
+            const result = await testDbConnector.createPayment(testPayment);
             testId = result.data[0].id;
         });
 
@@ -73,17 +74,17 @@ describe('A Scheduler', () => {
             let count = 0;
             const numberOfPayments = 3;
 
-            testDbConnector.getContract(testId).then(res => {
+            testDbConnector.getPayment(testId).then(res => {
                 const tempContract = res.data[0];
                 tempContract.startTimestamp = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
 
-                testDbConnector.updateContract(tempContract).then(response => {
+                testDbConnector.updatePayment(tempContract).then(response => {
                     const paymentContract = response.data[0];
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updateContract(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 
                     setTimeout(() => {
@@ -98,16 +99,16 @@ describe('A Scheduler', () => {
         it('should stop when numberOfPayments reaches 0', (done) => {
             const numberOfPayments = 2;
 
-            testDbConnector.getContract(testId).then(res => {
+            testDbConnector.getPayment(testId).then(res => {
                 const tempContract = res.data[0];
                 tempContract.startTimestamp = Math.floor(new Date(Date.now()).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
-                testDbConnector.updateContract(tempContract).then(response => {
+                testDbConnector.updatePayment(tempContract).then(response => {
                     const paymentContract = response.data[0];
 
                     new Scheduler(paymentContract.id, async () => {
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updateContract(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 
                     setTimeout(() => {
@@ -123,18 +124,18 @@ describe('A Scheduler', () => {
             let count = 0;
             const numberOfPayments = 4; //Must be even number
 
-            testDbConnector.getContract(testId).then(res => {
+            testDbConnector.getPayment(testId).then(res => {
                 const tempContract = res.data[0];
                 tempContract.startTimestamp = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
 
-                testDbConnector.updateContract(tempContract).then(response => {
+                testDbConnector.updatePayment(tempContract).then(response => {
                     const paymentContract = response.data[0];
 
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updateContract(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 
                     setTimeout(async () => {
@@ -156,25 +157,25 @@ describe('A Scheduler', () => {
             const numberOfPayments: number = 8;
 
             before(async () => {
-                testContract.customerAddress = (Math.floor(Math.random() * 1e+30 + 1e20)).toString();
-                const result = await testDbConnector.createContract(testContract);
+                testPayment.customerAddress = (Math.floor(Math.random() * 1e+30 + 1e20)).toString();
+                const result = await testDbConnector.createPayment(testPayment);
                 testId = result.data[0].id;
             });
 
             beforeEach('start scheduler', async () => {
-                const tempContract = (await testDbConnector.getContract(testId)).data[0];
+                const tempContract = (await testDbConnector.getPayment(testId)).data[0];
                 tempContract.startTimestamp = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.nextPaymentDate = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
 
-                await testDbConnector.updateContract(tempContract);
+                await testDbConnector.updatePayment(tempContract);
 
                 new Scheduler(tempContract.id, async () => {
                     count++;
                     tempContract.numberOfPayments = tempContract.numberOfPayments - 1;
                     tempContract.nextPaymentDate = tempContract.numberOfPayments === 0
-                        ? tempContract.nextPaymentDate : Number(tempContract.nextPaymentDate) + testPayment.frequency;
-                    await (new TestDbConnector().updateContract(tempContract).catch(() => { }));
+                        ? tempContract.nextPaymentDate : Number(tempContract.nextPaymentDate) + testPaymentTemplate.frequency;
+                    await (new TestDbConnector().updatePayment(tempContract).catch(() => { }));
                 }).start();
 
             })
@@ -206,20 +207,20 @@ describe('A Scheduler', () => {
             let count = 0;
             const numberOfPayments = 8;
 
-            testDbConnector.getContract(testId).then(res => {
+            testDbConnector.getPayment(testId).then(res => {
                 let tempContract = res.data[0];
                 tempContract.startTimestamp = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.nextPaymentDate = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
 
-                testDbConnector.updateContract(tempContract).then(response => {
+                testDbConnector.updatePayment(tempContract).then(response => {
                     const paymentContract = response.data[0];
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
                         paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0
-                            ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPayment.frequency;
-                        await (new TestDbConnector().updateContract(paymentContract).catch(() => { }));
+                            ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPaymentTemplate.frequency;
+                        await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 
                     Scheduler.stop(paymentContract.id);
@@ -242,21 +243,21 @@ describe('A Scheduler', () => {
             let count = 0;
             const numberOfPayments = 8;
 
-            testDbConnector.getContract(testId).then(res => {
+            testDbConnector.getPayment(testId).then(res => {
                 const tempContract = res.data[0];
                 tempContract.startTimestamp = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.nextPaymentDate = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
 
-                testDbConnector.updateContract(tempContract).then(response => {
+                testDbConnector.updatePayment(tempContract).then(response => {
                     const paymentContract = response.data[0];
 
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
                         paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0
-                            ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPayment.frequency;
-                        await (new TestDbConnector().updateContract(paymentContract).catch(() => { }));
+                            ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPaymentTemplate.frequency;
+                        await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 
                     setTimeout(() => {
@@ -283,19 +284,19 @@ describe('A Scheduler', () => {
             const numberOfPayments = 8;
             const numberOfRestarts = 5;
 
-            testDbConnector.getContract(testId).then(res => {
+            testDbConnector.getPayment(testId).then(res => {
                 const tempContract = res.data[0];
                 tempContract.startTimestamp = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.nextPaymentDate = Math.floor(new Date(Date.now() + delay).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
 
-                testDbConnector.updateContract(tempContract).then(response => {
+                testDbConnector.updatePayment(tempContract).then(response => {
                     const paymentContract = response.data[0];
 
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updateContract(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 
                     setTimeout(async () => {
@@ -327,21 +328,21 @@ describe('A Scheduler', () => {
 
             (async () => {
                 for (let i = 0; i < multipleInstances; i++) {
-                    testContract.customerAddress = (Math.floor(Math.random() * 1e+30 + 1e20)).toString();
-                    const tempContract = (await testDbConnector.createContract(testContract)).data[0];
+                    testPayment.customerAddress = (Math.floor(Math.random() * 1e+30 + 1e20)).toString();
+                    const tempContract = (await testDbConnector.createPayment(testPayment)).data[0];
                     ids.push(tempContract.id);
                     tempContract.startTimestamp = Math.floor(new Date(Date.now() + 2 * delay).getTime() / 1000);
                     tempContract.nextPaymentDate = Math.floor(new Date(Date.now() + 2 * delay).getTime() / 1000);
                     tempContract.numberOfPayments = numberOfPayments;
 
-                    await testDbConnector.updateContract(tempContract);
+                    await testDbConnector.updatePayment(tempContract);
 
                     new Scheduler(ids[i], async () => {
 
-                        const p = (await testDbConnector.getContract(ids[i])).data[0];
+                        const p = (await testDbConnector.getPayment(ids[i])).data[0];
                         count++;
                         p.numberOfPayments = p.numberOfPayments - 1;
-                        await testDbConnector.updateContract(p);
+                        await testDbConnector.updatePayment(p);
                     }).start();
                 }
             })();
@@ -362,18 +363,18 @@ describe('A Scheduler', () => {
             const numberOfPayments = 3;
             const timeWindow = 20000; // Time window of 20 seconds
 
-            testDbConnector.getContract(testId).then(res => {
+            testDbConnector.getPayment(testId).then(res => {
                 const tempContract = res.data[0];
                 tempContract.startTimestamp = Math.floor(new Date(Date.now() - timeWindow).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
 
-                testDbConnector.updateContract(tempContract).then(response => {
+                testDbConnector.updatePayment(tempContract).then(response => {
                     const paymentContract = response.data[0];
 
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updateContract(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 
                     setTimeout(() => {
@@ -388,8 +389,8 @@ describe('A Scheduler', () => {
 
     describe('with incorrect parameters', () => {
         beforeEach(async () => {
-            testContract.customerAddress = (Math.floor(Math.random() * 1e+30 + 1e20)).toString();
-            const result = await testDbConnector.createContract(testContract);
+            testPayment.customerAddress = (Math.floor(Math.random() * 1e+30 + 1e20)).toString();
+            const result = await testDbConnector.createPayment(testPayment);
             testId = result.data[0].id;
         });
 
@@ -399,18 +400,18 @@ describe('A Scheduler', () => {
             const numberOfPayments = 3; //Run scheduler for 3 seconds
             const timeWindow = 301000; // Time window of 5 min and 1 second
 
-            testDbConnector.getContract(testId).then(res => {
+            testDbConnector.getPayment(testId).then(res => {
                 const tempContract = res.data[0];
                 tempContract.startTimestamp = Math.floor(new Date(Date.now() - timeWindow).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
 
-                testDbConnector.updateContract(tempContract).then(response => {
+                testDbConnector.updatePayment(tempContract).then(response => {
                     const paymentContract = response.data[0];
 
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updateContract(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 
                     setTimeout(() => {
