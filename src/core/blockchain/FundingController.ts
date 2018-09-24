@@ -65,7 +65,7 @@ export class FundingController {
                 tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
                 const paymentContract: IPaymentView = (await new PaymentController().getPayment(paymentID)).data[0];
                 const rate = await new HTTPHelper().request(`${Globals.GET_CRYPTOCOMPARE_URL()}data/price?fsym=PMA&tsyms=${paymentContract.currency.toUpperCase()}`, 'GET');
-                const value = new BlockchainHelper().parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
+                const value = new BlockchainHelper().parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), Globals.GET_DEFAULT_VALUE_DECIMALS());
 
                 const transferFee = await this.calculateTransferFee(paymentContract.merchantAddress, bankAddress, value, tokenAddress);
                 const executionFee = await this.calculateMaxExecutionFee(pullPaymentAddress);

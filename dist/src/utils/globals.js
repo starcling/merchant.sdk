@@ -23,10 +23,10 @@ class Globals {
         return '/qr/url/';
     }
     static GET_PAYMENT_MODEL_URL() {
-        return '/payment-templates';
+        return '/pull-payment-models';
     }
     static GET_PAYMENT_URL() {
-        return '/payments';
+        return '/pull-payments';
     }
     static GET_TRANSACTION_URL() {
         return '/transactions';

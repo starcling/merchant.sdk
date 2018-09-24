@@ -12,6 +12,7 @@ let accounts;
 let blockchainHelper = new BlockchainHelper(web3API);
 
 describe('A Blockchain Helper', async () => {
+
     it('should return the nonce of an account', async () => {
         accounts = await web3API.eth.getAccounts();
         const nonceBefore = await blockchainHelper.getTxCount(accounts[0]);
@@ -22,5 +23,15 @@ describe('A Blockchain Helper', async () => {
         const nonceAfter = await blockchainHelper.getTxCount(accounts[0]);
 
         expect((nonceAfter - nonceBefore)).to.be.equal(2);
+    });
+
+    it('should parse the value based on decimals', async () => {
+        const amount = '1';
+        const rate = 0.0009;
+
+        const parsed = blockchainHelper.parseUnits(((Number(amount) / 100) / rate).toString(), 18);
+
+        console.log(parsed);
+        expect(parsed)
     })
 });

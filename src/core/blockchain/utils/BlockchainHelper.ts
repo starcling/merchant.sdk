@@ -5,7 +5,7 @@ export class BlockchainHelper {
     private provider: any;
 
     public constructor(provider?: any) {
-        this.provider = provider? provider : DefaultConfig.settings.web3;
+        this.provider = provider ? provider : DefaultConfig.settings.web3;
     }
 
     /**
@@ -69,12 +69,12 @@ export class BlockchainHelper {
         }
         while (fraction.length < decimals) { fraction += '0'; }
 
-        whole = DefaultConfig.settings.web3.utils.toBN(whole);
-        fraction = DefaultConfig.settings.web3.utils.toBN(fraction);
-        const tenPower = DefaultConfig.settings.web3.utils.toBN('1' + Array(decimals + 1).join('0'));
+        whole = this.provider.utils.toBN(whole);
+        fraction = this.provider.utils.toBN(fraction);
+        const tenPower = this.provider.utils.toBN('1' + Array(decimals + 1).join('0'));
         let res = (whole.mul(tenPower)).add(fraction);
 
-        if (negative) { res = res.mul(DefaultConfig.settings.web3.utils.toBN(-1)); }
+        if (negative) { res = res.mul(this.provider.utils.toBN(-1)); }
 
         return res;
     }

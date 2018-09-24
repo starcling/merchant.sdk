@@ -34,7 +34,7 @@ export class Globals {
      * @returns {string} url
      */
     public static GET_PAYMENT_MODEL_URL(): string {
-        return '/payment-templates';
+        return '/pull-payment-models';
     }
 
     /**
@@ -42,7 +42,7 @@ export class Globals {
      * @returns {string} url
      */
     public static GET_PAYMENT_URL(): string {
-        return '/payments';
+        return '/pull-payments';
     }
 
     /**
@@ -84,6 +84,14 @@ export class Globals {
      */
     public static GET_START_SCHEDULER_TIME_WINDOW(): number {
         return 300;
+    }
+
+    /**
+     * @description Method for getting decimals for parsing units
+     * @returns {number} time in seconds
+     */
+    public static GET_DEFAULT_VALUE_DECIMALS(): number {
+        return 18;
     }
 
     public static GET_DEFAULT_REDIS_HOST(): string {
