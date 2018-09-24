@@ -1,13 +1,13 @@
-import { IPaymentUpdate, ITransactionInsert, ITransactionUpdate, ITransactionGet } from "../../core/database/models";
+import { IPullPaymentUpdate, ITransactionInsert, ITransactionUpdate, ITransactionGet } from "../../core/database/models";
 import { ISqlQuery, DataService } from '../../utils/datasource/DataService';
 
 export class TestDbConnector {
-  public createPayment(insertDetails: any) {
+  public createPullPayment(insertDetails: any) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM fc_create_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       values: [
         insertDetails.hdWalletIndex,
-        insertDetails.paymentID,
+        insertDetails.pullPaymentID,
         insertDetails.numberOfPayments,
         insertDetails.nextPaymentDate,
         insertDetails.startTimestamp,
@@ -21,7 +21,7 @@ export class TestDbConnector {
     return new DataService().executeQueryAsPromise(sqlQuery, true);
   }
 
-  public async updatePayment(updateDetails: IPaymentUpdate) {
+  public async updatePullPayment(updateDetails: IPullPaymentUpdate) {
     const sqlQuery: ISqlQuery = {
       // tslint:disable-next-line:max-line-length
       text: 'SELECT * FROM fc_update_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
@@ -48,16 +48,16 @@ export class TestDbConnector {
     return response;
   }
 
-  public getPayment(contractID: string) {
+  public getPullPayment(pullPaymentID: string) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM public.fc_get_payment_contract($1);',
-      values: [contractID]
+      values: [pullPaymentID]
     };
 
     return new DataService().executeQueryAsPromise(sqlQuery);
   }
 
-  public createPaymentTemplate(insertDetails: any) {
+  public createPullPaymentModel(insertDetails: any) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
       values: [
@@ -79,7 +79,7 @@ export class TestDbConnector {
     return new DataService().executeQueryAsPromise(sqlQuery, true);
   }
 
-  public async updatePaymentTemplate(updateDetails: any) {
+  public async updatePullPaymentModel(updateDetails: any) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
       values: [
@@ -108,19 +108,19 @@ export class TestDbConnector {
     return response;
   }
 
-  public getPaymentTemplate(paymentID: string) {
+  public getPullPaymentModel(pullPaymentID: string) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM public.fc_get_payment_details($1);',
-      values: [paymentID]
+      values: [pullPaymentID]
     };
 
     return new DataService().executeQueryAsPromise(sqlQuery);
   }
 
-  public deletePaymentTemplate(paymentId: string) {
+  public deletePullPaymentModel(pullPaymentID: string) {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM public.fc_delete_payment($1);',
-      values: [paymentId]
+      values: [pullPaymentID]
     };
 
     return new DataService().executeQueryAsPromise(sqlQuery);
@@ -132,7 +132,7 @@ export class TestDbConnector {
       values: [
         transaction.hash,
         transaction.typeID,
-        transaction.contractID,
+        transaction.pullPaymentID,
         transaction.timestamp
       ]
     };
@@ -178,7 +178,7 @@ export class TestDbConnector {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM public.fc_get_transactions_by_contract_id($1, $2, $3);',
       values: [
-        transaction.contractID,
+        transaction.pullPaymentID,
         transaction.statusID,
         transaction.typeID
       ]

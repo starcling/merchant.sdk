@@ -19,17 +19,14 @@ const testDbConnector = new TestDbConnector();
 const dataservice = new DataService();
 const privateKeysDbConnector = new PrivateKeysDbConnector();
 const dataServiceEncrypted = new DataServiceEncrypted();
-let paymentID;
+let pullPaymentID;
 let testId;
 
-const insertTestPaymentModel = async (testPayment) => {
-    const result = await testDbConnector.createPaymentTemplate(testPayment);
-    paymentID = result.data[0].id;
+const insertTestPullPaymentModel = async (testPayment) => {
+    const result = await testDbConnector.createPullPaymentModel(testPayment);
+    pullPaymentID = result.data[0].id;
 };
-const updateTestPayment = async (testContract) => {
-    await testDbConnector.updatePayment(testContract);
-};
-const clearTestPaymentModel = async (paymentID) => {
+const clearTestPullPaymentModel = async (paymentID) => {
     const sqlQuery = {
         text: 'DELETE FROM public.tb_payments WHERE id = $1;',
         values: [paymentID]
@@ -67,8 +64,8 @@ const USD_EXCHANGE_RATE = 120000000; // 0.012 * 1^10
 
 const settings = {
     web3: web3API,
-    getPayment: testDbConnector.getPayment,
-    updatePayment: testDbConnector.updatePayment,
+    getPullPayment: testDbConnector.getPullPayment,
+    updatePullPayment: testDbConnector.updatePullPayment,
     getTransactions: testDbConnector.getTransactionsByContractID,
     createTransaction: testDbConnector.createTransaction,
     updateTransaction: testDbConnector.updateTransaction,
@@ -88,7 +85,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     let recurringPullPayment;
     let token;
     let masterPullPayment;
-    let testPaymentModel = {
+    let testPullPaymentModel = {
         "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
         "title": "test payment",
         "description": "test description",
@@ -103,9 +100,9 @@ contract('Master Pull Payment Contract', async (accounts) => {
         "cashOutFrequency": 1,
         "networkID": 3
     }
-    let testPayment = {
+    let testPullPayment = {
         "hdWalletIndex": 0,
-        "paymentID": "adsfads",
+        "pullPaymentID": "adsfads",
         "numberOfPayments": 4,
         "nextPaymentDate": 10,
         "lastPaymentDate": 20,
@@ -129,13 +126,13 @@ contract('Master Pull Payment Contract', async (accounts) => {
     before('build sdk and insert payment', async () => {
         settings.bankAddress = bank;
         sdk = new MerchantSDK().build(settings);
-        await insertTestPaymentModel(testPaymentModel);
+        await insertTestPullPaymentModel(testPullPaymentModel);
     });
     after('disconnect redis', async () => {
         sdk.disconnectRedis();
     });
     afterEach('clear test payment', async () => {
-        await clearTestPaymentModel(testId);
+        await clearTestPullPaymentModel(testId);
 
     });
 
@@ -151,23 +148,23 @@ contract('Master Pull Payment Contract', async (accounts) => {
             });
     });
     beforeEach(async () => {
-        testPayment.paymentID = paymentID;
-        testPayment.pullPaymentAddress = masterPullPayment.address;
-        const result = await testDbConnector.createPayment(testPayment);
+        testPullPayment.pullPaymentID = pullPaymentID;
+        testPullPayment.pullPaymentAddress = masterPullPayment.address;
+        const result = await testDbConnector.createPullPayment(testPullPayment);
         testId = result.data[0].id;
-        await testDbConnector.updatePayment({
+        await testDbConnector.updatePullPayment({
             id: result.data[0].id,
             merchantAddress: beneficiary
         });
 
     });
     beforeEach(async () => {
-        await insertTestPaymentModel(testPaymentModel);
+        await insertTestPullPaymentModel(testPullPaymentModel);
     });
     beforeEach('set recurring pull payment', () => {
         recurringPullPayment = {
             merchantID: "merchantID",
-            paymentID: testId,
+            pullPaymentID: testId,
             customerAddress: client,
             beneficiary: beneficiary,
             currency: 'EUR',
@@ -210,34 +207,34 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
 
     describe('A CashOut Controller', async () => {
-        // describe('successfuly retrieve the balance for address', async () => {
-        //     it('should retrieve balance of PMA of provided address', async () => {
-        //         const balance = await token.balanceOf(beneficiary);
-        //         const sdkBalance = await sdk.getBalance(beneficiary, token.address);
-        //         Number(sdkBalance).should.be.equal(Number(balance));
-        //     });
-        // });
+        describe('successfuly retrieve the balance for address', async () => {
+            it('should retrieve balance of PMA of provided address', async () => {
+                const balance = await token.balanceOf(beneficiary);
+                const sdkBalance = await sdk.getBalance(beneficiary, token.address);
+                Number(sdkBalance).should.be.equal(Number(balance));
+            });
+        });
 
-        // describe('successfuly execute cash out PMA', async () => {
-        //     it('should cash out PMAs from beneficiery to the bank', async () => {
-        //         const oldBalance = await token.balanceOf(beneficiary);
-        //         await sdk.fundETH(bank, beneficiary, recurringPullPayment.paymentID, null, token.address, masterPullPayment.address);
-        //         await sdk.cashOutPMA(recurringPullPayment.paymentID, token.address);
-        //         const balance = await token.balanceOf(beneficiary);
-        //         Number(balance).should.be.equal(0);
-        //         Number(oldBalance).should.be.greaterThan(0);
-        //     });
-        // });
+        describe('successfuly execute cash out PMA', async () => {
+            it('should cash out PMAs from beneficiery to the bank', async () => {
+                const oldBalance = await token.balanceOf(beneficiary);
+                await sdk.fundETH(bank, beneficiary, recurringPullPayment.pullPaymentID, null, token.address, masterPullPayment.address);
+                await sdk.cashOutPMA(recurringPullPayment.pullPaymentID, token.address);
+                const balance = await token.balanceOf(beneficiary);
+                Number(balance).should.be.equal(0);
+                Number(oldBalance).should.be.greaterThan(0);
+            });
+        });
 
         describe('successfuly execute cash out ETH', async () => {
             it('should cash out ETHs from beneficiery to the bank', async () => {
-                await testDbConnector.updatePayment({
-                    id: recurringPullPayment.paymentID,
+                await testDbConnector.updatePullPayment({
+                    id: recurringPullPayment.pullPaymentID,
                     merchantAddress: beneficiary2
                 });
                 const oldBalance = await web3API.eth.getBalance(beneficiary2);
-                await sdk.fundETH(bank, beneficiary2, recurringPullPayment.paymentID, null, token.address, masterPullPayment.address);
-                await sdk.cashOutETH(recurringPullPayment.paymentID, token.address);
+                await sdk.fundETH(bank, beneficiary2, recurringPullPayment.pullPaymentID, null, token.address, masterPullPayment.address);
+                await sdk.cashOutETH(recurringPullPayment.pullPaymentID, token.address);
 
                 const newBalance = await web3API.eth.getBalance(beneficiary2);
 

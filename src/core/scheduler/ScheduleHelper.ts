@@ -1,6 +1,6 @@
 import { Globals } from '../../utils/globals';
-import { IPaymentUpdate } from '../database/models';
-import { PaymentController } from '../database/PaymentController';
+import { IPullPaymentUpdate } from '../database/models';
+import { PullPaymentController } from '../database/PullPaymentController';
 
 /**
  * @description Scheduler, started and created through monitorTransaction function.
@@ -14,22 +14,22 @@ export class ScheduleHelper {
     /**
      * @description Adjusts the start timestamp if the start timestamp is in the 5 min window in past of the current time
      */
-    public static async adjustStartTime(payment: IPaymentUpdate) {
+    public static async adjustStartTime(pullPayment: IPullPaymentUpdate) {
         const currentTime = Number(new Date().getTime() / 1000);
-        if (Number(payment.startTimestamp) <= currentTime && Number(payment.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
-            payment.startTimestamp = Math.floor(Number(currentTime + 1));
-            await new PaymentController().updatePayment(payment);
+        if (Number(pullPayment.startTimestamp) <= currentTime && Number(pullPayment.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
+            pullPayment.startTimestamp = Math.floor(Number(currentTime + 1));
+            await new PullPaymentController().updatePullPayment(pullPayment);
         }
     }
 
-    public static async updatePaymentStatus(payment: IPaymentUpdate, status: number) {
-        payment.statusID = status;
-        await new PaymentController().updatePayment(payment);
+    public static async updatePaymentStatus(pullPayment: IPullPaymentUpdate, status: number) {
+        pullPayment.statusID = status;
+        await new PullPaymentController().updatePullPayment(pullPayment);
     }
 
-    public static async getPayment(paymentID: string) {
+    public static async getPullPayment(pullPaymentID: string) {
         try {
-            return (await new PaymentController().getPayment(paymentID).catch((err) => {console.log(err)})).data[0];
+            return (await new PullPaymentController().getPullPayment(pullPaymentID).catch((err) => {console.log(err)})).data[0];
         } catch(err) {
             return null;
         }

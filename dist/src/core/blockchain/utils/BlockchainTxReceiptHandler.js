@@ -10,28 +10,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const globals_1 = require("../../../utils/globals");
 const TransactionController_1 = require("../../database/TransactionController");
-const PaymentController_1 = require("../../database/PaymentController");
+const PullPaymentController_1 = require("../../database/PullPaymentController");
 const CashOutController_1 = require("../CashOutController");
 class BlockchainTxReceiptHandler {
-    handleRecurringPaymentReceipt(payment, transactionHash, receipt) {
+    handleRecurringPaymentReceipt(pullPayment, transactionHash, receipt) {
         return __awaiter(this, void 0, void 0, function* () {
-            let numberOfPayments = payment.numberOfPayments;
-            let lastPaymentDate = payment.lastPaymentDate;
-            let nextPaymentDate = payment.nextPaymentDate;
+            let numberOfPayments = pullPayment.numberOfPayments;
+            let lastPaymentDate = pullPayment.lastPaymentDate;
+            let nextPaymentDate = pullPayment.nextPaymentDate;
             let executeTxStatusID;
             let statusID;
             if (receipt.status) {
                 numberOfPayments = numberOfPayments - 1;
                 lastPaymentDate = Math.floor(new Date().getTime() / 1000);
-                nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
+                nextPaymentDate = Number(pullPayment.nextPaymentDate) + Number(pullPayment.frequency);
                 executeTxStatusID = globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().success;
-                statusID = numberOfPayments == 0 ? globals_1.Globals.GET_CONTRACT_STATUS_ENUM().done : globals_1.Globals.GET_CONTRACT_STATUS_ENUM()[payment.status];
+                statusID = numberOfPayments == 0 ? globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().done : globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM()[pullPayment.status];
             }
             else {
                 executeTxStatusID = globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed;
             }
-            yield new PaymentController_1.PaymentController().updatePayment({
-                id: payment.id,
+            yield new PullPaymentController_1.PullPaymentController().updatePullPayment({
+                id: pullPayment.id,
                 numberOfPayments: numberOfPayments,
                 lastPaymentDate: lastPaymentDate,
                 nextPaymentDate: nextPaymentDate,
@@ -43,8 +43,8 @@ class BlockchainTxReceiptHandler {
             });
             if (numberOfPayments === 0) {
                 const cashOutController = new CashOutController_1.CashOutController();
-                yield cashOutController.cashOutPMA(payment.id);
-                yield cashOutController.cashOutETH(payment.id);
+                yield cashOutController.cashOutPMA(pullPayment.id);
+                yield cashOutController.cashOutETH(pullPayment.id);
             }
         });
     }

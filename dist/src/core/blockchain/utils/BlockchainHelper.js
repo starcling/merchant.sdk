@@ -14,10 +14,16 @@ class BlockchainHelper {
     getProvider() {
         return this.provider.eth ? this.provider.eth : this.provider;
     }
-    isValidRegisterTx(receipt, payment_id) {
+    toWei(value) {
+        return this.provider.utils.toWei(value);
+    }
+    toBN(value) {
+        return this.provider.utils.toBN(value);
+    }
+    isValidRegisterTx(receipt, pull_payment_id) {
         try {
             const data = this.getProvider().abi.decodeLog(['address', 'address', 'string'], receipt.logs[0].data, receipt.logs.topics);
-            return data[2] === payment_id ? true : false;
+            return data[2] === pull_payment_id ? true : false;
         }
         catch (err) {
             return false;
@@ -52,12 +58,12 @@ class BlockchainHelper {
         while (fraction.length < decimals) {
             fraction += '0';
         }
-        whole = default_config_1.DefaultConfig.settings.web3.utils.toBN(whole);
-        fraction = default_config_1.DefaultConfig.settings.web3.utils.toBN(fraction);
-        const tenPower = default_config_1.DefaultConfig.settings.web3.utils.toBN('1' + Array(decimals + 1).join('0'));
+        whole = this.provider.utils.toBN(whole);
+        fraction = this.provider.utils.toBN(fraction);
+        const tenPower = this.provider.utils.toBN('1' + Array(decimals + 1).join('0'));
         let res = (whole.mul(tenPower)).add(fraction);
         if (negative) {
-            res = res.mul(default_config_1.DefaultConfig.settings.web3.utils.toBN(-1));
+            res = res.mul(this.provider.utils.toBN(-1));
         }
         return res;
     }

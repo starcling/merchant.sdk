@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const globals_1 = require("../../utils/globals");
-const PaymentController_1 = require("../database/PaymentController");
+const PullPaymentController_1 = require("../database/PullPaymentController");
 const SmartContractReader_1 = require("./utils/SmartContractReader");
 const BlockchainHelper_1 = require("./utils/BlockchainHelper");
 const default_config_1 = require("../../config/default.config");
@@ -23,7 +23,7 @@ class FundingController {
         this.lastBlock = "k_last_block";
         this.multiplier = 1.5;
     }
-    fundETH(fromAddress, toAddress, paymentID = null, value = null, tokenAddress = null, pullPaymentAddress = null) {
+    fundETH(fromAddress, toAddress, paymentID, value = null, tokenAddress = null, pullPaymentAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!value) {
                 value = yield this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
@@ -56,9 +56,11 @@ class FundingController {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     tokenAddress = tokenAddress ? tokenAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).token;
-                    const paymentContract = (yield new PaymentController_1.PaymentController().getPayment(paymentID)).data[0];
+                    const paymentContract = (yield new PullPaymentController_1.PullPaymentController().getPullPayment(paymentID)).data[0];
                     const rate = yield new HTTPHelper_1.HTTPHelper().request(`${globals_1.Globals.GET_CRYPTOCOMPARE_URL()}data/price?fsym=PMA&tsyms=${paymentContract.currency.toUpperCase()}`, 'GET');
-                    const value = new BlockchainHelper_1.BlockchainHelper().parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), 14);
+                    const bcHelper = new BlockchainHelper_1.BlockchainHelper();
+                    const amount = ((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]);
+                    const value = bcHelper.toWei(amount.toString());
                     const transferFee = yield this.calculateTransferFee(paymentContract.merchantAddress, bankAddress, value, tokenAddress);
                     const executionFee = yield this.calculateMaxExecutionFee(pullPaymentAddress);
                     const calculation = (paymentContract.numberOfPayments * (transferFee + executionFee)) * this.multiplier;
@@ -79,7 +81,7 @@ class FundingController {
                 try {
                     new BlockchainHelper_1.BlockchainHelper().getProvider().estimateGas({
                         to: tokenAddress,
-                        from: fromAddress,
+                        from: '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb',
                         gasPrice: default_config_1.DefaultConfig.settings.web3.utils.toHex(default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei')),
                         gasLimit: default_config_1.DefaultConfig.settings.web3.utils.toHex(4000000),
                         value: '0x00',

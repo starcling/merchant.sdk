@@ -8,12 +8,12 @@ import { MultipleInheritance } from './utils/MultipleInheritance/MultipleInherit
 import { ErrorHandler } from './utils/handlers/ErrorHandler';
 import { Scheduler } from './core/scheduler/Scheduler';
 import { SchedulerBuffer } from './core/scheduler/ScheduleBuffer';
-import { PaymentController } from './core/database/PaymentController';
+import { PullPaymentController } from './core/database/PullPaymentController';
 import { TransactionController } from './core/database/TransactionController';
 import { FundingController } from './core/blockchain/FundingController';
 import { CashOutController } from './core/blockchain/CashOutController';
 
-export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PaymentController, TransactionController, FundingController, CashOutController) {
+export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PullPaymentController, TransactionController, FundingController, CashOutController) {
 
     public constructor() {
         super();

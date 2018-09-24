@@ -33,7 +33,7 @@ export class Globals {
      * @description Method for getting payment api url 
      * @returns {string} url
      */
-    public static GET_PAYMENT_MODEL_URL(): string {
+    public static GET_PULL_PAYMENT_MODEL_URL(): string {
         return '/pull-payment-models';
     }
 
@@ -91,7 +91,7 @@ export class Globals {
      * @returns {number} time in seconds
      */
     public static GET_DEFAULT_VALUE_DECIMALS(): number {
-        return 18;
+        return 13;
     }
 
     public static GET_DEFAULT_REDIS_HOST(): string {
@@ -201,7 +201,7 @@ export class Globals {
         return TransactionStatusEnum;
     }
 
-    public static GET_CONTRACT_STATUS_ENUM(): any {
+    public static GET_PULL_PAYMENT_STATUS_ENUM(): any {
         return ContractStatusEnum;
     }
 
@@ -222,7 +222,7 @@ export class Globals {
         ];
     }
 
-    public static GET_CONTRACT_STATUS_ENUM_NAMES(): any {
+    public static GET_PULL_PAYMENT_STATUS_ENUM_NAMES(): any {
         return [
             '',
             'initial',
@@ -233,7 +233,7 @@ export class Globals {
         ];
     }
 
-    public static GET_PAYMENT_TYPE_ENUM_NAMES(): any {
+    public static GET_PULL_PAYMENT_TYPE_ENUM_NAMES(): any {
         return [
             '',
             'push',

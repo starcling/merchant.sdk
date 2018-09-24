@@ -1,5 +1,5 @@
-import { PaymentController } from "../database/PaymentController";
-import { IPaymentView } from "../database/models";
+import { PullPaymentController } from "../database/PullPaymentController";
+import { IPullPaymentView } from "../database/models";
 import { FundingController } from "./FundingController";
 import { DefaultConfig } from "../../config/default.config";
 import { SmartContractReader } from "./utils/SmartContractReader";
@@ -11,13 +11,13 @@ export class CashOutController {
     private min = 20000;
     private max = 50000;
 
-    private paymentController: PaymentController;
+    private paymentController: PullPaymentController;
     constructor() {
-        this.paymentController = new PaymentController();
+        this.paymentController = new PullPaymentController();
     }
 
     public async cashOutPMA(paymentID: string, tokenAddress: string = null) {
-        const payment: IPaymentView = (await this.paymentController.getPayment(paymentID)).data[0];
+        const payment: IPullPaymentView = (await this.paymentController.getPullPayment(paymentID)).data[0];
 
         if (!((payment.initialNumberOfPayments - payment.numberOfPayments) % payment.cashOutFrequency)) {
             const balance = await this.getBalance(payment.merchantAddress, tokenAddress);
@@ -26,7 +26,7 @@ export class CashOutController {
     }
 
     public async cashOutETH(paymentID: string, tokenAddress: string = null) {
-        const payment: IPaymentView = (await this.paymentController.getPayment(paymentID)).data[0];
+        const payment: IPullPaymentView = (await this.paymentController.getPullPayment(paymentID)).data[0];
         const fundingController = new FundingController();
 
         const balance = await new BlockchainHelper().getProvider().getBalance(payment.merchantAddress);

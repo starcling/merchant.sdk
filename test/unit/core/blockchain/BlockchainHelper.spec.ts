@@ -27,11 +27,8 @@ describe('A Blockchain Helper', async () => {
 
     it('should parse the value based on decimals', async () => {
         const amount = '1';
-        const rate = 0.0009;
-
+        const rate = 0.009;
         const parsed = blockchainHelper.parseUnits(((Number(amount) / 100) / rate).toString(), 18);
-
-        console.log(parsed);
-        expect(parsed)
+        expect(isNaN(parsed)).to.be.equal(false);
     })
 });

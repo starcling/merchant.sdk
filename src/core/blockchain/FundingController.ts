@@ -1,6 +1,6 @@
 import { Globals } from "../../utils/globals";
-import { PaymentController } from "../database/PaymentController";
-import { IPaymentView } from "../database/models";
+import { PullPaymentController } from "../database/PullPaymentController";
+import { IPullPaymentView } from "../database/models";
 import { SmartContractReader } from "./utils/SmartContractReader";
 import { BlockchainHelper } from "./utils/BlockchainHelper";
 import { DefaultConfig } from "../../config/default.config";
@@ -19,11 +19,11 @@ export class FundingController {
      * @param fromAddress Address from wich you want to send ETH's
      * @param toAddress Address to wich you want to receive ETH's
      * @param paymentID (optional) ID of the payment entity that you want to fund
-     * @param value (optional) ** Must send paymentID as well with this param ** Amount that you want to fund
+     * @param value (optional) ** Must send pullPaymentID as well with this param ** Amount that you want to fund
      * @param tokenAddress (optional) Address of the token contract
      * @param pullPaymentAddress (optional) Address of the master pull payment contract
      */
-    public async fundETH(fromAddress: string, toAddress: string, paymentID: string = null, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
+    public async fundETH(fromAddress: string, toAddress: string, paymentID: string, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
         if (!value) {
             value = await this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
             value = value * DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
@@ -63,10 +63,13 @@ export class FundingController {
         return new Promise(async (resolve, reject) => {
             try {
                 tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
-                const paymentContract: IPaymentView = (await new PaymentController().getPayment(paymentID)).data[0];
+                const paymentContract: IPullPaymentView = (await new PullPaymentController().getPullPayment(paymentID)).data[0];
                 const rate = await new HTTPHelper().request(`${Globals.GET_CRYPTOCOMPARE_URL()}data/price?fsym=PMA&tsyms=${paymentContract.currency.toUpperCase()}`, 'GET');
-                const value = new BlockchainHelper().parseUnits(((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]).toString(), Globals.GET_DEFAULT_VALUE_DECIMALS());
+                const bcHelper = new BlockchainHelper();
 
+                const amount = ((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]);
+                const value = bcHelper.toWei(amount.toString());
+                
                 const transferFee = await this.calculateTransferFee(paymentContract.merchantAddress, bankAddress, value, tokenAddress);
                 const executionFee = await this.calculateMaxExecutionFee(pullPaymentAddress);
 
@@ -88,7 +91,7 @@ export class FundingController {
             try {
                 new BlockchainHelper().getProvider().estimateGas({
                     to: tokenAddress,
-                    from: fromAddress,
+                    from: '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb',
                     gasPrice: DefaultConfig.settings.web3.utils.toHex(DefaultConfig.settings.web3.utils.toWei('10', 'Gwei')),
                     gasLimit: DefaultConfig.settings.web3.utils.toHex(4000000),
                     value: '0x00',

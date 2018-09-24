@@ -4,11 +4,11 @@ export class QrCode {
 
     /**
     * @description generate QR Code Url
-    * @param {string} paymentID: ID of the specific payment
+    * @param {string} pullPaymentModelID: ID of the specific payment
     * @returns {string} qr code url
     */
-    private generateURL(callUrl: string, paymentID: string) {
-        return `${DefaultConfig.settings.merchantApiUrl}${callUrl}/${paymentID}`;
+    private generateURL(callUrl: string, pullPaymentModelID: string) {
+        return `${DefaultConfig.settings.merchantApiUrl}${callUrl}/${pullPaymentModelID}`;
     }
 
     /**
@@ -18,8 +18,8 @@ export class QrCode {
     */
     public generateQRCode(paymentModelID: string) {
         return {
-            paymentModelURL: this.generateURL(DefaultConfig.settings.paymentModelURL, paymentModelID),
-            paymentURL: this.generateURL(DefaultConfig.settings.paymentURL, ''),
+            pullPaymentModelURL: this.generateURL(DefaultConfig.settings.pullPaymentModelURL, paymentModelID),
+            pullPaymentURL: this.generateURL(DefaultConfig.settings.pullPaymentURL, ''),
             transactionURL: this.generateURL(DefaultConfig.settings.transactionURL, '')
         };
     }

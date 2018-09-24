@@ -34,13 +34,31 @@ export class BlockchainHelper {
     }
 
     /**
+     * @description Converts provided number as string to wei
+     * @param {string} value value to be converted
+     * @returns {PromiEvent<any>} Returns the PromiEvent from the ethereum network
+     * */
+    public toWei(value: string) {
+        return this.provider.utils.toWei(value);
+    }
+
+    /**
+     * @description Converts provided number to big number
+     * @param {number} value value to be converted
+     * @returns {PromiEvent<any>} Returns the PromiEvent from the ethereum network
+     * */
+    public toBN(value: number) {
+        return this.provider.utils.toBN(value);
+    }
+
+    /**
      * @description Validates the receipt that the tx hash provided is actually a pull payment
      * @returns {boolean} true if the receipt is from pull payment
      * */
-    public isValidRegisterTx(receipt: any, payment_id: string) {
+    public isValidRegisterTx(receipt: any, pull_payment_id: string) {
         try {
             const data = this.getProvider().abi.decodeLog(['address', 'address', 'string'], receipt.logs[0].data, receipt.logs.topics);
-            return data[2] === payment_id ? true : false;
+            return data[2] === pull_payment_id ? true : false;
         } catch (err) {
             return false;
         }

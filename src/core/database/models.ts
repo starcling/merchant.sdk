@@ -1,4 +1,4 @@
-export interface IPaymentUpdate {
+export interface IPullPaymentUpdate {
   id: string;
   hdWalletIndex: number;
   numberOfPayments: number;
@@ -10,7 +10,7 @@ export interface IPaymentUpdate {
   userID: string;
 }
 
-export interface IPaymentView {
+export interface IPullPaymentView {
   id: string;
   title: string;
   description: string;
@@ -45,14 +45,14 @@ export interface ITransactionInsert {
   hash: string;
   statusID: number;
   typeID: number;
-  contractID: string;
+  pullPaymentID: string;
   timestamp: number;
 }
 
 export interface ITransactionGet {
   id: string;
   hash: string;
-  contractID: string;
+  pullPaymentID: string;
   statusID: number;
   typeID: number;
 }

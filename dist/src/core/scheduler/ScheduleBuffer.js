@@ -11,13 +11,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Scheduler_1 = require("./Scheduler");
 const default_config_1 = require("../../config/default.config");
 const globals_1 = require("../../utils/globals");
-const PaymentController_1 = require("../database/PaymentController");
+const PullPaymentController_1 = require("../database/PullPaymentController");
 const redis = require('redis');
 let rclient = null;
 class SchedulerBuffer {
-    static set(paymentID, scheduler) {
-        SchedulerBuffer.SCHEDULER_BUFFER[paymentID] = scheduler;
-        rclient.sadd(SchedulerBuffer.bufferName, paymentID);
+    static set(pullPaymentID, scheduler) {
+        SchedulerBuffer.SCHEDULER_BUFFER[pullPaymentID] = scheduler;
+        rclient.sadd(SchedulerBuffer.bufferName, pullPaymentID);
     }
     static get(paymentID) {
         return SchedulerBuffer.SCHEDULER_BUFFER[paymentID];
@@ -43,7 +43,7 @@ class SchedulerBuffer {
             rclient.smembers(SchedulerBuffer.bufferName, (err, ids) => __awaiter(this, void 0, void 0, function* () {
                 if (!err) {
                     for (let i = 0; i < ids.length; i++) {
-                        new PaymentController_1.PaymentController().getPayment(ids[i]).then((response) => __awaiter(this, void 0, void 0, function* () {
+                        new PullPaymentController_1.PullPaymentController().getPullPayment(ids[i]).then((response) => __awaiter(this, void 0, void 0, function* () {
                             const payment = response.data[0];
                             if (!SchedulerBuffer.SCHEDULER_BUFFER[payment.id]) {
                                 rclient.srem(SchedulerBuffer.bufferName, ids[i]);
@@ -52,18 +52,18 @@ class SchedulerBuffer {
                                         executePullPayment(payment.id);
                                     })).start(true);
                                     switch (payment.status) {
-                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_CONTRACT_STATUS_ENUM().initial]):
+                                        case (globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM_NAMES[globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().initial]):
                                             Scheduler_1.Scheduler.stop(payment.id);
                                             Scheduler_1.Scheduler.restart(payment.id);
                                             break;
-                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_CONTRACT_STATUS_ENUM().running]):
+                                        case (globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM_NAMES[globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().running]):
                                             Scheduler_1.Scheduler.stop(payment.id);
                                             Scheduler_1.Scheduler.restart(payment.id);
                                             break;
-                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_CONTRACT_STATUS_ENUM().stopped]):
+                                        case (globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM_NAMES[globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().stopped]):
                                             Scheduler_1.Scheduler.stop(payment.id);
                                             break;
-                                        case (globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES[globals_1.Globals.GET_CONTRACT_STATUS_ENUM().canceled]):
+                                        case (globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM_NAMES[globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().canceled]):
                                             Scheduler_1.Scheduler.stop(payment.id);
                                             break;
                                     }
@@ -77,16 +77,16 @@ class SchedulerBuffer {
             }));
         });
     }
-    static testScheduler(paymentID) {
+    static testScheduler(pullPaymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            const contractDbConnector = new PaymentController_1.PaymentController();
-            const paymentContract = (yield contractDbConnector.getPayment(paymentID)).data[0];
+            const pullPaymentDbConnector = new PullPaymentController_1.PullPaymentController();
+            const paymentContract = (yield pullPaymentDbConnector.getPullPayment(pullPaymentID)).data[0];
             paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
             paymentContract.lastPaymentDate = paymentContract.nextPaymentDate;
             paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0 ?
                 paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + paymentContract.frequency;
-            paymentContract.status = paymentContract.numberOfPayments === 0 ? globals_1.Globals.GET_CONTRACT_STATUS_ENUM().done : globals_1.Globals.GET_CONTRACT_STATUS_ENUM()[paymentContract.status],
-                yield contractDbConnector.updatePayment(paymentContract);
+            paymentContract.status = paymentContract.numberOfPayments === 0 ? globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().done : globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM()[paymentContract.status],
+                yield pullPaymentDbConnector.updatePullPayment(paymentContract);
         });
     }
     static reconnectToRedis() {

@@ -1,30 +1,30 @@
 
 import { Globals } from '../../../utils/globals';
-import { IPaymentView, ITransactionUpdate, IPaymentUpdate } from '../../database/models';
+import { IPullPaymentView, ITransactionUpdate, IPullPaymentUpdate } from '../../database/models';
 import { TransactionController } from '../../database/TransactionController';
-import { PaymentController } from '../../database/PaymentController';
+import { PullPaymentController } from '../../database/PullPaymentController';
 import { CashOutController } from '../CashOutController';
 
 export class BlockchainTxReceiptHandler {
-    public async handleRecurringPaymentReceipt(payment: IPaymentView, transactionHash: string, receipt: any): Promise<void> {
-        let numberOfPayments = payment.numberOfPayments;
-        let lastPaymentDate = payment.lastPaymentDate;
-        let nextPaymentDate = payment.nextPaymentDate;
+    public async handleRecurringPaymentReceipt(pullPayment: IPullPaymentView, transactionHash: string, receipt: any): Promise<void> {
+        let numberOfPayments = pullPayment.numberOfPayments;
+        let lastPaymentDate = pullPayment.lastPaymentDate;
+        let nextPaymentDate = pullPayment.nextPaymentDate;
         let executeTxStatusID;
         let statusID;
 
         if (receipt.status) {
             numberOfPayments = numberOfPayments - 1;
             lastPaymentDate = Math.floor(new Date().getTime() / 1000); // TODO: get from BC ?
-            nextPaymentDate = Number(payment.nextPaymentDate) + Number(payment.frequency);
+            nextPaymentDate = Number(pullPayment.nextPaymentDate) + Number(pullPayment.frequency);
             executeTxStatusID = Globals.GET_TRANSACTION_STATUS_ENUM().success;
-            statusID = numberOfPayments == 0 ? Globals.GET_CONTRACT_STATUS_ENUM().done : Globals.GET_CONTRACT_STATUS_ENUM()[payment.status]
+            statusID = numberOfPayments == 0 ? Globals.GET_PULL_PAYMENT_STATUS_ENUM().done : Globals.GET_PULL_PAYMENT_STATUS_ENUM()[pullPayment.status]
         } else {
             executeTxStatusID = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
         }
 
-        await new PaymentController().updatePayment(<IPaymentUpdate>{
-            id: payment.id,
+        await new PullPaymentController().updatePullPayment(<IPullPaymentUpdate>{
+            id: pullPayment.id,
             numberOfPayments: numberOfPayments,
             lastPaymentDate: lastPaymentDate,
             nextPaymentDate: nextPaymentDate,
@@ -39,12 +39,12 @@ export class BlockchainTxReceiptHandler {
 
         if (numberOfPayments === 0) { // Payment is done, time to cash out.
             const cashOutController = new CashOutController();
-            await cashOutController.cashOutPMA(payment.id);
-            await cashOutController.cashOutETH(payment.id);
+            await cashOutController.cashOutPMA(pullPayment.id);
+            await cashOutController.cashOutETH(pullPayment.id);
         }
     }
 
-    public async handleRecurringPaymentWithInitialReceipt(payment: IPaymentView, transactionHash: string, receipt: any): Promise<void> {
+    public async handleRecurringPaymentWithInitialReceipt(payment: IPullPaymentView, transactionHash: string, receipt: any): Promise<void> {
         let initialPaymentTxStatus: number;
         
         if (receipt.status) {

@@ -19,20 +19,20 @@ const testDbConnector = new TestDbConnector();
 const dataservice = new DataService();
 const privateKeysDbConnector = new PrivateKeysDbConnector();
 const dataServiceEncrypted = new DataServiceEncrypted();
-let paymentID;
+let pullPaymentID;
 let testId;
 
-const insertTestPaymentModel = async (testPayment) => {
-    const result = await testDbConnector.createPaymentTemplate(testPayment);
-    paymentID = result.data[0].id;
+const insertTestPullPaymentModel = async (testPayment) => {
+    const result = await testDbConnector.createPullPaymentModel(testPayment);
+    pullPaymentID = result.data[0].id;
 };
 const updateTestContract = async (testContract) => {
-    await testDbConnector.updatePayment(testContract);
+    await testDbConnector.updatePullPayment(testContract);
 };
-const clearTestPaymentModel = async (paymentID) => {
+const clearTestPullPaymentModel = async (pullPaymentID) => {
     const sqlQuery = {
         text: 'DELETE FROM public.tb_payments WHERE id = $1;',
-        values: [paymentID]
+        values: [pullPaymentID]
     };
     await dataservice.executeQueryAsPromise(sqlQuery);
 };
@@ -67,8 +67,8 @@ const USD_EXCHANGE_RATE = 120000000; // 0.012 * 1^10
 
 const settings = {
     web3: web3API,
-    getPayment: testDbConnector.getPayment,
-    updatePayment: testDbConnector.updatePayment,
+    getPullPayment: testDbConnector.getPullPayment,
+    updatePullPayment: testDbConnector.updatePullPayment,
     getTransactions: testDbConnector.getTransactionsByContractID,
     createTransaction: testDbConnector.createTransaction,
     updateTransaction: testDbConnector.updateTransaction,
@@ -88,7 +88,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     let recurringPullPaymentWithInitial;
     let token;
     let masterPullPayment;
-    let testPaymentModel = {
+    let testPullPaymentModel = {
         "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
         "title": "test payment",
         "description": "test description",
@@ -101,9 +101,9 @@ contract('Master Pull Payment Contract', async (accounts) => {
         "typeID": 1,
         "networkID": 3
     }
-    let testPayment = {
+    let testPullPayment = {
         "hdWalletIndex": 0,
-        "paymentID": "adsfads",
+        "pullPaymentID": "adsfads",
         "numberOfPayments": 4,
         "nextPaymentDate": 10,
         "lastPaymentDate": 20,
@@ -124,13 +124,13 @@ contract('Master Pull Payment Contract', async (accounts) => {
     })
     before('build sdk and insert payment', async () => {
         sdk = new MerchantSDK().build(settings);
-        await insertTestPaymentModel(testPaymentModel);
+        await insertTestPullPaymentModel(testPullPaymentModel);
     });
     after('disconnect redis', async () => {
         sdk.disconnectRedis();
     });
     afterEach('clear test payment', async () => {
-        await clearTestPaymentModel(testId);
+        await clearTestPullPaymentModel(testId);
 
     });
 
@@ -146,22 +146,22 @@ contract('Master Pull Payment Contract', async (accounts) => {
             });
     });
     beforeEach(async () => {
-        testPayment.paymentID = paymentID;
-        testPayment.pullPaymentAddress = masterPullPayment.address;
-        const result = await testDbConnector.createPayment(testPayment);
+        testPullPayment.pullPaymentID = pullPaymentID;
+        testPullPayment.pullPaymentAddress = masterPullPayment.address;
+        const result = await testDbConnector.createPullPayment(testPullPayment);
         testId = result.data[0].id;
-        await testDbConnector.updatePayment({
+        await testDbConnector.updatePullPayment({
             id: result.data[0].id,
             merchantAddress: beneficiary
         });
     });
     beforeEach(async () => {
-        await insertTestPaymentModel(testPaymentModel);
+        await insertTestPullPaymentModel(testPullPaymentModel);
     });
     beforeEach('set recurring pull payment', () => {
         recurringPullPayment = {
             merchantID: "merchantID",
-            paymentID: testId,
+            pullPaymentID: testId,
             customerAddress: client,
             beneficiary: beneficiary,
             currency: 'EUR',
@@ -175,7 +175,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     beforeEach('set recurring pull payment with intial amount', () => {
         recurringPullPaymentWithInitial = {
             merchantID: "merchantID",
-            paymentID: testId,
+            pullPaymentID: testId,
             customerAddress: client,
             beneficiary: beneficiary,
             currency: 'EUR',
@@ -226,7 +226,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
                     sigVRS.r,
                     sigVRS.s,
                     recurringPullPayment.merchantID,
-                    recurringPullPayment.paymentID,
+                    recurringPullPayment.pullPaymentID,
                     recurringPullPayment.customerAddress,
                     recurringPullPayment.beneficiary,
                     recurringPullPayment.currency,
@@ -247,7 +247,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
                 });
             });
             it('should transfer PMA tokens to the beneficiary', async () => {
-                await sdk.executePullPayment(recurringPullPayment.paymentID);
+                await sdk.executePullPayment(recurringPullPayment.pullPaymentID);
                 const beneficiaryBalance = await token.balanceOf(beneficiary);
 
                 Number(beneficiaryBalance).should.be.equal(1000 * ONE_ETHER);
@@ -264,7 +264,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
                 sigVRS.r,
                 sigVRS.s,
                 recurringPullPaymentWithInitial.merchantID,
-                recurringPullPaymentWithInitial.paymentID,
+                recurringPullPaymentWithInitial.pullPaymentID,
                 recurringPullPaymentWithInitial.customerAddress,
                 recurringPullPaymentWithInitial.beneficiary,
                 recurringPullPaymentWithInitial.currency,
@@ -285,16 +285,16 @@ contract('Master Pull Payment Contract', async (accounts) => {
             });
         });
         it('should transfer PMA tokens to the beneficiary', async () => {
-            await sdk.executePullPayment(recurringPullPayment.paymentID);
+            await sdk.executePullPayment(recurringPullPayment.pullPaymentID);
             const beneficiaryBalance = await token.balanceOf(beneficiary);
 
             Number(beneficiaryBalance).should.be.equal(100 * ONE_ETHER);
         });
 
         it('should transfer PMA tokens to the beneficiary', async () => {
-            await sdk.executePullPayment(recurringPullPayment.paymentID);
+            await sdk.executePullPayment(recurringPullPayment.pullPaymentID);
             await timeTravel(DAY);
-            await sdk.executePullPayment(recurringPullPayment.paymentID);
+            await sdk.executePullPayment(recurringPullPayment.pullPaymentID);
             const beneficiaryBalance = await token.balanceOf(beneficiary);
             Number(beneficiaryBalance).should.be.equal(1100 * ONE_ETHER);
         });

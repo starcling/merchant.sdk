@@ -19,8 +19,8 @@ class MerchantSDKBuild {
         this.keyDbPort = buildParams.keyDbPort ? buildParams.keyDbPort : null;
         this.queueLimit = buildParams.queueLimit ? buildParams.queueLimit : null;
         this.getEnums = buildParams.getEnums;
-        this.getPayment = buildParams.getPayment;
-        this.updatePayment = buildParams.updatePayment;
+        this.getPullPayment = buildParams.getPullPayment;
+        this.updatePullPayment = buildParams.updatePullPayment;
         this.getTransactions = buildParams.getTransactions;
         this.createTransaction = buildParams.createTransaction;
         this.updateTransaction = buildParams.updateTransaction;

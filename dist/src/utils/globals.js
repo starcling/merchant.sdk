@@ -22,7 +22,7 @@ class Globals {
     static GET_QR_API_URL() {
         return '/qr/url/';
     }
-    static GET_PAYMENT_MODEL_URL() {
+    static GET_PULL_PAYMENT_MODEL_URL() {
         return '/pull-payment-models';
     }
     static GET_PAYMENT_URL() {
@@ -42,6 +42,9 @@ class Globals {
     }
     static GET_START_SCHEDULER_TIME_WINDOW() {
         return 300;
+    }
+    static GET_DEFAULT_VALUE_DECIMALS() {
+        return 13;
     }
     static GET_DEFAULT_REDIS_HOST() {
         return 'localhost';
@@ -120,7 +123,7 @@ class Globals {
     static GET_TRANSACTION_STATUS_ENUM() {
         return TransactionStatusEnum;
     }
-    static GET_CONTRACT_STATUS_ENUM() {
+    static GET_PULL_PAYMENT_STATUS_ENUM() {
         return ContractStatusEnum;
     }
     static GET_PAYMENT_TYPE_ENUM() {
@@ -137,7 +140,7 @@ class Globals {
             'success'
         ];
     }
-    static GET_CONTRACT_STATUS_ENUM_NAMES() {
+    static GET_PULL_PAYMENT_STATUS_ENUM_NAMES() {
         return [
             '',
             'initial',
@@ -147,7 +150,7 @@ class Globals {
             'done',
         ];
     }
-    static GET_PAYMENT_TYPE_ENUM_NAMES() {
+    static GET_PULL_PAYMENT_TYPE_ENUM_NAMES() {
         return [
             '',
             'push',

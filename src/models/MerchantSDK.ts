@@ -4,8 +4,8 @@ export interface MerchantSDKSettings extends MerchantSDKBuild {
     pmaApiKey?: string;
     pmaUserToken?: string;
     generateQRApiUrl?: string;
-    paymentModelURL?: string;
-    paymentURL?: string;
+    pullPaymentModelURL?: string;
+    pullPaymentURL?: string;
     transactionURL?: string;
     loginUrl?: string;
     generateApiKeyUrl?: string;
@@ -32,8 +32,8 @@ export class MerchantSDKBuild {
     keyDbPort?: string;
     queueLimit?: number;
     getEnums: any;
-    getPayment: any;
-    updatePayment: any;
+    getPullPayment: any;
+    updatePullPayment: any;
     getTransactions: any;
     createTransaction: any;
     updateTransaction: any;
@@ -58,8 +58,8 @@ export class MerchantSDKBuild {
         this.keyDbPort = buildParams.keyDbPort ? buildParams.keyDbPort : null;
         this.queueLimit = buildParams.queueLimit ? buildParams.queueLimit : null;
         this.getEnums = buildParams.getEnums;
-        this.getPayment = buildParams.getPayment;
-        this.updatePayment = buildParams.updatePayment;
+        this.getPullPayment = buildParams.getPullPayment;
+        this.updatePullPayment = buildParams.updatePullPayment;
         this.getTransactions = buildParams.getTransactions;
         this.createTransaction = buildParams.createTransaction;
         this.updateTransaction = buildParams.updateTransaction;
