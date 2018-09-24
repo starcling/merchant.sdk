@@ -14,9 +14,9 @@ const delay = 1000; //1 second
 const testDbConnector = new TestDbConnector();
 const dataservice = new DataService();
 const paymentsTestData: any = require('../../../../resources/testData.json').payments;
-const paymentTemplatesTestData: any = require('../../../../resources/testData.json').paymentTemplates;
+const paymentModelsTestData: any = require('../../../../resources/testData.json').paymentModels;
 const testPayment: any = paymentsTestData['insertTestPayment'];
-const testPaymentTemplate: any = paymentTemplatesTestData['insertTestPaymentTemplate'];
+const testPaymentModel: any = paymentModelsTestData['insertTestPaymentModel'];
 
 var testId: string;
 
@@ -36,8 +36,8 @@ const settings = {
 let sdk;
 
 const insertTestPayment = async () => {
-    testPaymentTemplate.frequency = 1;
-    const result = await testDbConnector.createPaymentTemplate(testPaymentTemplate);
+    testPaymentModel.frequency = 1;
+    const result = await testDbConnector.createPaymentTemplate(testPaymentModel);
     testPayment.paymentID = result.data[0].id;
 };
 
@@ -174,7 +174,7 @@ describe('A Scheduler', () => {
                     count++;
                     tempContract.numberOfPayments = tempContract.numberOfPayments - 1;
                     tempContract.nextPaymentDate = tempContract.numberOfPayments === 0
-                        ? tempContract.nextPaymentDate : Number(tempContract.nextPaymentDate) + testPaymentTemplate.frequency;
+                        ? tempContract.nextPaymentDate : Number(tempContract.nextPaymentDate) + testPaymentModel.frequency;
                     await (new TestDbConnector().updatePayment(tempContract).catch(() => { }));
                 }).start();
 
@@ -219,7 +219,7 @@ describe('A Scheduler', () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
                         paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0
-                            ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPaymentTemplate.frequency;
+                            ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPaymentModel.frequency;
                         await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 
@@ -256,7 +256,7 @@ describe('A Scheduler', () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
                         paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0
-                            ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPaymentTemplate.frequency;
+                            ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPaymentModel.frequency;
                         await (new TestDbConnector().updatePayment(paymentContract).catch(() => { }));
                     }).start();
 

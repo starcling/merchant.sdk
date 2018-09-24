@@ -22,14 +22,14 @@ const dataServiceEncrypted = new DataServiceEncrypted();
 let paymentID;
 let testId;
 
-const insertTestPayment = async (testPayment) => {
+const insertTestPaymentModel = async (testPayment) => {
     const result = await testDbConnector.createPaymentTemplate(testPayment);
     paymentID = result.data[0].id;
 };
-const updateTestContract = async (testContract) => {
+const updateTestPayment = async (testContract) => {
     await testDbConnector.updatePayment(testContract);
 };
-const clearTestPayment = async (paymentID) => {
+const clearTestPaymentModel = async (paymentID) => {
     const sqlQuery = {
         text: 'DELETE FROM public.tb_payments WHERE id = $1;',
         values: [paymentID]
@@ -88,7 +88,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     let recurringPullPayment;
     let token;
     let masterPullPayment;
-    let testPayment = {
+    let testPaymentModel = {
         "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
         "title": "test payment",
         "description": "test description",
@@ -103,7 +103,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         "cashOutFrequency": 1,
         "networkID": 3
     }
-    let testContract = {
+    let testPayment = {
         "hdWalletIndex": 0,
         "paymentID": "adsfads",
         "numberOfPayments": 4,
@@ -129,13 +129,13 @@ contract('Master Pull Payment Contract', async (accounts) => {
     before('build sdk and insert payment', async () => {
         settings.bankAddress = bank;
         sdk = new MerchantSDK().build(settings);
-        await insertTestPayment(testPayment);
+        await insertTestPaymentModel(testPaymentModel);
     });
     after('disconnect redis', async () => {
         sdk.disconnectRedis();
     });
     afterEach('clear test payment', async () => {
-        await clearTestPayment(testId);
+        await clearTestPaymentModel(testId);
 
     });
 
@@ -151,9 +151,9 @@ contract('Master Pull Payment Contract', async (accounts) => {
             });
     });
     beforeEach(async () => {
-        testContract.paymentID = paymentID;
-        testContract.pullPaymentAddress = masterPullPayment.address;
-        const result = await testDbConnector.createPayment(testContract);
+        testPayment.paymentID = paymentID;
+        testPayment.pullPaymentAddress = masterPullPayment.address;
+        const result = await testDbConnector.createPayment(testPayment);
         testId = result.data[0].id;
         await testDbConnector.updatePayment({
             id: result.data[0].id,
@@ -162,7 +162,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
     });
     beforeEach(async () => {
-        await insertTestPayment(testPayment);
+        await insertTestPaymentModel(testPaymentModel);
     });
     beforeEach('set recurring pull payment', () => {
         recurringPullPayment = {

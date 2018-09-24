@@ -2,7 +2,7 @@
 import { Globals } from '../../../utils/globals';
 import { IPaymentView, ITransactionUpdate, IPaymentUpdate } from '../../database/models';
 import { TransactionController } from '../../database/TransactionController';
-import { PaymentContractController } from '../../database/PaymentContractController';
+import { PaymentController } from '../../database/PaymentController';
 import { CashOutController } from '../CashOutController';
 
 export class BlockchainTxReceiptHandler {
@@ -23,7 +23,7 @@ export class BlockchainTxReceiptHandler {
             executeTxStatusID = Globals.GET_TRANSACTION_STATUS_ENUM().failed;
         }
 
-        await new PaymentContractController().updatePayment(<IPaymentUpdate>{
+        await new PaymentController().updatePayment(<IPaymentUpdate>{
             id: payment.id,
             numberOfPayments: numberOfPayments,
             lastPaymentDate: lastPaymentDate,

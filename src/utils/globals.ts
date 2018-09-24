@@ -33,7 +33,7 @@ export class Globals {
      * @description Method for getting payment api url 
      * @returns {string} url
      */
-    public static GET_PAYMENT_TEMPLATE_URL(): string {
+    public static GET_PAYMENT_MODEL_URL(): string {
         return '/payment-templates';
     }
 

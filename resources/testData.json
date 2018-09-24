@@ -1,6 +1,6 @@
 {
-    "paymentTemplates": {
-        "insertTestPaymentTemplate": {
+    "paymentModels": {
+        "insertTestPaymentModel": {
             "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
             "title": "test payment",
             "description": "test description",
@@ -13,7 +13,7 @@
             "typeID": 1,
             "networkID": 3
         },
-        "updateTestPaymentTemplate": {
+        "updateTestPaymentModel": {
             "id": "",
             "title": "changes title",
             "description": "another description",

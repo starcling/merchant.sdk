@@ -1,7 +1,7 @@
 import { Scheduler } from './Scheduler';
 import { DefaultConfig } from '../../config/default.config';
 import { Globals } from '../../utils/globals';
-import { PaymentContractController } from '../database/PaymentContractController';
+import { PaymentController } from '../database/PaymentController';
 const redis = require('redis');
 let rclient = null;
 
@@ -43,7 +43,7 @@ export class SchedulerBuffer {
         rclient.smembers(SchedulerBuffer.bufferName, async (err, ids) => {
             if (!err) {
                 for (let i = 0; i < ids.length; i++) {
-                    new PaymentContractController().getPayment(ids[i]).then(async response => {
+                    new PaymentController().getPayment(ids[i]).then(async response => {
                         const payment = response.data[0];
                         if (!SchedulerBuffer.SCHEDULER_BUFFER[payment.id]) {
                             rclient.srem(SchedulerBuffer.bufferName, ids[i]);
@@ -85,7 +85,7 @@ export class SchedulerBuffer {
     * @returns {object} null
     */
     protected static async testScheduler(paymentID?: string) {
-        const contractDbConnector = new PaymentContractController();
+        const contractDbConnector = new PaymentController();
         const paymentContract = (await contractDbConnector.getPayment(paymentID)).data[0];
 
         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;

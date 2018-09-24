@@ -4,7 +4,7 @@ export interface MerchantSDKSettings extends MerchantSDKBuild {
     pmaApiKey?: string;
     pmaUserToken?: string;
     generateQRApiUrl?: string;
-    paymentTemplateURL?: string;
+    paymentModelURL?: string;
     paymentURL?: string;
     transactionURL?: string;
     loginUrl?: string;

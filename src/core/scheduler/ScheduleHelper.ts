@@ -1,6 +1,6 @@
 import { Globals } from '../../utils/globals';
 import { IPaymentUpdate } from '../database/models';
-import { PaymentContractController } from '../database/PaymentContractController';
+import { PaymentController } from '../database/PaymentController';
 
 /**
  * @description Scheduler, started and created through monitorTransaction function.
@@ -18,18 +18,18 @@ export class ScheduleHelper {
         const currentTime = Number(new Date().getTime() / 1000);
         if (Number(payment.startTimestamp) <= currentTime && Number(payment.startTimestamp) + Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
             payment.startTimestamp = Math.floor(Number(currentTime + 1));
-            await new PaymentContractController().updatePayment(payment);
+            await new PaymentController().updatePayment(payment);
         }
     }
 
     public static async updatePaymentStatus(payment: IPaymentUpdate, status: number) {
         payment.statusID = status;
-        await new PaymentContractController().updatePayment(payment);
+        await new PaymentController().updatePayment(payment);
     }
 
     public static async getPayment(paymentID: string) {
         try {
-            return (await new PaymentContractController().getPayment(paymentID).catch((err) => {console.log(err)})).data[0];
+            return (await new PaymentController().getPayment(paymentID).catch((err) => {console.log(err)})).data[0];
         } catch(err) {
             return null;
         }

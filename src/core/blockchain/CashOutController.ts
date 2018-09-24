@@ -1,4 +1,4 @@
-import { PaymentContractController } from "../database/PaymentContractController";
+import { PaymentController } from "../database/PaymentController";
 import { IPaymentView } from "../database/models";
 import { FundingController } from "./FundingController";
 import { DefaultConfig } from "../../config/default.config";
@@ -11,13 +11,13 @@ export class CashOutController {
     private min = 20000;
     private max = 50000;
 
-    private paymentDbController: PaymentContractController;
+    private paymentController: PaymentController;
     constructor() {
-        this.paymentDbController = new PaymentContractController();
+        this.paymentController = new PaymentController();
     }
 
     public async cashOutPMA(paymentID: string, tokenAddress: string = null) {
-        const payment: IPaymentView = (await this.paymentDbController.getPayment(paymentID)).data[0];
+        const payment: IPaymentView = (await this.paymentController.getPayment(paymentID)).data[0];
 
         if (!((payment.initialNumberOfPayments - payment.numberOfPayments) % payment.cashOutFrequency)) {
             const balance = await this.getBalance(payment.merchantAddress, tokenAddress);
@@ -26,7 +26,7 @@ export class CashOutController {
     }
 
     public async cashOutETH(paymentID: string, tokenAddress: string = null) {
-        const payment: IPaymentView = (await this.paymentDbController.getPayment(paymentID)).data[0];
+        const payment: IPaymentView = (await this.paymentController.getPayment(paymentID)).data[0];
         const fundingController = new FundingController();
 
         const balance = await new BlockchainHelper().getProvider().getBalance(payment.merchantAddress);

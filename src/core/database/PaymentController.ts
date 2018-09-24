@@ -1,7 +1,7 @@
 import { DefaultConfig } from '../../config/default.config';
 import { IPaymentUpdate } from './models';
 
-export class PaymentContractController {
+export class PaymentController {
 
   /**
   * @description Method for getting contract from to the database

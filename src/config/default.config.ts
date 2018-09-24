@@ -26,7 +26,7 @@ export class DefaultConfig {
             merchantApiUrl: this._settings.merchantApiUrl,
             apiUrl: this._settings.apiUrl ? this._settings.apiUrl : Globals.GET_DEFAULT_CORE_API_URL(),
             generateQRApiUrl: this._settings.generateQRApiUrl ? this._settings.generateQRApiUrl : Globals.GET_QR_API_URL(),
-            paymentTemplateURL: this._settings.paymentTemplateURL ? this._settings.paymentTemplateURL : Globals.GET_PAYMENT_TEMPLATE_URL(),
+            paymentModelURL: this._settings.paymentModelURL ? this._settings.paymentModelURL : Globals.GET_PAYMENT_MODEL_URL(),
             paymentURL: this._settings.paymentURL ? this._settings.paymentURL : Globals.GET_PAYMENT_URL(),
             transactionURL: this._settings.transactionURL ? this._settings.transactionURL : Globals.GET_TRANSACTION_URL(),
             getPayment: this._settings.getPayment,
