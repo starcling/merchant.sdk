@@ -27,39 +27,41 @@ class BlockchainController {
     }
     monitorRegistrationTransaction(txHash, pullPaymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const sub = setInterval(() => __awaiter(this, void 0, void 0, function* () {
-                    const bcHelper = new BlockchainHelper_1.BlockchainHelper();
-                    const receipt = yield bcHelper.getProvider().getTransactionReceipt(txHash);
-                    if (receipt) {
-                        clearInterval(sub);
-                        const status = receipt.status ? globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().success : globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                        yield this.transactionController.updateTransaction({
-                            hash: receipt.transactionHash,
-                            statusID: status
-                        });
-                        const pullPayment = (yield this.paymentController.getPullPayment(pullPaymentID)).data[0];
-                        if (receipt.status && bcHelper.isValidRegisterTx(receipt, pullPaymentID)) {
-                            if (pullPayment.type == globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
-                                pullPayment.type == globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
-                                this.executePullPayment(pullPaymentID);
-                            }
-                            if (pullPayment.type !== globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().singlePull]) {
-                                new Scheduler_1.Scheduler(pullPaymentID, () => __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                try {
+                    const sub = setInterval(() => __awaiter(this, void 0, void 0, function* () {
+                        const bcHelper = new BlockchainHelper_1.BlockchainHelper();
+                        const receipt = yield bcHelper.getProvider().getTransactionReceipt(txHash);
+                        if (receipt) {
+                            clearInterval(sub);
+                            const status = receipt.status ? globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().success : globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+                            yield this.transactionController.updateTransaction({
+                                hash: receipt.transactionHash,
+                                statusID: status
+                            });
+                            const pullPayment = (yield this.paymentController.getPullPayment(pullPaymentID)).data[0];
+                            if (receipt.status && bcHelper.isValidRegisterTx(receipt, pullPaymentID)) {
+                                if (pullPayment.type == globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
+                                    pullPayment.type == globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                                     this.executePullPayment(pullPaymentID);
-                                })).start();
+                                }
+                                if (pullPayment.type !== globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().singlePull]) {
+                                    new Scheduler_1.Scheduler(pullPaymentID, () => __awaiter(this, void 0, void 0, function* () {
+                                        this.executePullPayment(pullPaymentID);
+                                    })).start();
+                                }
                             }
+                            else {
+                                return false;
+                            }
+                            resolve(receipt);
                         }
-                        else {
-                            return false;
-                        }
-                    }
-                }), default_config_1.DefaultConfig.settings.txStatusInterval);
-                return true;
-            }
-            catch (error) {
-                return false;
-            }
+                    }), default_config_1.DefaultConfig.settings.txStatusInterval);
+                }
+                catch (error) {
+                    reject(error);
+                }
+            });
         });
     }
     monitorCancellationTransaction(txHash, pullPaymentID) {
@@ -106,7 +108,7 @@ class BlockchainController {
                 if (pullPayment.type == globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                     try {
                         yield transactionController.getTransactions({
-                            pullPaymentID: pullPayment.id,
+                            paymentID: pullPayment.id,
                             typeID: globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().initial
                         });
                     }
@@ -117,14 +119,14 @@ class BlockchainController {
                 yield transactionController.createTransaction({
                     hash: hash,
                     typeID: typeID,
-                    pullPaymentID: pullPayment.id,
+                    paymentID: pullPayment.id,
                     timestamp: Math.floor(new Date().getTime() / 1000)
                 });
             })).on('receipt', (receipt) => __awaiter(this, void 0, void 0, function* () {
                 if (pullPayment.type == globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                     try {
                         yield transactionController.getTransactions({
-                            pullPaymentID: pullPayment.id,
+                            paymentID: pullPayment.id,
                             typeID: globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().initial,
                             statusID: globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().success
                         });

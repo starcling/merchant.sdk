@@ -45,14 +45,14 @@ export interface ITransactionInsert {
   hash: string;
   statusID: number;
   typeID: number;
-  pullPaymentID: string;
+  paymentID: string;
   timestamp: number;
 }
 
 export interface ITransactionGet {
   id: string;
   hash: string;
-  pullPaymentID: string;
+  paymentID: string;
   statusID: number;
   typeID: number;
 }

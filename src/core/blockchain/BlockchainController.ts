@@ -29,42 +29,44 @@ export class BlockchainController {
     * @returns {boolean} success/fail response
     */
     protected async monitorRegistrationTransaction(txHash: string, pullPaymentID: string) {
-        try {
-            const sub = setInterval(async () => {
-                const bcHelper = new BlockchainHelper();
-                const receipt = await bcHelper.getProvider().getTransactionReceipt(txHash);
-                if (receipt) {
-                    clearInterval(sub);
-                    const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+        return new Promise((resolve, reject) => {
+            try {
+                const sub = setInterval(async () => {
+                    const bcHelper = new BlockchainHelper();
+                    const receipt = await bcHelper.getProvider().getTransactionReceipt(txHash);
+                    if (receipt) {
+                        clearInterval(sub);
+                        const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
 
-                    await this.transactionController.updateTransaction(<ITransactionUpdate>{
-                        hash: receipt.transactionHash,
-                        statusID: status
-                    });
-                    const pullPayment: IPullPaymentView = (await this.paymentController.getPullPayment(pullPaymentID)).data[0];
+                        await this.transactionController.updateTransaction(<ITransactionUpdate>{
+                            hash: receipt.transactionHash,
+                            statusID: status
+                        });
+                        const pullPayment: IPullPaymentView = (await this.paymentController.getPullPayment(pullPaymentID)).data[0];
 
-                    if (receipt.status && bcHelper.isValidRegisterTx(receipt, pullPaymentID)) {
-                        if (pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
-                            pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
-                            this.executePullPayment(pullPaymentID);
-                        }
-
-                        if (pullPayment.type !== Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull]) {
-                            new Scheduler(pullPaymentID, async () => {
+                        if (receipt.status && bcHelper.isValidRegisterTx(receipt, pullPaymentID)) {
+                            if (pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
+                                pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                                 this.executePullPayment(pullPaymentID);
-                            }).start();
+                            }
+
+                            if (pullPayment.type !== Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull]) {
+                                new Scheduler(pullPaymentID, async () => {
+                                    this.executePullPayment(pullPaymentID);
+                                }).start();
+                            }
+                        } else {
+                            return false;
                         }
-                    } else {
-                        return false;
+                        resolve(receipt);
                     }
+                }, DefaultConfig.settings.txStatusInterval);
 
-                }
-            }, DefaultConfig.settings.txStatusInterval);
+            } catch (error) {
+                reject(error);
+            }
+        });
 
-            return true;
-        } catch (error) {
-            return false;
-        }
     }
 
     /**
@@ -124,7 +126,7 @@ export class BlockchainController {
 
                 try {
                     await transactionController.getTransactions(<ITransactionGet>{
-                        pullPaymentID: pullPayment.id,
+                        paymentID: pullPayment.id,
                         typeID: Globals.GET_TRANSACTION_TYPE_ENUM().initial
                     });
                 } catch (err) {
@@ -134,14 +136,14 @@ export class BlockchainController {
             await transactionController.createTransaction(<ITransactionInsert>{
                 hash: hash,
                 typeID: typeID,
-                pullPaymentID: pullPayment.id,
+                paymentID: pullPayment.id,
                 timestamp: Math.floor(new Date().getTime() / 1000)
             });
         }).on('receipt', async (receipt) => {
             if (pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                 try {
                     await transactionController.getTransactions(<ITransactionGet>{
-                        pullPaymentID: pullPayment.id,
+                        paymentID: pullPayment.id,
                         typeID: Globals.GET_TRANSACTION_TYPE_ENUM().initial,
                         statusID: Globals.GET_TRANSACTION_STATUS_ENUM().success
                     });

@@ -117,7 +117,8 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
     before('add Key', async () => {
         await addKeys(beneficiary, '4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387');
-        await addKeys(bank, '4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387');
+        await addKeys(beneficiary2, '6cab891a1f6e5b60e99b9adfc0f1c06150334d4d67bc65204736f2543feaada9'.toUpperCase());
+        await addKeys(bank, 'e2e00d88c4f66daf29875c6b23702631db4cab46034041ceee39617f8fcf5e49'.toUpperCase());
     });
     after('remove key', async () => {
         await clearKey(beneficiary);
@@ -232,13 +233,11 @@ contract('Master Pull Payment Contract', async (accounts) => {
                     id: recurringPullPayment.pullPaymentID,
                     merchantAddress: beneficiary2
                 });
-                const oldBalance = await web3API.eth.getBalance(beneficiary2);
                 await sdk.fundETH(bank, beneficiary2, recurringPullPayment.pullPaymentID, null, token.address, masterPullPayment.address);
                 await sdk.cashOutETH(recurringPullPayment.pullPaymentID, token.address);
-
                 const newBalance = await web3API.eth.getBalance(beneficiary2);
 
-                Number(newBalance).should.be.lessThan(2000000000000000);
+                Number(newBalance).should.be.lessThan(4000000000000000);
             });
         });
 

@@ -33,7 +33,6 @@ export class CashOutController {
         const initalFee = Math.floor(Math.random() * (this.max - this.min) + this.min) * DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
 
         const gasFee = DefaultConfig.settings.web3.utils.toWei('10', 'Gwei') * 21000;
-
         const fundETH = async (gasFee) => {
             await fundingController.fundETH(payment.merchantAddress, DefaultConfig.settings.bankAddress, null, balance - gasFee, tokenAddress).catch(async err => {
                 await fundETH(gasFee + gasFee / 5);

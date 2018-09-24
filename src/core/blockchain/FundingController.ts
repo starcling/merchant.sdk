@@ -8,6 +8,7 @@ import { HTTPHelper } from "../../utils/web/HTTPHelper";
 import { RawTransactionSerializer } from "./utils/RawTransactionSerializer";
 const redis = require('redis');
 const bluebird = require('bluebird');
+const Tx = require('ethereumjs-tx');
 
 export class FundingController {
     private maxGasFeeName = "k_max_gas_fee";
@@ -24,17 +25,31 @@ export class FundingController {
      * @param pullPaymentAddress (optional) Address of the master pull payment contract
      */
     public async fundETH(fromAddress: string, toAddress: string, paymentID: string, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
+
+        const bcHelper = new BlockchainHelper();
         if (!value) {
             value = await this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
-            value = value * DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
+            value = value * bcHelper.utils().toWei('10', 'Gwei');
         }
+        let privateKey = Buffer.from((await DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'], 'hex');
+        const nonce = await new BlockchainHelper().getTxCount(fromAddress);
+
         const rawTx = {
+            nonce: nonce,
+            gasPrice: bcHelper.utils().toHex(bcHelper.utils().toWei('10', 'Gwei')),
+            gasLimit: bcHelper.utils().toHex(300000),
             to: toAddress,
             from: fromAddress,
-            value: DefaultConfig.settings.web3.utils.toHex(value)
+            value: value
         };
 
-        return new BlockchainHelper().getProvider().sendTransaction(rawTx);
+        const tx = new Tx(rawTx);
+        tx.sign(privateKey);
+        privateKey = null;
+
+        const serializedTx = tx.serialize();
+
+        return await bcHelper.getProvider().sendSignedTransaction('0x' + serializedTx.toString('hex'));
     }
 
     /**
@@ -69,7 +84,7 @@ export class FundingController {
 
                 const amount = ((Number(paymentContract.amount) / 100) / rate[paymentContract.currency.toUpperCase()]);
                 const value = bcHelper.toWei(amount.toString());
-                
+
                 const transferFee = await this.calculateTransferFee(paymentContract.merchantAddress, bankAddress, value, tokenAddress);
                 const executionFee = await this.calculateMaxExecutionFee(pullPaymentAddress);
 

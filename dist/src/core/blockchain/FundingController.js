@@ -17,6 +17,7 @@ const HTTPHelper_1 = require("../../utils/web/HTTPHelper");
 const RawTransactionSerializer_1 = require("./utils/RawTransactionSerializer");
 const redis = require('redis');
 const bluebird = require('bluebird');
+const Tx = require('ethereumjs-tx');
 class FundingController {
     constructor() {
         this.maxGasFeeName = "k_max_gas_fee";
@@ -25,16 +26,26 @@ class FundingController {
     }
     fundETH(fromAddress, toAddress, paymentID, value = null, tokenAddress = null, pullPaymentAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const bcHelper = new BlockchainHelper_1.BlockchainHelper();
             if (!value) {
                 value = yield this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
-                value = value * default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
+                value = value * bcHelper.utils().toWei('10', 'Gwei');
             }
+            let privateKey = Buffer.from((yield default_config_1.DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'], 'hex');
+            const nonce = yield new BlockchainHelper_1.BlockchainHelper().getTxCount(fromAddress);
             const rawTx = {
+                nonce: nonce,
+                gasPrice: bcHelper.utils().toHex(bcHelper.utils().toWei('10', 'Gwei')),
+                gasLimit: bcHelper.utils().toHex(300000),
                 to: toAddress,
                 from: fromAddress,
-                value: default_config_1.DefaultConfig.settings.web3.utils.toHex(value)
+                value: value
             };
-            return new BlockchainHelper_1.BlockchainHelper().getProvider().sendTransaction(rawTx);
+            const tx = new Tx(rawTx);
+            tx.sign(privateKey);
+            privateKey = null;
+            const serializedTx = tx.serialize();
+            return yield bcHelper.getProvider().sendSignedTransaction('0x' + serializedTx.toString('hex'));
         });
     }
     fundPMA(fromAddress, toAddress, value, tokenAddress = null) {

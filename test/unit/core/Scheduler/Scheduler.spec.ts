@@ -51,12 +51,12 @@ const clearTestPullPayment = async () => {
 
 describe('A Scheduler', () => {
 
-    before(async () => {
+    before('Building the sdk', async () => {
         sdk = new MerchantSDK().build(settings);
         await insertTestPullPayment();
     });
 
-    after(async () => {
+    after('Disconnect redis', async () => {
         sdk.disconnectRedis();
         SchedulerBuffer.closeConnection();
         await clearTestPullPayment();

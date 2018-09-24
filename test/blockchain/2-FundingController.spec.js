@@ -115,7 +115,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
     before('add Key', async () => {
         await addKeys(beneficiary, '4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387');
-        await addKeys(bank, '4E9632F0D020E8BDD50A6055CC0904C5D866FC14081B48500352A914E02EF387');
+        await addKeys(bank, 'e2e00d88c4f66daf29875c6b23702631db4cab46034041ceee39617f8fcf5e49'.toUpperCase());
     });
     after('remove key', async () => {
         await clearKey(beneficiary);

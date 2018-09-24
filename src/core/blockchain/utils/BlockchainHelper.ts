@@ -34,6 +34,14 @@ export class BlockchainHelper {
     }
 
     /**
+     * @description Method for getting provider utils
+     * @returns {any} Returns utils
+     * */
+    public utils() {
+        return this.provider.utils;
+    }
+
+    /**
      * @description Converts provided number as string to wei
      * @param {string} value value to be converted
      * @returns {PromiEvent<any>} Returns the PromiEvent from the ethereum network

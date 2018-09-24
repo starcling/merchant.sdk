@@ -4,7 +4,7 @@ import { ISqlQuery, DataService } from '../../utils/datasource/DataService';
 export class TestDbConnector {
   public createPullPayment(insertDetails: any) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_create_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       values: [
         insertDetails.hdWalletIndex,
         insertDetails.pullPaymentID,
@@ -24,7 +24,7 @@ export class TestDbConnector {
   public async updatePullPayment(updateDetails: IPullPaymentUpdate) {
     const sqlQuery: ISqlQuery = {
       // tslint:disable-next-line:max-line-length
-      text: 'SELECT * FROM fc_update_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       values: [
         updateDetails.id,
         updateDetails.hdWalletIndex,
@@ -50,7 +50,7 @@ export class TestDbConnector {
 
   public getPullPayment(pullPaymentID: string) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM public.fc_get_payment_contract($1);',
+      text: 'SELECT * FROM public.fc_get_payment_by_id($1);',
       values: [pullPaymentID]
     };
 
@@ -59,7 +59,7 @@ export class TestDbConnector {
 
   public createPullPaymentModel(insertDetails: any) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      text: 'SELECT * FROM fc_create_payment_model($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
       values: [
         insertDetails.merchantID,
         insertDetails.title,
@@ -72,7 +72,9 @@ export class TestDbConnector {
         insertDetails.numberOfPayments,
         insertDetails.frequency,
         insertDetails.typeID,
-        insertDetails.networkID
+        insertDetails.networkID,
+        insertDetails.automatedCashOut,
+        insertDetails.cashOutFrequency
       ]
     };
 
@@ -81,7 +83,7 @@ export class TestDbConnector {
 
   public async updatePullPaymentModel(updateDetails: any) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      text: 'SELECT * FROM fc_update_payment_model($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
       values: [
         updateDetails.id,
         updateDetails.title,
@@ -94,7 +96,9 @@ export class TestDbConnector {
         updateDetails.numberOfPayments,
         updateDetails.frequency,
         updateDetails.typeID,
-        updateDetails.networkID
+        updateDetails.networkID,
+        updateDetails.automatedCashOut,
+        updateDetails.cashOutFrequency
       ]
     };
     // Handling the case when no record exists with provided id
@@ -132,7 +136,7 @@ export class TestDbConnector {
       values: [
         transaction.hash,
         transaction.typeID,
-        transaction.pullPaymentID,
+        transaction.paymentID,
         transaction.timestamp
       ]
     };
@@ -178,7 +182,7 @@ export class TestDbConnector {
     const sqlQuery: ISqlQuery = {
       text: 'SELECT * FROM public.fc_get_transactions_by_contract_id($1, $2, $3);',
       values: [
-        transaction.pullPaymentID,
+        transaction.paymentID,
         transaction.statusID,
         transaction.typeID
       ]

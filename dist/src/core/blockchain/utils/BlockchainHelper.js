@@ -14,6 +14,9 @@ class BlockchainHelper {
     getProvider() {
         return this.provider.eth ? this.provider.eth : this.provider;
     }
+    utils() {
+        return this.provider.utils;
+    }
     toWei(value) {
         return this.provider.utils.toWei(value);
     }
