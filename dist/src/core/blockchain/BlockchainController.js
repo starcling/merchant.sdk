@@ -17,13 +17,13 @@ const Scheduler_1 = require("../scheduler/Scheduler");
 const ErrorHandler_1 = require("../../utils/handlers/ErrorHandler");
 const BlockchainTxReceiptHandler_1 = require("./utils/BlockchainTxReceiptHandler");
 const TransactionController_1 = require("../database/TransactionController");
-const PaymentContractController_1 = require("../database/PaymentContractController");
+const PaymentController_1 = require("../database/PaymentController");
 const FundingController_1 = require("./FundingController");
 const CashOutController_1 = require("./CashOutController");
 class BlockchainController {
     constructor() {
-        this.transactionDbController = new TransactionController_1.TransactionController();
-        this.contractDbController = new PaymentContractController_1.PaymentContractController();
+        this.transactionController = new TransactionController_1.TransactionController();
+        this.paymentController = new PaymentController_1.PaymentController();
     }
     monitorRegistrationTransaction(txHash, paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -34,12 +34,12 @@ class BlockchainController {
                     if (receipt) {
                         clearInterval(sub);
                         const status = receipt.status ? globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().success : globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                        const contractResponse = yield this.transactionDbController.updateTransaction({
+                        const paymentResponse = yield this.transactionController.updateTransaction({
                             hash: receipt.transactionHash,
                             statusID: status
                         });
-                        const contract = (yield this.contractDbController.getPayment(paymentID)).data;
-                        const payment = contractResponse.data[0];
+                        const contract = (yield this.paymentController.getPayment(paymentID)).data;
+                        const payment = paymentResponse.data[0];
                         if (receipt.status && bcHelper.isValidRegisterTx(receipt, paymentID)) {
                             if (contract.type == globals_1.Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
                                 contract.type == globals_1.Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
@@ -71,12 +71,12 @@ class BlockchainController {
                     if (receipt) {
                         clearInterval(sub);
                         const status = receipt.status ? globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().success : globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                        yield this.transactionDbController.updateTransaction({
+                        yield this.transactionController.updateTransaction({
                             hash: receipt.transactionHash,
                             statusID: status
                         });
                         if (receipt.status) {
-                            const contract = (yield this.contractDbController.getPayment(paymentID)).data[0];
+                            const contract = (yield this.paymentController.getPayment(paymentID)).data[0];
                             Scheduler_1.Scheduler.stop(contract.id);
                         }
                     }
@@ -90,9 +90,9 @@ class BlockchainController {
     }
     executePullPayment(contractID) {
         return __awaiter(this, void 0, void 0, function* () {
-            const transactionDbController = new TransactionController_1.TransactionController();
-            const contractDbController = new PaymentContractController_1.PaymentContractController();
-            const paymentContract = (yield contractDbController.getPayment(contractID)).data[0];
+            const transactionController = new TransactionController_1.TransactionController();
+            const contractController = new PaymentController_1.PaymentController();
+            const paymentContract = (yield contractController.getPayment(contractID)).data[0];
             ErrorHandler_1.ErrorHandler.validatePullPaymentExecution(paymentContract);
             const contract = yield new SmartContractReader_1.SmartContractReader(globals_1.Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(paymentContract.pullPaymentAddress);
             const blockchainHelper = new BlockchainHelper_1.BlockchainHelper();
@@ -106,7 +106,7 @@ class BlockchainController {
                 let typeID = globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().execute;
                 if (paymentContract.type == globals_1.Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                     try {
-                        yield transactionDbController.getTransactions({
+                        yield transactionController.getTransactions({
                             contractID: paymentContract.id,
                             typeID: globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().initial
                         });
@@ -115,7 +115,7 @@ class BlockchainController {
                         typeID = globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().initial;
                     }
                 }
-                yield transactionDbController.createTransaction({
+                yield transactionController.createTransaction({
                     hash: hash,
                     typeID: typeID,
                     contractID: paymentContract.id,
@@ -124,7 +124,7 @@ class BlockchainController {
             })).on('receipt', (receipt) => __awaiter(this, void 0, void 0, function* () {
                 if (paymentContract.type == globals_1.Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                     try {
-                        yield transactionDbController.getTransactions({
+                        yield transactionController.getTransactions({
                             contractID: paymentContract.id,
                             typeID: globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().initial,
                             statusID: globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().success

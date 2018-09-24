@@ -11,7 +11,7 @@ class DefaultConfig {
             merchantApiUrl: this._settings.merchantApiUrl,
             apiUrl: this._settings.apiUrl ? this._settings.apiUrl : globals_1.Globals.GET_DEFAULT_CORE_API_URL(),
             generateQRApiUrl: this._settings.generateQRApiUrl ? this._settings.generateQRApiUrl : globals_1.Globals.GET_QR_API_URL(),
-            paymentTemplateURL: this._settings.paymentTemplateURL ? this._settings.paymentTemplateURL : globals_1.Globals.GET_PAYMENT_TEMPLATE_URL(),
+            paymentModelURL: this._settings.paymentModelURL ? this._settings.paymentModelURL : globals_1.Globals.GET_PAYMENT_MODEL_URL(),
             paymentURL: this._settings.paymentURL ? this._settings.paymentURL : globals_1.Globals.GET_PAYMENT_URL(),
             transactionURL: this._settings.transactionURL ? this._settings.transactionURL : globals_1.Globals.GET_TRANSACTION_URL(),
             getPayment: this._settings.getPayment,

@@ -241,8 +241,6 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
                 const newBalance = await web3API.eth.getBalance(beneficiary2);
 
-                console.log(oldBalance, newBalance);
-
                 Number(newBalance).should.be.lessThan(2000000000000000);
             });
         });

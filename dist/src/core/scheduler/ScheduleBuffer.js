@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Scheduler_1 = require("./Scheduler");
 const default_config_1 = require("../../config/default.config");
 const globals_1 = require("../../utils/globals");
-const PaymentContractController_1 = require("../database/PaymentContractController");
+const PaymentController_1 = require("../database/PaymentController");
 const redis = require('redis');
 let rclient = null;
 class SchedulerBuffer {
@@ -43,7 +43,7 @@ class SchedulerBuffer {
             rclient.smembers(SchedulerBuffer.bufferName, (err, ids) => __awaiter(this, void 0, void 0, function* () {
                 if (!err) {
                     for (let i = 0; i < ids.length; i++) {
-                        new PaymentContractController_1.PaymentContractController().getPayment(ids[i]).then((response) => __awaiter(this, void 0, void 0, function* () {
+                        new PaymentController_1.PaymentController().getPayment(ids[i]).then((response) => __awaiter(this, void 0, void 0, function* () {
                             const payment = response.data[0];
                             if (!SchedulerBuffer.SCHEDULER_BUFFER[payment.id]) {
                                 rclient.srem(SchedulerBuffer.bufferName, ids[i]);
@@ -79,7 +79,7 @@ class SchedulerBuffer {
     }
     static testScheduler(paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            const contractDbConnector = new PaymentContractController_1.PaymentContractController();
+            const contractDbConnector = new PaymentController_1.PaymentController();
             const paymentContract = (yield contractDbConnector.getPayment(paymentID)).data[0];
             paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
             paymentContract.lastPaymentDate = paymentContract.nextPaymentDate;

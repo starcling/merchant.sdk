@@ -30,10 +30,10 @@ class Scheduler {
             return ScheduleBuffer_1.SchedulerBuffer.set(this._paymentID, this);
         });
     }
-    static stop(contractID) {
+    static stop(paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            const payment = yield ScheduleHelper_1.ScheduleHelper.getPayment(contractID);
-            const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(contractID);
+            const payment = yield ScheduleHelper_1.ScheduleHelper.getPayment(paymentID);
+            const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(paymentID);
             if (scheduler && payment) {
                 if (scheduler._schedule) {
                     scheduler._schedule.cancel();
@@ -43,15 +43,15 @@ class Scheduler {
                     scheduler._interval = null;
                 }
                 yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(payment, globals_1.Globals.GET_CONTRACT_STATUS_ENUM().stopped);
-                return contractID;
+                return paymentID;
             }
             return null;
         });
     }
-    static restart(contractID) {
+    static restart(paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(contractID);
-            const payment = yield ScheduleHelper_1.ScheduleHelper.getPayment(contractID);
+            const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(paymentID);
+            const payment = yield ScheduleHelper_1.ScheduleHelper.getPayment(paymentID);
             if (scheduler && payment && payment.status == globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES()[globals_1.Globals.GET_CONTRACT_STATUS_ENUM().stopped] && !scheduler._restarting) {
                 scheduler._restarting = true;
                 yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(payment, globals_1.Globals.GET_CONTRACT_STATUS_ENUM().initial);
@@ -61,14 +61,14 @@ class Scheduler {
                 while (nextPayment <= currentDate && numberOfPayments > 0) {
                     numberOfPayments--;
                     nextPayment = nextPayment + payment.frequency;
-                    ScheduleQueue_1.ScheduleQueue.instance().queue(contractID);
+                    ScheduleQueue_1.ScheduleQueue.instance().queue(paymentID);
                 }
                 if (numberOfPayments > 0) {
                     yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(payment, globals_1.Globals.GET_CONTRACT_STATUS_ENUM().running);
                     scheduler._schedule = yield scheduler.scheduleJob(nextPayment);
                 }
                 scheduler._restarting = false;
-                return contractID;
+                return paymentID;
             }
             return null;
         });
@@ -84,14 +84,14 @@ class Scheduler {
             const payment = yield ScheduleHelper_1.ScheduleHelper.getPayment(this._paymentID);
             startTime = startTime ? startTime : payment.startTimestamp;
             return schedule.scheduleJob(payment.id, new Date(Number(startTime) * 1000), () => __awaiter(this, void 0, void 0, function* () {
-                const paymentContract = yield ScheduleHelper_1.ScheduleHelper.getPayment(this._paymentID);
-                yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(paymentContract, globals_1.Globals.GET_CONTRACT_STATUS_ENUM().running);
+                const payment = yield ScheduleHelper_1.ScheduleHelper.getPayment(this._paymentID);
+                yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(payment, globals_1.Globals.GET_CONTRACT_STATUS_ENUM().running);
                 yield this.executeCallback();
-                this._interval = this.startInterval(paymentContract.frequency);
-                const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(paymentContract.id);
+                this._interval = this.startInterval(payment.frequency);
+                const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(payment.id);
                 if (scheduler) {
                     scheduler._interval = this._interval;
-                    ScheduleBuffer_1.SchedulerBuffer.set(paymentContract.id, scheduler);
+                    ScheduleBuffer_1.SchedulerBuffer.set(payment.id, scheduler);
                 }
             }));
         });

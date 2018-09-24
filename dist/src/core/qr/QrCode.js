@@ -5,9 +5,9 @@ class QrCode {
     generateURL(callUrl, paymentID) {
         return `${default_config_1.DefaultConfig.settings.merchantApiUrl}${callUrl}/${paymentID}`;
     }
-    generateQRCode(paymentTemplateID) {
+    generateQRCode(paymentModelID) {
         return {
-            paymentTemplateURL: this.generateURL(default_config_1.DefaultConfig.settings.paymentTemplateURL, paymentTemplateID),
+            paymentModelURL: this.generateURL(default_config_1.DefaultConfig.settings.paymentModelURL, paymentModelID),
             paymentURL: this.generateURL(default_config_1.DefaultConfig.settings.paymentURL, ''),
             transactionURL: this.generateURL(default_config_1.DefaultConfig.settings.transactionURL, '')
         };

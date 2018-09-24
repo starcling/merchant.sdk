@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const globals_1 = require("../../../utils/globals");
 const TransactionController_1 = require("../../database/TransactionController");
-const PaymentContractController_1 = require("../../database/PaymentContractController");
+const PaymentController_1 = require("../../database/PaymentController");
 const CashOutController_1 = require("../CashOutController");
 class BlockchainTxReceiptHandler {
     handleRecurringPaymentReceipt(payment, transactionHash, receipt) {
@@ -30,7 +30,7 @@ class BlockchainTxReceiptHandler {
             else {
                 executeTxStatusID = globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed;
             }
-            yield new PaymentContractController_1.PaymentContractController().updatePayment({
+            yield new PaymentController_1.PaymentController().updatePayment({
                 id: payment.id,
                 numberOfPayments: numberOfPayments,
                 lastPaymentDate: lastPaymentDate,

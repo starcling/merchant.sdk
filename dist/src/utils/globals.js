@@ -22,7 +22,7 @@ class Globals {
     static GET_QR_API_URL() {
         return '/qr/url/';
     }
-    static GET_PAYMENT_TEMPLATE_URL() {
+    static GET_PAYMENT_MODEL_URL() {
         return '/payment-templates';
     }
     static GET_PAYMENT_URL() {
