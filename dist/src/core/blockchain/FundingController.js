@@ -92,7 +92,7 @@ class FundingController {
                 try {
                     new BlockchainHelper_1.BlockchainHelper().getProvider().estimateGas({
                         to: tokenAddress,
-                        from: '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb',
+                        from: globals_1.Globals.GET_PMA_ESTIMATE_ADDRESS(default_config_1.DefaultConfig.settings.networkID),
                         gasPrice: default_config_1.DefaultConfig.settings.web3.utils.toHex(default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei')),
                         gasLimit: default_config_1.DefaultConfig.settings.web3.utils.toHex(4000000),
                         value: '0x00',

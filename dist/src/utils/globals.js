@@ -114,6 +114,14 @@ class Globals {
                 };
         }
     }
+    static GET_PMA_ESTIMATE_ADDRESS(networkID) {
+        switch (networkID) {
+            case (1):
+                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+            case (3):
+                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+        }
+    }
     static GET_SOLIDITY_FILE() {
         return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
     }

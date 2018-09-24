@@ -189,6 +189,17 @@ export class Globals {
 
     }
 
+    public static GET_PMA_ESTIMATE_ADDRESS(networkID: number): string {
+        switch (networkID) {
+            // TODO: Update once deploy to ETH MAINNET
+            case (1):
+                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+            case (3):
+                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+        }
+
+    }
+
     public static GET_SOLIDITY_FILE(): string {
         return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
     }
