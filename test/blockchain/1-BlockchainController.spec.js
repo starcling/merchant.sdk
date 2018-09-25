@@ -44,8 +44,8 @@ const addKeys = async (address, key) => {
 
 const clearKey = async (address) => {
     const sqlQuery = {
-        text: 'DELETE FROM account WHERE address = ?;',
-        values: [address]
+        text: 'DELETE FROM account WHERE 1=1;',
+        values: []
     };
     await dataServiceEncrypted.executeQueryAsPromise(sqlQuery);
 }
