@@ -123,7 +123,7 @@ export class TestDbConnector {
 
   public deletePullPaymentModel(pullPaymentID: string) {
     const sqlQuery: ISqlQuery = {
-      text: 'SELECT * FROM public.fc_delete_payment($1);',
+      text: 'SELECT * FROM public.fc_delete_payment_model($1);',
       values: [pullPaymentID]
     };
 

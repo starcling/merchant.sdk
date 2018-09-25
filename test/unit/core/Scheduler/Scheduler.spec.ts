@@ -42,11 +42,7 @@ const insertTestPullPayment = async () => {
 };
 
 const clearTestPullPayment = async () => {
-    const sqlQuery: ISqlQuery = {
-        text: 'DELETE FROM public.tb_payments WHERE id = $1;',
-        values: [testPullPayment.pullPaymentID]
-    };
-    await dataservice.executeQueryAsPromise(sqlQuery);
+    await testDbConnector.deletePullPaymentModel(testPullPayment.pullPaymentID);
 };
 
 describe('A Scheduler', () => {

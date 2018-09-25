@@ -120,7 +120,7 @@ class TestDbConnector {
     }
     deletePullPaymentModel(pullPaymentID) {
         const sqlQuery = {
-            text: 'SELECT * FROM public.fc_delete_payment($1);',
+            text: 'SELECT * FROM public.fc_delete_payment_model($1);',
             values: [pullPaymentID]
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);

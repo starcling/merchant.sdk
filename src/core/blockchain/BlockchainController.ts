@@ -159,9 +159,14 @@ export class BlockchainController {
                 await new CashOutController().cashOutPMA(pullPaymentID);
             }
 
-        }).catch((err) => {
+        }).catch(async (err) => {
             // TODO: Proper error handling 
             console.debug(err);
+
+            await transactionController.updateTransaction(<ITransactionUpdate>{
+                hash: err.transactionHash,
+                statusID: Globals.GET_TRANSACTION_STATUS_ENUM().failed
+            });
         });
     }
 }

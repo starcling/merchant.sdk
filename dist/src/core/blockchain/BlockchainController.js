@@ -142,9 +142,13 @@ class BlockchainController {
                 if (pullPayment.automatedCashOut && receipt.status) {
                     yield new CashOutController_1.CashOutController().cashOutPMA(pullPaymentID);
                 }
-            })).catch((err) => {
+            })).catch((err) => __awaiter(this, void 0, void 0, function* () {
                 console.debug(err);
-            });
+                yield transactionController.updateTransaction({
+                    hash: err.transactionHash,
+                    statusID: globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed
+                });
+            }));
         });
     }
 }

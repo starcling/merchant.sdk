@@ -1,5 +1,4 @@
 import { MerchantSDK } from '../../dist/src/MerchantSDKClass';
-import { DataService } from '../../dist/src/utils/datasource/DataService';
 import { PrivateKeysDbConnector } from '../../dist/src/utils/datasource/PrivateKeysDbConnector';
 import { TestDbConnector } from '../../dist/src/utils/datasource/TestDbConnector';
 import {
@@ -16,7 +15,6 @@ require('chai')
     .should();
 
 const testDbConnector = new TestDbConnector();
-const dataservice = new DataService();
 const privateKeysDbConnector = new PrivateKeysDbConnector();
 const dataServiceEncrypted = new DataServiceEncrypted();
 let pullPaymentID;
@@ -26,15 +24,8 @@ const insertTestPullPaymentModel = async (testPayment) => {
     const result = await testDbConnector.createPullPaymentModel(testPayment);
     pullPaymentID = result.data[0].id;
 };
-const updateTestContract = async (testContract) => {
-    await testDbConnector.updatePullPayment(testContract);
-};
-const clearTestPullPaymentModel = async (pullPaymentID) => {
-    const sqlQuery = {
-        text: 'DELETE FROM public.tb_payments WHERE id = $1;',
-        values: [pullPaymentID]
-    };
-    await dataservice.executeQueryAsPromise(sqlQuery);
+const clearTestPullPaymentModel = async () => {
+    await testDbConnector.deletePullPaymentModel(pullPaymentID);
 };
 
 const addKeys = async (address, key) => {
@@ -44,8 +35,8 @@ const addKeys = async (address, key) => {
 
 const clearKey = async (address) => {
     const sqlQuery = {
-        text: 'DELETE FROM account WHERE 1=1;',
-        values: []
+        text: 'DELETE FROM account WHERE address = ?;',
+        values: [address]
     };
     await dataServiceEncrypted.executeQueryAsPromise(sqlQuery);
 }
@@ -124,16 +115,17 @@ contract('Master Pull Payment Contract', async (accounts) => {
     })
     before('build sdk and insert payment', async () => {
         sdk = new MerchantSDK().build(settings);
-        await insertTestPullPaymentModel(testPullPaymentModel);
     });
     after('disconnect redis', async () => {
         sdk.disconnectRedis();
     });
-    afterEach('clear test payment', async () => {
-        await clearTestPullPaymentModel(testId);
+    afterEach('clear test pull payment model', async () => {
+        await clearTestPullPaymentModel();
 
     });
-
+    beforeEach('insert test pull payment model', async () => {
+        await insertTestPullPaymentModel(testPullPaymentModel);
+    });
     beforeEach('Deploying new PumaPayToken', async () => {
         token = await PumaPayToken.new({
             from: owner
@@ -155,9 +147,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
             merchantAddress: beneficiary
         });
     });
-    beforeEach(async () => {
-        await insertTestPullPaymentModel(testPullPaymentModel);
-    });
+    
     beforeEach('set recurring pull payment', () => {
         recurringPullPayment = {
             merchantID: "merchantID",
