@@ -144,8 +144,10 @@ class BlockchainController {
                 }
             })).catch((err) => __awaiter(this, void 0, void 0, function* () {
                 console.debug(err);
+                const error = JSON.parse(err.replace('Error: Transaction has been reverted by the EVM:', ''));
+                console.log(error);
                 yield transactionController.updateTransaction({
-                    hash: err.transactionHash,
+                    hash: error.transactionHash,
                     statusID: globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed
                 });
             }));
