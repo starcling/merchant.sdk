@@ -164,7 +164,7 @@ export class BlockchainController {
             console.debug(err);
 
             await transactionController.updateTransaction(<ITransactionUpdate>{
-                hash: err.transactionHash,
+                hash: JSON.parse(err).transactionHash,
                 statusID: Globals.GET_TRANSACTION_STATUS_ENUM().failed
             });
         });
