@@ -162,9 +162,10 @@ export class BlockchainController {
         }).catch(async (err) => {
             // TODO: Proper error handling 
             console.debug(err);
-
+            const error = JSON.parse(err.replace('Error: Transaction has been reverted by the EVM:', ''));
+            console.log(error);
             await transactionController.updateTransaction(<ITransactionUpdate>{
-                hash: JSON.parse(err).transactionHash,
+                hash: error.transactionHash,
                 statusID: Globals.GET_TRANSACTION_STATUS_ENUM().failed
             });
         });
