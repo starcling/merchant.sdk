@@ -59,7 +59,6 @@ class FundingController {
             let privateKey = (yield default_config_1.DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'];
             const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
             privateKey = null;
-            console.debug('funding PMA...', value);
             return blockchainHelper.getProvider().sendSignedTransaction(serializedTx);
         });
     }

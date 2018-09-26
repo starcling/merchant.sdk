@@ -17,7 +17,6 @@
             "id": "",
             "title": "changes title",
             "description": "another description",
-            "promo": "testing",
             "amount": "20",
             "initialPaymentAmount": "23",
             "trialPeriod": 23,

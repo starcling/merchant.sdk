@@ -14,7 +14,6 @@ export interface IPullPaymentView {
   id: string;
   title: string;
   description: string;
-  promo: string;
   amount: number;
   initialPaymentAmount: number;
   initialNumberOfPayments: number;
