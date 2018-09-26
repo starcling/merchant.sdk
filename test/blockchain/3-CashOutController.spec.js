@@ -1,13 +1,6 @@
 import { MerchantSDK } from '../../dist/src/MerchantSDKClass';
 import { PrivateKeysDbConnector } from '../../dist/src/utils/datasource/PrivateKeysDbConnector';
 import { TestDbConnector } from '../../dist/src/utils/datasource/TestDbConnector';
-import {
-    calcSignedMessageForRegistration,
-    getVRS
-} from '../helpers/signatureCalculator';
-import {
-    timeTravel
-} from '../helpers/timeHelper';
 import { DataServiceEncrypted } from '../../dist/src/utils/datasource/DataServiceEncrypted';
 
 require('chai')
@@ -31,7 +24,7 @@ const clearTestPullPaymentModel = async () => {
 const addKeys = async (address, key) => {
     await privateKeysDbConnector.addKeyName();
     await privateKeysDbConnector.addAddress(address, key);
-}
+};
 
 const clearKey = async (address) => {
     const sqlQuery = {
@@ -39,7 +32,7 @@ const clearKey = async (address) => {
         values: [address]
     };
     await dataServiceEncrypted.executeQueryAsPromise(sqlQuery);
-}
+};
 
 // TEST MNEMONIC - chase eagle blur snack pass version raven awesome wisdom embrace wood example
 const PumaPayToken = artifacts.require('PumaPayToken');
@@ -50,31 +43,32 @@ const web3API = new web3(new web3.providers.HttpProvider('http://localhost:7545'
 
 const MINUTE = 60; // 60 seconds
 const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
 const ONE_ETHER = web3.utils.toWei("1", 'ether');
 const MINTED_TOKENS = 1000000000 * ONE_ETHER; // 1 Billion PMA
-const EUR_EXCHANGE_RATE = 100000000; // 0.010 * 1^10
-const USD_EXCHANGE_RATE = 120000000; // 0.012 * 1^10
 
-const settings = {
-    web3: web3API,
-    getPullPayment: testDbConnector.getPullPayment,
-    updatePullPayment: testDbConnector.updatePullPayment,
-    getTransactions: testDbConnector.getTransactionsByContractID,
-    createTransaction: testDbConnector.createTransaction,
-    updateTransaction: testDbConnector.updateTransaction,
-    getPrivateKey: privateKeysDbConnector.getPrivateKey
-};
 let sdk;
 
-const CLIENT_PRIVATE_KEY = '0xfdfd2ca99b70a6299fff767b4ef0fe82f58c47119721c817046023a29354129c';
 contract('Master Pull Payment Contract', async (accounts) => {
     const owner = accounts[0];          // 0xe689c075c808404C9A0d84bE10d2E960CC61c497
-    const executor = accounts[1];       // 0xf52DBA6fe86D2f80c13F2e2565F521Ad0C18Efc0
     const client = accounts[2];         // 0xf52DBA6fe86D2f80c13F2e2565F521Ad0C18Efc0
     const beneficiary2 = accounts[3];         // 0xf52DBA6fe86D2f80c13F2e2565F521Ad0C18Efc0
     const beneficiary = '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
     const bank = accounts[9];
+
+    const bankAddressMock = async () => {
+        return {bankAddress: bank}
+    };
+
+    const settings = {
+        web3: web3API,
+        getPullPayment: testDbConnector.getPullPayment,
+        updatePullPayment: testDbConnector.updatePullPayment,
+        getTransactions: testDbConnector.getTransactionsByContractID,
+        createTransaction: testDbConnector.createTransaction,
+        updateTransaction: testDbConnector.updateTransaction,
+        getPrivateKey: privateKeysDbConnector.getPrivateKey,
+        bankAddress: bankAddressMock
+    };
 
     let recurringPullPayment;
     let token;
@@ -93,7 +87,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         "automatedCashOut": true,
         "cashOutFrequency": 1,
         "networkID": 3
-    }
+    };
     let testPullPayment = {
         "hdWalletIndex": 0,
         "pullPaymentID": "adsfads",
@@ -118,9 +112,8 @@ contract('Master Pull Payment Contract', async (accounts) => {
         await clearKey(beneficiary);
         await clearKey(beneficiary2);
         await clearKey(bank);
-    })
+    });
     before('build sdk', async () => {
-        settings.bankAddress = bank;
         sdk = new MerchantSDK().build(settings);
     });
     after('disconnect redis', async () => {

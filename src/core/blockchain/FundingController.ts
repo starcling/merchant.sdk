@@ -70,7 +70,7 @@ export class FundingController {
         let privateKey: string = (await DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'];
         const serializedTx: string = await new RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
         privateKey = null;
-        console.debug('funding PMA...', value);
+
         return blockchainHelper.getProvider().sendSignedTransaction(serializedTx);
     }
 

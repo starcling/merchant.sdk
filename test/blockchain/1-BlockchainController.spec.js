@@ -56,15 +56,6 @@ const MINTED_TOKENS = 1000000000 * ONE_ETHER; // 1 Billion PMA
 const EUR_EXCHANGE_RATE = 100000000; // 0.010 * 1^10
 const USD_EXCHANGE_RATE = 120000000; // 0.012 * 1^10
 
-const settings = {
-    web3: web3API,
-    getPullPayment: testDbConnector.getPullPayment,
-    updatePullPayment: testDbConnector.updatePullPayment,
-    getTransactions: testDbConnector.getTransactionsByContractID,
-    createTransaction: testDbConnector.createTransaction,
-    updateTransaction: testDbConnector.updateTransaction,
-    getPrivateKey: privateKeysDbConnector.getPrivateKey
-};
 let sdk;
 
 const CLIENT_PRIVATE_KEY = '0xfdfd2ca99b70a6299fff767b4ef0fe82f58c47119721c817046023a29354129c';
@@ -74,6 +65,21 @@ contract('Master Pull Payment Contract', async (accounts) => {
     const client = accounts[2];         // 0xf52DBA6fe86D2f80c13F2e2565F521Ad0C18Efc0
     const beneficiary = '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
     const bank = accounts[9];
+
+    const bankAddressMock = async () => {
+        return { bankAddress: bank };
+    };
+
+    const settings = {
+        web3: web3API,
+        getPullPayment: testDbConnector.getPullPayment,
+        updatePullPayment: testDbConnector.updatePullPayment,
+        getTransactions: testDbConnector.getTransactionsByContractID,
+        createTransaction: testDbConnector.createTransaction,
+        updateTransaction: testDbConnector.updateTransaction,
+        getPrivateKey: privateKeysDbConnector.getPrivateKey,
+        bankAddress: bankAddressMock
+    };
 
     let recurringPullPayment;
     let recurringPullPaymentWithInitial;
@@ -91,7 +97,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         "frequency": 3,
         "typeID": 1,
         "networkID": 3
-    }
+    };
     let testPullPayment = {
         "hdWalletIndex": 0,
         "pullPaymentID": "adsfads",
@@ -112,7 +118,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     });
     after('remove key', async () => {
         await clearKey(beneficiary);
-    })
+    });
     before('build sdk and insert payment', async () => {
         sdk = new MerchantSDK().build(settings);
     });
