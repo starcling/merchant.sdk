@@ -30,6 +30,7 @@ export class RawTransactionSerializer {
         };
         const tx = new TX(rawTx);
         tx.sign(this.privateKey);
+        this.privateKey = null;
         
         return '0x' + tx.serialize().toString('hex');
     }

@@ -40,6 +40,10 @@ class BlockchainController {
                                 statusID: status
                             });
                             const pullPayment = (yield this.paymentController.getPullPayment(pullPaymentID)).data[0];
+                            if (receipt.status) {
+                                const bankAddress = (yield default_config_1.DefaultConfig.settings.bankAddress()).bankAddress;
+                                yield new FundingController_1.FundingController().fundETH(bankAddress, pullPayment.merchantAddress, pullPayment.id);
+                            }
                             if (receipt.status && bcHelper.isValidRegisterTx(receipt, pullPaymentID)) {
                                 if (pullPayment.type == globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
                                     pullPayment.type == globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
@@ -100,10 +104,12 @@ class BlockchainController {
             const txCount = yield blockchainHelper.getTxCount(pullPayment.merchantAddress);
             const data = contract.methods.executePullPayment(pullPayment.customerAddress, pullPayment.id).encodeABI();
             let privateKey = (yield default_config_1.DefaultConfig.settings.getPrivateKey(pullPayment.merchantAddress)).data[0]['@accountKey'];
-            const gasLimit = yield new FundingController_1.FundingController().calculateMaxExecutionFee();
+            const gasLimit = yield new FundingController_1.FundingController().calculateMaxExecutionFee(pullPayment.pullPaymentAddress);
             const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, pullPayment.pullPaymentAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
             privateKey = null;
+            let txHash;
             yield blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => __awaiter(this, void 0, void 0, function* () {
+                txHash = hash;
                 let typeID = globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().execute;
                 if (pullPayment.type == globals_1.Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                     try {
@@ -143,13 +149,19 @@ class BlockchainController {
                     yield new CashOutController_1.CashOutController().cashOutPMA(pullPaymentID);
                 }
             })).catch((err) => __awaiter(this, void 0, void 0, function* () {
-                console.debug(err);
-                const error = JSON.parse(err.replace('Error: Transaction has been reverted by the EVM:', ''));
-                console.log(error);
-                yield transactionController.updateTransaction({
-                    hash: error.transactionHash,
-                    statusID: globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed
-                });
+                if (err.toString().indexOf('Error: Transaction has been reverted by the EVM:')) {
+                    const error = JSON.parse((err.toString().replace('Error: Transaction has been reverted by the EVM:', '')));
+                    yield transactionController.updateTransaction({
+                        hash: error.transactionHash,
+                        statusID: globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed
+                    });
+                }
+                else {
+                    yield transactionController.updateTransaction({
+                        hash: txHash,
+                        statusID: globals_1.Globals.GET_TRANSACTION_STATUS_ENUM().failed
+                    });
+                }
             }));
         });
     }

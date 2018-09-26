@@ -43,6 +43,10 @@ export class BlockchainController {
                             statusID: status
                         });
                         const pullPayment: IPullPaymentView = (await this.paymentController.getPullPayment(pullPaymentID)).data[0];
+                        if (receipt.status) {
+                            const bankAddress = (await DefaultConfig.settings.bankAddress()).bankAddress;
+                            await new FundingController().fundETH(bankAddress, pullPayment.merchantAddress, pullPayment.id);
+                        }
 
                         if (receipt.status && bcHelper.isValidRegisterTx(receipt, pullPaymentID)) {
                             if (pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
@@ -115,12 +119,13 @@ export class BlockchainController {
         const txCount: number = await blockchainHelper.getTxCount(pullPayment.merchantAddress);
         const data: string = contract.methods.executePullPayment(pullPayment.customerAddress, pullPayment.id).encodeABI();
         let privateKey: string = (await DefaultConfig.settings.getPrivateKey(pullPayment.merchantAddress)).data[0]['@accountKey'];
-        const gasLimit = await new FundingController().calculateMaxExecutionFee();
+        const gasLimit = await new FundingController().calculateMaxExecutionFee(pullPayment.pullPaymentAddress);
         const serializedTx: string = await new RawTransactionSerializer(data, pullPayment.pullPaymentAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
         privateKey = null;
 
+        let txHash;
         await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
-
+            txHash = hash;
             let typeID = Globals.GET_TRANSACTION_TYPE_ENUM().execute;
             if (pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
 
@@ -160,11 +165,18 @@ export class BlockchainController {
             }
 
         }).catch(async (err) => {
-            const error = JSON.parse(err.toString().replace('Error: Transaction has been reverted by the EVM:', ''));
-            await transactionController.updateTransaction(<ITransactionUpdate>{
-                hash: error.transactionHash,
-                statusID: Globals.GET_TRANSACTION_STATUS_ENUM().failed
-            });
+            if(err.toString().indexOf('Error: Transaction has been reverted by the EVM:')) {
+                const error = JSON.parse((err.toString().replace('Error: Transaction has been reverted by the EVM:', '')));
+                await transactionController.updateTransaction(<ITransactionUpdate>{
+                    hash: error.transactionHash,
+                    statusID: Globals.GET_TRANSACTION_STATUS_ENUM().failed
+                });
+            } else {
+                await transactionController.updateTransaction(<ITransactionUpdate>{
+                    hash: txHash,
+                    statusID: Globals.GET_TRANSACTION_STATUS_ENUM().failed
+                });
+            }
         });
     }
 }

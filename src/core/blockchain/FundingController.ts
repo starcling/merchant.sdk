@@ -6,6 +6,7 @@ import { BlockchainHelper } from "./utils/BlockchainHelper";
 import { DefaultConfig } from "../../config/default.config";
 import { HTTPHelper } from "../../utils/web/HTTPHelper";
 import { RawTransactionSerializer } from "./utils/RawTransactionSerializer";
+import {BlockType} from "web3/types";
 const redis = require('redis');
 const bluebird = require('bluebird');
 const Tx = require('ethereumjs-tx');
@@ -25,7 +26,6 @@ export class FundingController {
      * @param pullPaymentAddress (optional) Address of the master pull payment contract
      */
     public async fundETH(fromAddress: string, toAddress: string, paymentID: string, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
-
         const bcHelper = new BlockchainHelper();
         if (!value) {
             value = await this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
@@ -70,7 +70,7 @@ export class FundingController {
         let privateKey: string = (await DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'];
         const serializedTx: string = await new RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
         privateKey = null;
-
+        console.debug('funding PMA...', value);
         return blockchainHelper.getProvider().sendSignedTransaction(serializedTx);
     }
 
@@ -126,10 +126,10 @@ export class FundingController {
         return new Promise<number>(async (resolve, reject) => {
             pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).masterPullPayment;
 
-            const rclient = redis.createClient({
-                port: DefaultConfig.settings.redisPort,
-                host: DefaultConfig.settings.redisHost
-            });
+            const rclient = redis.createClient(
+                Number(DefaultConfig.settings.redisPort),
+                DefaultConfig.settings.redisHost
+            );
             bluebird.promisifyAll(redis);
             const bcHelper = new BlockchainHelper();
 
@@ -145,8 +145,8 @@ export class FundingController {
             const latestBlock = Number(await bcHelper.getProvider().getBlockNumber());
 
             bcHelper.getProvider().getPastLogs({
-                fromBlock: DefaultConfig.settings.web3.utils.toHex(fromBlock),
-                toBlock: latestBlock ? DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest',
+                fromBlock: DefaultConfig.settings.web3.utils.toHex(fromBlock) as BlockType,
+                toBlock: (latestBlock ? DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest') as BlockType,
                 address: pullPaymentAddress,
                 topics: Globals.GET_PULL_PAYMENT_TOPICS(DefaultConfig.settings.networkID).execute
             }, async (err, res) => {

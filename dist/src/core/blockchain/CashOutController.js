@@ -25,7 +25,8 @@ class CashOutController {
             const payment = (yield this.paymentController.getPullPayment(paymentID)).data[0];
             if (!((payment.initialNumberOfPayments - payment.numberOfPayments) % payment.cashOutFrequency)) {
                 const balance = yield this.getBalance(payment.merchantAddress, tokenAddress);
-                yield new FundingController_1.FundingController().fundPMA(payment.merchantAddress, default_config_1.DefaultConfig.settings.bankAddress, balance, tokenAddress);
+                const bankAddress = (yield default_config_1.DefaultConfig.settings.bankAddress()).bankAddress;
+                yield new FundingController_1.FundingController().fundPMA(payment.merchantAddress, bankAddress, balance, tokenAddress);
             }
         });
     }
@@ -37,7 +38,8 @@ class CashOutController {
             const initalFee = Math.floor(Math.random() * (this.max - this.min) + this.min) * default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei');
             const gasFee = default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei') * 21000;
             const fundETH = (gasFee) => __awaiter(this, void 0, void 0, function* () {
-                yield fundingController.fundETH(payment.merchantAddress, default_config_1.DefaultConfig.settings.bankAddress, null, balance - gasFee, tokenAddress).catch((err) => __awaiter(this, void 0, void 0, function* () {
+                const bankAddress = (yield default_config_1.DefaultConfig.settings.bankAddress()).bankAddress;
+                yield fundingController.fundETH(payment.merchantAddress, bankAddress, null, balance - gasFee, tokenAddress).catch((err) => __awaiter(this, void 0, void 0, function* () {
                     yield fundETH(gasFee + gasFee / 5);
                 }));
             });

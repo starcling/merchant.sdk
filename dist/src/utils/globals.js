@@ -93,12 +93,12 @@ class Globals {
             case (1):
                 return {
                     token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
-                    masterPullPayment: '0x7990fc1d2527d00c22db4c2b72e3e74f80b97d9c'
+                    masterPullPayment: '0xd996f8a7298d822eeb71868c93eceb106401a5fe'
                 };
             case (3):
                 return {
                     token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
-                    masterPullPayment: '0x7990fc1d2527d00c22db4c2b72e3e74f80b97d9c'
+                    masterPullPayment: '0xd996f8a7298d822eeb71868c93eceb106401a5fe'
                 };
         }
     }

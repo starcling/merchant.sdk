@@ -59,6 +59,7 @@ class FundingController {
             let privateKey = (yield default_config_1.DefaultConfig.settings.getPrivateKey(fromAddress)).data[0]['@accountKey'];
             const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, tokenAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
             privateKey = null;
+            console.debug('funding PMA...', value);
             return blockchainHelper.getProvider().sendSignedTransaction(serializedTx);
         });
     }
@@ -113,10 +114,7 @@ class FundingController {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).masterPullPayment;
-                const rclient = redis.createClient({
-                    port: default_config_1.DefaultConfig.settings.redisPort,
-                    host: default_config_1.DefaultConfig.settings.redisHost
-                });
+                const rclient = redis.createClient(Number(default_config_1.DefaultConfig.settings.redisPort), default_config_1.DefaultConfig.settings.redisHost);
                 bluebird.promisifyAll(redis);
                 const bcHelper = new BlockchainHelper_1.BlockchainHelper();
                 let max = Number(yield rclient.getAsync(this.maxGasFeeName));
@@ -130,7 +128,7 @@ class FundingController {
                 const latestBlock = Number(yield bcHelper.getProvider().getBlockNumber());
                 bcHelper.getProvider().getPastLogs({
                     fromBlock: default_config_1.DefaultConfig.settings.web3.utils.toHex(fromBlock),
-                    toBlock: latestBlock ? default_config_1.DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest',
+                    toBlock: (latestBlock ? default_config_1.DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest'),
                     address: pullPaymentAddress,
                     topics: globals_1.Globals.GET_PULL_PAYMENT_TOPICS(default_config_1.DefaultConfig.settings.networkID).execute
                 }, (err, res) => __awaiter(this, void 0, void 0, function* () {

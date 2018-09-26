@@ -21,7 +21,8 @@ export class CashOutController {
 
         if (!((payment.initialNumberOfPayments - payment.numberOfPayments) % payment.cashOutFrequency)) {
             const balance = await this.getBalance(payment.merchantAddress, tokenAddress);
-            await new FundingController().fundPMA(payment.merchantAddress, DefaultConfig.settings.bankAddress, balance, tokenAddress);
+            const bankAddress = (await DefaultConfig.settings.bankAddress()).bankAddress;
+            await new FundingController().fundPMA(payment.merchantAddress, bankAddress, balance, tokenAddress);
         }
     }
 
@@ -34,10 +35,11 @@ export class CashOutController {
 
         const gasFee = DefaultConfig.settings.web3.utils.toWei('10', 'Gwei') * 21000;
         const fundETH = async (gasFee) => {
-            await fundingController.fundETH(payment.merchantAddress, DefaultConfig.settings.bankAddress, null, balance - gasFee, tokenAddress).catch(async err => {
+            const bankAddress = (await DefaultConfig.settings.bankAddress()).bankAddress;
+            await fundingController.fundETH(payment.merchantAddress, bankAddress, null, balance - gasFee, tokenAddress).catch(async err => {
                 await fundETH(gasFee + gasFee / 5);
             });
-        }
+        };
 
         await fundETH(gasFee + initalFee);
     }
