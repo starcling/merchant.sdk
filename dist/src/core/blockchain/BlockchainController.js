@@ -120,6 +120,7 @@ class BlockchainController {
                     }
                     catch (err) {
                         typeID = globals_1.Globals.GET_TRANSACTION_TYPE_ENUM().initial;
+                        console.debug('Disregard the DB error. TODO: To be fixed');
                     }
                 }
                 yield transactionController.createTransaction({

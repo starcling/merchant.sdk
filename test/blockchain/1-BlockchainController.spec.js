@@ -43,7 +43,7 @@ const clearKey = async (address) => {
 
 // TEST MNEMONIC - chase eagle blur snack pass version raven awesome wisdom embrace wood example
 const PumaPayToken = artifacts.require('PumaPayToken');
-const MasterPullPayment = artifacts.require('MasterPullPayment');
+const PumaPayPullPayment = artifacts.require('PumaPayPullPayment');
 
 const web3 = require('web3');
 const web3API = new web3(new web3.providers.HttpProvider('http://localhost:7545'));
@@ -84,7 +84,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     let recurringPullPayment;
     let recurringPullPaymentWithInitial;
     let token;
-    let masterPullPayment;
+    let pumaPayPullPayment;
     let testPullPaymentModel = {
         "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
         "title": "test payment",
@@ -138,14 +138,14 @@ contract('Master Pull Payment Contract', async (accounts) => {
         });
     });
     beforeEach('Deploying new Master Pull Payment  ', async () => {
-        masterPullPayment = await MasterPullPayment
+        pumaPayPullPayment = await PumaPayPullPayment
             .new(token.address, {
                 from: owner
             });
     });
-    beforeEach(async () => {
+    beforeEach('Inserting pull payment', async () => {
         testPullPayment.pullPaymentID = pullPaymentID;
-        testPullPayment.pullPaymentAddress = masterPullPayment.address;
+        testPullPayment.pullPaymentAddress = pumaPayPullPayment.address;
         const result = await testDbConnector.createPullPayment(testPullPayment);
         testId = result.data[0].id;
         await testDbConnector.updatePullPayment({
@@ -193,21 +193,29 @@ contract('Master Pull Payment Contract', async (accounts) => {
             from: owner
         });
     });
+    beforeEach('Send ETH to smart contract', async () => {
+        await pumaPayPullPayment.sendTransaction(
+            {
+                from: owner,
+                value: 1 * ONE_ETHER
+            }
+        );
+    });
     beforeEach('add executor', async () => {
-        await masterPullPayment.addExecutor(executor, {
+        await pumaPayPullPayment.addExecutor(executor, {
             from: owner
         });
     });
     beforeEach('set the rate for multiple fiat currencies', async () => {
-        await masterPullPayment.setRate('EUR', EUR_EXCHANGE_RATE, {
+        await pumaPayPullPayment.setRate('EUR', EUR_EXCHANGE_RATE, {
             from: owner
         });
-        await masterPullPayment.setRate('USD', USD_EXCHANGE_RATE, {
+        await pumaPayPullPayment.setRate('USD', USD_EXCHANGE_RATE, {
             from: owner
         });
     });
     beforeEach('approve pull payment contract', async () => {
-        await token.approve(masterPullPayment.address, MINTED_TOKENS, {
+        await token.approve(pumaPayPullPayment.address, MINTED_TOKENS, {
             from: client
         });
     });
@@ -217,7 +225,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
                 const signature = await calcSignedMessageForRegistration(recurringPullPayment, CLIENT_PRIVATE_KEY);
                 const sigVRS = await getVRS(signature);
 
-                await masterPullPayment.registerPullPayment(
+                await pumaPayPullPayment.registerPullPayment(
                     sigVRS.v,
                     sigVRS.r,
                     sigVRS.s,
@@ -255,7 +263,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         beforeEach('register new pull payment', async () => {
             const signature = await calcSignedMessageForRegistration(recurringPullPaymentWithInitial, CLIENT_PRIVATE_KEY);
             const sigVRS = await getVRS(signature);
-            await masterPullPayment.registerPullPayment(
+            await pumaPayPullPayment.registerPullPayment(
                 sigVRS.v,
                 sigVRS.r,
                 sigVRS.s,

@@ -136,6 +136,7 @@ export class BlockchainController {
                     });
                 } catch (err) {
                     typeID = Globals.GET_TRANSACTION_TYPE_ENUM().initial;
+                    console.debug('Disregard the DB error. TODO: To be fixed');
                 }
             }
             await transactionController.createTransaction(<ITransactionInsert>{

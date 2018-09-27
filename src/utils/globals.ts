@@ -1,10 +1,6 @@
 import { DefaultConfig } from "../config/default.config";
 
 export class Globals {
-    static GET_PAYMENT_STATUS_ENUM(): any {
-        throw new Error("Method not implemented.");
-    }
-
     /**
      * @description Method for getting core backend api url 
      * @returns {string} url
@@ -213,7 +209,7 @@ export class Globals {
     }
 
     public static GET_PULL_PAYMENT_STATUS_ENUM(): any {
-        return ContractStatusEnum;
+        return PaymentStatusEnum;
     }
 
     public static GET_PAYMENT_TYPE_ENUM(): any {
@@ -273,7 +269,7 @@ export class Globals {
     }
 
     public static GET_PULL_PAYMENT_CONTRACT_NAME(): string {
-        return 'MasterPullPayment';
+        return 'PumaPayPullPayment';
     }
 
     public static GET_SCHEDULE_QUEUE_INTERVAL(): number {
@@ -303,7 +299,7 @@ enum TransactionTypeEnum {
     cancel = 4
 }
 
-enum ContractStatusEnum {
+enum PaymentStatusEnum {
     initial = 1,
     running = 2,
     stopped = 3,

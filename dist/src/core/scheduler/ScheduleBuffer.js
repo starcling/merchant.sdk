@@ -80,13 +80,13 @@ class SchedulerBuffer {
     static testScheduler(pullPaymentID) {
         return __awaiter(this, void 0, void 0, function* () {
             const pullPaymentDbConnector = new PullPaymentController_1.PullPaymentController();
-            const paymentContract = (yield pullPaymentDbConnector.getPullPayment(pullPaymentID)).data[0];
-            paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-            paymentContract.lastPaymentDate = paymentContract.nextPaymentDate;
-            paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0 ?
-                paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + paymentContract.frequency;
-            paymentContract.status = paymentContract.numberOfPayments === 0 ? globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().done : globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM()[paymentContract.status],
-                yield pullPaymentDbConnector.updatePullPayment(paymentContract);
+            const pullPayment = (yield pullPaymentDbConnector.getPullPayment(pullPaymentID)).data[0];
+            pullPayment.numberOfPayments = pullPayment.numberOfPayments - 1;
+            pullPayment.lastPaymentDate = pullPayment.nextPaymentDate;
+            pullPayment.nextPaymentDate = pullPayment.numberOfPayments === 0 ?
+                pullPayment.nextPaymentDate : Number(pullPayment.nextPaymentDate) + pullPayment.frequency;
+            pullPayment.status = pullPayment.numberOfPayments === 0 ? globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().done : globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM()[pullPayment.status],
+                yield pullPaymentDbConnector.updatePullPayment(pullPayment);
         });
     }
     static reconnectToRedis() {

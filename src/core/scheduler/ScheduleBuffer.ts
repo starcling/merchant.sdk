@@ -81,19 +81,19 @@ export class SchedulerBuffer {
     }
 
     /**
-    * @description Method for actual execution of pull paymentContract
+    * @description Method for actual execution of pull pullPayment
     * @returns {object} null
     */
     protected static async testScheduler(pullPaymentID?: string) {
         const pullPaymentDbConnector = new PullPaymentController();
-        const paymentContract = (await pullPaymentDbConnector.getPullPayment(pullPaymentID)).data[0];
+        const pullPayment = (await pullPaymentDbConnector.getPullPayment(pullPaymentID)).data[0];
 
-        paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-        paymentContract.lastPaymentDate = paymentContract.nextPaymentDate;
-        paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0 ?
-            paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + paymentContract.frequency;
-        paymentContract.status = paymentContract.numberOfPayments === 0 ? Globals.GET_PULL_PAYMENT_STATUS_ENUM().done : Globals.GET_PULL_PAYMENT_STATUS_ENUM()[paymentContract.status],
-            await pullPaymentDbConnector.updatePullPayment(paymentContract);
+        pullPayment.numberOfPayments = pullPayment.numberOfPayments - 1;
+        pullPayment.lastPaymentDate = pullPayment.nextPaymentDate;
+        pullPayment.nextPaymentDate = pullPayment.numberOfPayments === 0 ?
+            pullPayment.nextPaymentDate : Number(pullPayment.nextPaymentDate) + pullPayment.frequency;
+        pullPayment.status = pullPayment.numberOfPayments === 0 ? Globals.GET_PULL_PAYMENT_STATUS_ENUM().done : Globals.GET_PULL_PAYMENT_STATUS_ENUM()[pullPayment.status],
+            await pullPaymentDbConnector.updatePullPayment(pullPayment);
     }
 
     public static reconnectToRedis() {

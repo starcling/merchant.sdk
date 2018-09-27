@@ -1,5 +1,18 @@
+pragma solidity 0.4.24;
 
-pragma solidity ^0.4.23;
+// File: node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol
+
+/**
+ * @title ERC20Basic
+ * @dev Simpler version of ERC20 interface
+ * See https://github.com/ethereum/EIPs/issues/179
+ */
+contract ERC20Basic {
+  function totalSupply() public view returns (uint256);
+  function balanceOf(address _who) public view returns (uint256);
+  function transfer(address _to, uint256 _value) public returns (bool);
+  event Transfer(address indexed from, address indexed to, uint256 value);
+}
 
 // File: node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol
 
@@ -12,45 +25,233 @@ library SafeMath {
   /**
   * @dev Multiplies two numbers, throws on overflow.
   */
-  function mul(uint256 a, uint256 b) internal pure returns (uint256 c) {
+  function mul(uint256 _a, uint256 _b) internal pure returns (uint256 c) {
     // Gas optimization: this is cheaper than asserting 'a' not being zero, but the
     // benefit is lost if 'b' is also tested.
     // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
-    if (a == 0) {
+    if (_a == 0) {
       return 0;
     }
 
-    c = a * b;
-    assert(c / a == b);
+    c = _a * _b;
+    assert(c / _a == _b);
     return c;
   }
 
   /**
   * @dev Integer division of two numbers, truncating the quotient.
   */
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
-    // assert(b > 0); // Solidity automatically throws when dividing by 0
-    // uint256 c = a / b;
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-    return a / b;
+  function div(uint256 _a, uint256 _b) internal pure returns (uint256) {
+    // assert(_b > 0); // Solidity automatically throws when dividing by 0
+    // uint256 c = _a / _b;
+    // assert(_a == _b * c + _a % _b); // There is no case in which this doesn't hold
+    return _a / _b;
   }
 
   /**
   * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
   */
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-    assert(b <= a);
-    return a - b;
+  function sub(uint256 _a, uint256 _b) internal pure returns (uint256) {
+    assert(_b <= _a);
+    return _a - _b;
   }
 
   /**
   * @dev Adds two numbers, throws on overflow.
   */
-  function add(uint256 a, uint256 b) internal pure returns (uint256 c) {
-    c = a + b;
-    assert(c >= a);
+  function add(uint256 _a, uint256 _b) internal pure returns (uint256 c) {
+    c = _a + _b;
+    assert(c >= _a);
     return c;
   }
+}
+
+// File: node_modules/openzeppelin-solidity/contracts/token/ERC20/BasicToken.sol
+
+/**
+ * @title Basic token
+ * @dev Basic version of StandardToken, with no allowances.
+ */
+contract BasicToken is ERC20Basic {
+  using SafeMath for uint256;
+
+  mapping(address => uint256) internal balances;
+
+  uint256 internal totalSupply_;
+
+  /**
+  * @dev Total number of tokens in existence
+  */
+  function totalSupply() public view returns (uint256) {
+    return totalSupply_;
+  }
+
+  /**
+  * @dev Transfer token for a specified address
+  * @param _to The address to transfer to.
+  * @param _value The amount to be transferred.
+  */
+  function transfer(address _to, uint256 _value) public returns (bool) {
+    require(_value <= balances[msg.sender]);
+    require(_to != address(0));
+
+    balances[msg.sender] = balances[msg.sender].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    emit Transfer(msg.sender, _to, _value);
+    return true;
+  }
+
+  /**
+  * @dev Gets the balance of the specified address.
+  * @param _owner The address to query the the balance of.
+  * @return An uint256 representing the amount owned by the passed address.
+  */
+  function balanceOf(address _owner) public view returns (uint256) {
+    return balances[_owner];
+  }
+
+}
+
+// File: node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol
+
+/**
+ * @title ERC20 interface
+ * @dev see https://github.com/ethereum/EIPs/issues/20
+ */
+contract ERC20 is ERC20Basic {
+  function allowance(address _owner, address _spender)
+    public view returns (uint256);
+
+  function transferFrom(address _from, address _to, uint256 _value)
+    public returns (bool);
+
+  function approve(address _spender, uint256 _value) public returns (bool);
+  event Approval(
+    address indexed owner,
+    address indexed spender,
+    uint256 value
+  );
+}
+
+// File: node_modules/openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol
+
+/**
+ * @title Standard ERC20 token
+ *
+ * @dev Implementation of the basic standard token.
+ * https://github.com/ethereum/EIPs/issues/20
+ * Based on code by FirstBlood: https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
+ */
+contract StandardToken is ERC20, BasicToken {
+
+  mapping (address => mapping (address => uint256)) internal allowed;
+
+
+  /**
+   * @dev Transfer tokens from one address to another
+   * @param _from address The address which you want to send tokens from
+   * @param _to address The address which you want to transfer to
+   * @param _value uint256 the amount of tokens to be transferred
+   */
+  function transferFrom(
+    address _from,
+    address _to,
+    uint256 _value
+  )
+    public
+    returns (bool)
+  {
+    require(_value <= balances[_from]);
+    require(_value <= allowed[_from][msg.sender]);
+    require(_to != address(0));
+
+    balances[_from] = balances[_from].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+    emit Transfer(_from, _to, _value);
+    return true;
+  }
+
+  /**
+   * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
+   * Beware that changing an allowance with this method brings the risk that someone may use both the old
+   * and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this
+   * race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards:
+   * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+   * @param _spender The address which will spend the funds.
+   * @param _value The amount of tokens to be spent.
+   */
+  function approve(address _spender, uint256 _value) public returns (bool) {
+    allowed[msg.sender][_spender] = _value;
+    emit Approval(msg.sender, _spender, _value);
+    return true;
+  }
+
+  /**
+   * @dev Function to check the amount of tokens that an owner allowed to a spender.
+   * @param _owner address The address which owns the funds.
+   * @param _spender address The address which will spend the funds.
+   * @return A uint256 specifying the amount of tokens still available for the spender.
+   */
+  function allowance(
+    address _owner,
+    address _spender
+   )
+    public
+    view
+    returns (uint256)
+  {
+    return allowed[_owner][_spender];
+  }
+
+  /**
+   * @dev Increase the amount of tokens that an owner allowed to a spender.
+   * approve should be called when allowed[_spender] == 0. To increment
+   * allowed value is better to use this function to avoid 2 calls (and wait until
+   * the first transaction is mined)
+   * From MonolithDAO Token.sol
+   * @param _spender The address which will spend the funds.
+   * @param _addedValue The amount of tokens to increase the allowance by.
+   */
+  function increaseApproval(
+    address _spender,
+    uint256 _addedValue
+  )
+    public
+    returns (bool)
+  {
+    allowed[msg.sender][_spender] = (
+      allowed[msg.sender][_spender].add(_addedValue));
+    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    return true;
+  }
+
+  /**
+   * @dev Decrease the amount of tokens that an owner allowed to a spender.
+   * approve should be called when allowed[_spender] == 0. To decrement
+   * allowed value is better to use this function to avoid 2 calls (and wait until
+   * the first transaction is mined)
+   * From MonolithDAO Token.sol
+   * @param _spender The address which will spend the funds.
+   * @param _subtractedValue The amount of tokens to decrease the allowance by.
+   */
+  function decreaseApproval(
+    address _spender,
+    uint256 _subtractedValue
+  )
+    public
+    returns (bool)
+  {
+    uint256 oldValue = allowed[msg.sender][_spender];
+    if (_subtractedValue >= oldValue) {
+      allowed[msg.sender][_spender] = 0;
+    } else {
+      allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
+    }
+    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    return true;
+  }
+
 }
 
 // File: node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol
@@ -89,6 +290,9 @@ contract Ownable {
 
   /**
    * @dev Allows the current owner to relinquish control of the contract.
+   * @notice Renouncing to ownership will leave the contract without an owner.
+   * It will not be possible to call the functions with the `onlyOwner`
+   * modifier anymore.
    */
   function renounceOwnership() public onlyOwner {
     emit OwnershipRenounced(owner);
@@ -114,217 +318,11 @@ contract Ownable {
   }
 }
 
-// File: node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol
-
-/**
- * @title ERC20Basic
- * @dev Simpler version of ERC20 interface
- * @dev see https://github.com/ethereum/EIPs/issues/179
- */
-contract ERC20Basic {
-  function totalSupply() public view returns (uint256);
-  function balanceOf(address who) public view returns (uint256);
-  function transfer(address to, uint256 value) public returns (bool);
-  event Transfer(address indexed from, address indexed to, uint256 value);
-}
-
-// File: node_modules/openzeppelin-solidity/contracts/token/ERC20/BasicToken.sol
-
-/**
- * @title Basic token
- * @dev Basic version of StandardToken, with no allowances.
- */
-contract BasicToken is ERC20Basic {
-  using SafeMath for uint256;
-
-  mapping(address => uint256) balances;
-
-  uint256 totalSupply_;
-
-  /**
-  * @dev total number of tokens in existence
-  */
-  function totalSupply() public view returns (uint256) {
-    return totalSupply_;
-  }
-
-  /**
-  * @dev transfer token for a specified address
-  * @param _to The address to transfer to.
-  * @param _value The amount to be transferred.
-  */
-  function transfer(address _to, uint256 _value) public returns (bool) {
-    require(_to != address(0));
-    require(_value <= balances[msg.sender]);
-
-    balances[msg.sender] = balances[msg.sender].sub(_value);
-    balances[_to] = balances[_to].add(_value);
-    emit Transfer(msg.sender, _to, _value);
-    return true;
-  }
-
-  /**
-  * @dev Gets the balance of the specified address.
-  * @param _owner The address to query the the balance of.
-  * @return An uint256 representing the amount owned by the passed address.
-  */
-  function balanceOf(address _owner) public view returns (uint256) {
-    return balances[_owner];
-  }
-
-}
-
-// File: node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol
-
-/**
- * @title ERC20 interface
- * @dev see https://github.com/ethereum/EIPs/issues/20
- */
-contract ERC20 is ERC20Basic {
-  function allowance(address owner, address spender)
-    public view returns (uint256);
-
-  function transferFrom(address from, address to, uint256 value)
-    public returns (bool);
-
-  function approve(address spender, uint256 value) public returns (bool);
-  event Approval(
-    address indexed owner,
-    address indexed spender,
-    uint256 value
-  );
-}
-
-// File: node_modules/openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol
-
-/**
- * @title Standard ERC20 token
- *
- * @dev Implementation of the basic standard token.
- * @dev https://github.com/ethereum/EIPs/issues/20
- * @dev Based on code by FirstBlood: https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
- */
-contract StandardToken is ERC20, BasicToken {
-
-  mapping (address => mapping (address => uint256)) internal allowed;
-
-
-  /**
-   * @dev Transfer tokens from one address to another
-   * @param _from address The address which you want to send tokens from
-   * @param _to address The address which you want to transfer to
-   * @param _value uint256 the amount of tokens to be transferred
-   */
-  function transferFrom(
-    address _from,
-    address _to,
-    uint256 _value
-  )
-    public
-    returns (bool)
-  {
-    require(_to != address(0));
-    require(_value <= balances[_from]);
-    require(_value <= allowed[_from][msg.sender]);
-
-    balances[_from] = balances[_from].sub(_value);
-    balances[_to] = balances[_to].add(_value);
-    allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-    emit Transfer(_from, _to, _value);
-    return true;
-  }
-
-  /**
-   * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
-   *
-   * Beware that changing an allowance with this method brings the risk that someone may use both the old
-   * and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this
-   * race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards:
-   * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-   * @param _spender The address which will spend the funds.
-   * @param _value The amount of tokens to be spent.
-   */
-  function approve(address _spender, uint256 _value) public returns (bool) {
-    allowed[msg.sender][_spender] = _value;
-    emit Approval(msg.sender, _spender, _value);
-    return true;
-  }
-
-  /**
-   * @dev Function to check the amount of tokens that an owner allowed to a spender.
-   * @param _owner address The address which owns the funds.
-   * @param _spender address The address which will spend the funds.
-   * @return A uint256 specifying the amount of tokens still available for the spender.
-   */
-  function allowance(
-    address _owner,
-    address _spender
-   )
-    public
-    view
-    returns (uint256)
-  {
-    return allowed[_owner][_spender];
-  }
-
-  /**
-   * @dev Increase the amount of tokens that an owner allowed to a spender.
-   *
-   * approve should be called when allowed[_spender] == 0. To increment
-   * allowed value is better to use this function to avoid 2 calls (and wait until
-   * the first transaction is mined)
-   * From MonolithDAO Token.sol
-   * @param _spender The address which will spend the funds.
-   * @param _addedValue The amount of tokens to increase the allowance by.
-   */
-  function increaseApproval(
-    address _spender,
-    uint _addedValue
-  )
-    public
-    returns (bool)
-  {
-    allowed[msg.sender][_spender] = (
-      allowed[msg.sender][_spender].add(_addedValue));
-    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
-    return true;
-  }
-
-  /**
-   * @dev Decrease the amount of tokens that an owner allowed to a spender.
-   *
-   * approve should be called when allowed[_spender] == 0. To decrement
-   * allowed value is better to use this function to avoid 2 calls (and wait until
-   * the first transaction is mined)
-   * From MonolithDAO Token.sol
-   * @param _spender The address which will spend the funds.
-   * @param _subtractedValue The amount of tokens to decrease the allowance by.
-   */
-  function decreaseApproval(
-    address _spender,
-    uint _subtractedValue
-  )
-    public
-    returns (bool)
-  {
-    uint oldValue = allowed[msg.sender][_spender];
-    if (_subtractedValue > oldValue) {
-      allowed[msg.sender][_spender] = 0;
-    } else {
-      allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
-    }
-    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
-    return true;
-  }
-
-}
-
 // File: node_modules/openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol
 
 /**
  * @title Mintable token
  * @dev Simple ERC20 Token example, with mintable token creation
- * @dev Issue: * https://github.com/OpenZeppelin/openzeppelin-solidity/issues/120
  * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
  */
 contract MintableToken is StandardToken, Ownable {
@@ -354,9 +352,9 @@ contract MintableToken is StandardToken, Ownable {
     address _to,
     uint256 _amount
   )
+    public
     hasMintPermission
     canMint
-    public
     returns (bool)
   {
     totalSupply_ = totalSupply_.add(_amount);
@@ -370,7 +368,7 @@ contract MintableToken is StandardToken, Ownable {
    * @dev Function to stop minting new tokens.
    * @return True if the operation was successful.
    */
-  function finishMinting() onlyOwner canMint public returns (bool) {
+  function finishMinting() public onlyOwner canMint returns (bool) {
     mintingFinished = true;
     emit MintFinished();
     return true;
@@ -414,32 +412,37 @@ contract PumaPayToken is MintableToken {
     }
 }
 
-// File: contracts/PullPayment/MasterPullPayment.sol
+// File: contracts/PumaPayPullPayment.sol
 
-/// @title Master Pull Payment - Contract that facilitates our pull payment protocol
+/// @title PumaPay Pull Payment - Contract that facilitates our pull payment protocol
 /// @author PumaPay Dev Team - <developers@pumapay.io>
-contract MasterPullPayment is Ownable {
+contract PumaPayPullPayment is Ownable {
+    
     using SafeMath for uint256;
-    /// =================================================================================================================
-    ///                                      Events
-    /// =================================================================================================================
 
+    /// ===============================================================================================================
+    ///                                      Events
+    /// ===============================================================================================================
+    
+    event LogExecutorAdded(address executor);
+    event LogExecutorRemoved(address executor);
     event LogPaymentRegistered(address clientAddress, address beneficiaryAddress, string paymentID);
     event LogPaymentCancelled(address clientAddress, address beneficiaryAddress, string paymentID);
     event LogPullPaymentExecuted(address clientAddress, address beneficiaryAddress, string paymentID);
     event LogSetExchangeRate(string currency, uint256 exchangeRate);
 
-    /// =================================================================================================================
+    /// ===============================================================================================================
     ///                                      Constants
-    /// =================================================================================================================
+    /// ===============================================================================================================
 
-    uint256 constant private DECIMAL_FIXER = 10000000000; // 1^10 - This transforms the Rate from decimals to uint256
-    uint256 constant private FIAT_TO_CENT_FIXER = 100;    // Fiat currencies have 100 cents in 1 basic monetary unit.
-    uint256 constant private ONE_ETHER = 1 ether;         // PumaPay token has 18 decimals - same as one ETHER
-
-    /// =================================================================================================================
+    uint256 constant private DECIMAL_FIXER = 10000000000; /// 1e^10 - This transforms the Rate from decimals to uint256
+    uint256 constant private FIAT_TO_CENT_FIXER = 100;    /// Fiat currencies have 100 cents in 1 basic monetary unit.
+    uint256 constant private ONE_ETHER = 1 ether;         /// PumaPay token has 18 decimals - same as one ETHER
+    uint256 constant private MINIMUM_AMOUN_OF_ETH_FOR_OPARATORS = 0.01 ether; /// minimum amount of ETHER the owner/executor should have 
+    
+    /// ===============================================================================================================
     ///                                      Members
-    /// =================================================================================================================
+    /// ===============================================================================================================
 
     PumaPayToken public token;
 
@@ -449,26 +452,36 @@ contract MasterPullPayment is Ownable {
 
     struct PullPayment {
         string merchantID;                      /// ID of the merchant
-        string paymentID;                       /// ID of the payment - required
-        string currency;                        /// 3-letter abbr i.e. 'EUR' / 'USD' etc. - required
-        uint256 initialPaymentAmountInCents;    /// initial payment amount in fiat in cents - required 
-        uint256 fiatAmountInCents;              /// payment amount in fiat in cents - required
-        uint256 frequency;                      /// how often merchant can pull - in seconds - required
-        uint256 numberOfPayments;               /// amount of pull payments merchant can make - required
-        uint256 startTimestamp;                 /// when subscription starts - in seconds - required
+        string paymentID;                       /// ID of the payment
+        string currency;                        /// 3-letter abbr i.e. 'EUR' / 'USD' etc.
+        uint256 initialPaymentAmountInCents;    /// initial payment amount in fiat in cents
+        uint256 fiatAmountInCents;              /// payment amount in fiat in cents
+        uint256 frequency;                      /// how often merchant can pull - in seconds
+        uint256 numberOfPayments;               /// amount of pull payments merchant can make
+        uint256 startTimestamp;                 /// when subscription starts - in seconds
         uint256 nextPaymentTimestamp;           /// timestamp of next payment
         uint256 lastPaymentTimestamp;           /// timestamp of last payment
         uint256 cancelTimestamp;                /// timestamp the payment was cancelled
     }
 
-    /// =================================================================================================================
+    /// ===============================================================================================================
     ///                                      Modifiers
-    /// =================================================================================================================
+    /// ===============================================================================================================
 
     modifier isExecutor() {
          require(executors[msg.sender]);
          _;
      }
+
+     modifier executorExists(address _executor) {
+         require(executors[_executor]);
+         _;
+     }
+
+     modifier executorDoesNotExists(address _executor) {
+         require(!executors[_executor]);
+         _;
+     } 
 
     modifier paymentExists(address _client, address _beneficiary) {
         require(doesPaymentExist(_client, _beneficiary));
@@ -511,9 +524,9 @@ contract MasterPullPayment is Ownable {
         _;
     }
 
-    /// =================================================================================================================
+    /// ===============================================================================================================
     ///                                      Constructor
-    /// =================================================================================================================
+    /// ===============================================================================================================
 
     /// @dev Contract constructor - sets the token address that the contract facilitates.
     /// @param _token Token Address.
@@ -524,32 +537,53 @@ contract MasterPullPayment is Ownable {
         token = _token;
     }
 
-    /// =================================================================================================================
+    // @notice Will receive any eth sent to the contract
+    function () external payable {
+    }
+
+    /// ===============================================================================================================
     ///                                      Public Functions - Owner Only
-    /// =================================================================================================================
+    /// ===============================================================================================================
     
-    /// @dev Adds a new executor. - can be executed only by the onwer.
+    /// @dev Adds a new executor. - can be executed only by the onwer. 
+    /// When adding a new executor 1 ETH is tranferred to allow the executor to pay for gas.
+    /// The balance of the owner is also checked and if funding is needed 1 ETH is transferred.
     /// @param _executor - address of the executor which cannot be zero address.
     function addExecutor(address _executor)
     public 
     onlyOwner
     isValidAddress(_executor)
+    executorDoesNotExists(_executor)
     {
+        _executor.transfer(1 ether);
         executors[_executor] = true;
+
+        if (isFundingNeeded(owner)) {
+            owner.transfer(1 ether);
+        }
+        
+        emit LogExecutorAdded(_executor);
     }
 
     /// @dev Removes a new executor. - can be executed only by the onwer.
+    /// The balance of the owner is checked and if funding is needed 1 ETH is transferred.
     /// @param _executor - address of the executor which cannot be zero address.
     function removeExecutor(address _executor)
     public 
     onlyOwner
     isValidAddress(_executor)
+    executorExists(_executor)
     {
         executors[_executor] = false;
+        if (isFundingNeeded(owner)) {
+            owner.transfer(1 ether);
+        }
+        emit LogExecutorRemoved(_executor);
     }
 
     /// @dev Sets the exchange rate for a currency. - can be executed only by the onwer.
     /// Emits 'LogSetExchangeRate' with the currency and the updated rate.
+    /// The balance of the owner is checked and if funding is needed 1 ETH is transferred.
     /// @param _currency - address of the executor which cannot be zero address
     /// @param _rate - address of the executor which cannot be zero address
     function setRate(string _currency, uint256 _rate)
@@ -558,16 +592,21 @@ contract MasterPullPayment is Ownable {
     returns (bool) {
         exchangeRates[_currency] = _rate;
         emit LogSetExchangeRate(_currency, _rate);
+        
+        if (isFundingNeeded(owner)) {
+            owner.transfer(1 ether);
+        }
 
         return true;
     }
 
-    /// =================================================================================================================
+    /// ===============================================================================================================
     ///                                      Public Functions - Executors Only
-    /// =================================================================================================================
+    /// ===============================================================================================================
 
-    /// @dev Registers a new pull payment to the Master Pull Payment Contract - The registration can be executed only by one of the executors of the Master Pull Payment Contract
-    /// and the Master Pull Payment Contract checks that the pull payment has been singed by the signatory of the account.
+    /// @dev Registers a new pull payment to the PumaPay Pull Payment Contract - The registration can be executed only by one of the executors of the PumaPay Pull Payment Contract
+    /// and the PumaPay Pull Payment Contract checks that the pull payment has been singed by the client of the account.
+    /// The balance of the executor (msg.sender) is checked and if funding is needed 1 ETH is transferred.
     /// Emits 'LogPaymentRegistered' with client address, beneficiary address and paymentID.
     /// @param v - recovery ID of the ETH signature. - https://github.com/ethereum/EIPs/issues/155
     /// @param r - R output of ECDSA signature.
@@ -618,21 +657,25 @@ contract MasterPullPayment is Ownable {
         pullPayments[_client][_beneficiary].startTimestamp = _startTimestamp;
         pullPayments[_client][_beneficiary].numberOfPayments = _numberOfPayments;
 
-        if (!isValidRegistration(v, r, s, _client, _beneficiary, pullPayments[_client][_beneficiary])) revert();
+        require(isValidRegistration(v, r, s, _client, _beneficiary, pullPayments[_client][_beneficiary]));
 
         pullPayments[_client][_beneficiary].merchantID = _merchantID;
         pullPayments[_client][_beneficiary].paymentID = _paymentID;
         pullPayments[_client][_beneficiary].nextPaymentTimestamp = _startTimestamp;
         pullPayments[_client][_beneficiary].lastPaymentTimestamp = 0;
         pullPayments[_client][_beneficiary].cancelTimestamp = 0;
+        
+        if (isFundingNeeded(msg.sender)) {
+            msg.sender.transfer(1 ether);
+        }
 
         emit LogPaymentRegistered(_client, _beneficiary, _paymentID);
     }
 
-    /// @dev Deletes a pull payment for a beneficiary - The deletion needs can be executed only by one of the executors of the Master Pull Payment Contract
-    /// and the Master Pull Payment Contract checks that the beneficiary and the paymentID have been singed by the signatory of the account.
-    /// This method deletes the pull payment from the pull payments array for this beneficiary specified and
-    /// also deletes the beneficiary from the beneficiaries array.
+    /// @dev Deletes a pull payment for a beneficiary - The deletion needs can be executed only by one of the executors of the PumaPay Pull Payment Contract
+    /// and the PumaPay Pull Payment Contract checks that the beneficiary and the paymentID have been singed by the client of the account.
+    /// This method sets the cancellation of the pull payment in the pull payments array for this beneficiary specified.
+    /// The balance of the executor (msg.sender) is checked and if funding is needed 1 ETH is transferred.
     /// Emits 'LogPaymentCancelled' with beneficiary address and paymentID.
     /// @param v - recovery ID of the ETH signature. - https://github.com/ethereum/EIPs/issues/155
     /// @param r - R output of ECDSA signature.
@@ -654,15 +697,20 @@ contract MasterPullPayment is Ownable {
     paymentNotCancelled(_client, _beneficiary)
     isValidDeletionRequest(_paymentID, _client, _beneficiary)
     {   
-        if (!isValidDeletion(v, r, s, _paymentID, _client, _beneficiary)) revert();
+        require(isValidDeletion(v, r, s, _paymentID, _client, _beneficiary));
+
         pullPayments[_client][_beneficiary].cancelTimestamp = now;
+
+        if (isFundingNeeded(msg.sender)) {
+            msg.sender.transfer(1 ether);
+        }
 
         emit LogPaymentCancelled(_client, _beneficiary, _paymentID);
     }
 
-    /// =================================================================================================================
+    /// ===============================================================================================================
     ///                                      Public Functions
-    /// =================================================================================================================
+    /// ===============================================================================================================
 
     /// @dev Executes a pull payment for the msg.sender - The pull payment should exist and the payment request
     /// should be valid in terms of when it can be executed.
@@ -694,9 +742,8 @@ contract MasterPullPayment is Ownable {
             pullPayments[_client][msg.sender].nextPaymentTimestamp = pullPayments[_client][msg.sender].nextPaymentTimestamp + pullPayments[_client][msg.sender].frequency;
             pullPayments[_client][msg.sender].numberOfPayments = pullPayments[_client][msg.sender].numberOfPayments - 1;
         }
-        token.transferFrom(_client, msg.sender, amountInPMA);
-
         pullPayments[_client][msg.sender].lastPaymentTimestamp = now;
+        token.transferFrom(_client, msg.sender, amountInPMA);
 
         emit LogPullPaymentExecuted(_client, msg.sender, pullPayments[_client][msg.sender].paymentID);
     }
@@ -705,12 +752,12 @@ contract MasterPullPayment is Ownable {
         return exchangeRates[_currency];
     }
 
-    /// =================================================================================================================
+    /// ===============================================================================================================
     ///                                      Internal Functions
-    /// =================================================================================================================
+    /// ===============================================================================================================
 
-    /// @dev Calculates the PMA Rate for the fiat currency specified - The rate is being retrieved by the PumaPayOracle
-    /// for the currency specified. The Oracle is being updated every minute for each different currency the our system supports.
+    /// @dev Calculates the PMA Rate for the fiat currency specified - The rate is set every 10 minutes by our PMA server
+    /// for the currencies specified in the smart contract. 
     /// @param _fiatAmountInCents - payment amount in fiat CENTS so that is always integer
     /// @param _currency - currency in which the payment needs to take place
     /// RATE CALCULATION EXAMPLE
@@ -726,17 +773,18 @@ contract MasterPullPayment is Ownable {
     internal
     view
     returns (uint256) {
-        return ONE_ETHER.mul(DECIMAL_FIXER).mul(_fiatAmountInCents).div(exchangeRates[_currency]).div(FIAT_TO_CENT_FIXER);
+        return ((ONE_ETHER * DECIMAL_FIXER * _fiatAmountInCents) / exchangeRates[_currency]) / FIAT_TO_CENT_FIXER;
     }
 
-    /// @dev Checks if a deletion request is valid by comparing the v, r, s params
-    /// and the hashed params with the signatory address.
+    /// @dev Checks if a registration request is valid by comparing the v, r, s params
+    /// and the hashed params with the client address.
     /// @param v - recovery ID of the ETH signature. - https://github.com/ethereum/EIPs/issues/155
     /// @param r - R output of ECDSA signature.
     /// @param s - S output of ECDSA signature.
     /// @param _client - client address that is linked to this pull payment.
+    /// @param _beneficiary - address that is allowed to execute this pull payment.
     /// @param _pullPayment - pull payment to be validated.
-    /// @return bool - if the v, r, s params with the hashed params match the signatory address
+    /// @return bool - if the v, r, s params with the hashed params match the client address
     function isValidRegistration(
         uint8 v,
         bytes32 r,
@@ -765,14 +813,14 @@ contract MasterPullPayment is Ownable {
     }
 
     /// @dev Checks if a deletion request is valid by comparing the v, r, s params
-    /// and the hashed params with the signatory address.
+    /// and the hashed params with the client address.
     /// @param v - recovery ID of the ETH signature. - https://github.com/ethereum/EIPs/issues/155
     /// @param r - R output of ECDSA signature.
     /// @param s - S output of ECDSA signature.
     /// @param _paymentID - ID of the payment.
     /// @param _client - client address that is linked to this pull payment.
     /// @param _beneficiary - address that is allowed to execute this pull payment.
-    /// @return bool - if the v, r, s params with the hashed params match the signatory address
+    /// @return bool - if the v, r, s params with the hashed params match the client address
     function isValidDeletion(
         uint8 v,
         bytes32 r,
@@ -813,5 +861,16 @@ contract MasterPullPayment is Ownable {
             pullPayments[_client][_beneficiary].numberOfPayments > 0 &&
             pullPayments[_client][_beneficiary].nextPaymentTimestamp > 0
         );
+    }
+    
+    /// @dev Checks if the address of an owner/executor needs to be funded. 
+    /// The minimum amount the owner/executors should always have is 0.001 ETH 
+    /// @param _address - address of owner/executors that the balance is checked against. 
+    /// @return bool - whether the address needs more ETH.
+    function isFundingNeeded(address _address) 
+    private
+    view
+    returns (bool) {
+        return address(_address).balance <= MINIMUM_AMOUN_OF_ETH_FOR_OPARATORS;
     }
 }

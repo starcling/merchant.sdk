@@ -36,7 +36,7 @@ const clearKey = async (address) => {
 
 // TEST MNEMONIC - chase eagle blur snack pass version raven awesome wisdom embrace wood example
 const PumaPayToken = artifacts.require('PumaPayToken');
-const MasterPullPayment = artifacts.require('MasterPullPayment');
+const PumaPayPullPayment = artifacts.require('PumaPayPullPayment');
 
 const web3 = require('web3');
 const web3API = new web3(new web3.providers.HttpProvider('http://localhost:7545'));
@@ -72,7 +72,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
     let recurringPullPayment;
     let token;
-    let masterPullPayment;
+    let pumaPayPullPayment;
     let testPullPaymentModel = {
         "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
         "title": "test payment",
@@ -131,14 +131,14 @@ contract('Master Pull Payment Contract', async (accounts) => {
         });
     });
     beforeEach('Deploying new Master Pull Payment  ', async () => {
-        masterPullPayment = await MasterPullPayment
+        pumaPayPullPayment = await PumaPayPullPayment
             .new(token.address, {
                 from: owner
             });
     });
     beforeEach(async () => {
         testPullPayment.pullPaymentID = pullPaymentID;
-        testPullPayment.pullPaymentAddress = masterPullPayment.address;
+        testPullPayment.pullPaymentAddress = pumaPayPullPayment.address;
         const result = await testDbConnector.createPullPayment(testPullPayment);
         testId = result.data[0].id;
         await testDbConnector.updatePullPayment({
@@ -204,7 +204,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         describe('successfuly execute cash out PMA', async () => {
             it('should cash out PMAs from beneficiery to the bank', async () => {
                 const oldBalance = await token.balanceOf(beneficiary);
-                await sdk.fundETH(bank, beneficiary, recurringPullPayment.pullPaymentID, null, token.address, masterPullPayment.address);
+                await sdk.fundETH(bank, beneficiary, recurringPullPayment.pullPaymentID, null, token.address, pumaPayPullPayment.address);
                 await sdk.cashOutPMA(recurringPullPayment.pullPaymentID, token.address);
                 const balance = await token.balanceOf(beneficiary);
                 Number(balance).should.be.equal(0);
@@ -218,7 +218,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
                     id: recurringPullPayment.pullPaymentID,
                     merchantAddress: beneficiary2
                 });
-                await sdk.fundETH(bank, beneficiary2, recurringPullPayment.pullPaymentID, null, token.address, masterPullPayment.address);
+                await sdk.fundETH(bank, beneficiary2, recurringPullPayment.pullPaymentID, null, token.address, pumaPayPullPayment.address);
                 await sdk.cashOutETH(recurringPullPayment.pullPaymentID, token.address);
                 const newBalance = await web3API.eth.getBalance(beneficiary2);
 

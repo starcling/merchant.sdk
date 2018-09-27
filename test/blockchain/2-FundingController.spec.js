@@ -36,7 +36,7 @@ const clearKey = async (address) => {
 
 // TEST MNEMONIC - chase eagle blur snack pass version raven awesome wisdom embrace wood example
 const PumaPayToken = artifacts.require('PumaPayToken');
-const MasterPullPayment = artifacts.require('MasterPullPayment');
+const PumaPayPullPayment = artifacts.require('PumaPayPullPayment');
 
 const web3 = require('web3');
 const web3API = new web3(new web3.providers.HttpProvider('http://localhost:7545'));
@@ -75,7 +75,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
     let recurringPullPayment;
     let token;
-    let masterPullPayment;
+    let pumaPayPullPayment;
     let testPullPaymentModel = {
         "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
         "title": "test payment",
@@ -131,14 +131,14 @@ contract('Master Pull Payment Contract', async (accounts) => {
         });
     });
     beforeEach('Deploying new Master Pull Payment  ', async () => {
-        masterPullPayment = await MasterPullPayment
+        pumaPayPullPayment = await PumaPayPullPayment
             .new(token.address, {
                 from: owner
             });
     });
     beforeEach(async () => {
         testPullPayment.pullPaymentID = pullPaymentID;
-        testPullPayment.pullPaymentAddress = masterPullPayment.address;
+        testPullPayment.pullPaymentAddress = pumaPayPullPayment.address;
         const result = await testDbConnector.createPullPayment(testPullPayment);
         testId = result.data[0].id;
         await testDbConnector.updatePullPayment({
@@ -196,14 +196,14 @@ contract('Master Pull Payment Contract', async (accounts) => {
 
         describe('successfuly calculate the max execution fee', async () => {
             it('should return calculated value in wei for execution fee', async () => {
-                const amount = await sdk.calculateMaxExecutionFee(masterPullPayment.address);
+                const amount = await sdk.calculateMaxExecutionFee(pumaPayPullPayment.address);
                 expect(amount).to.be.greaterThan(0);
             });
         });
 
         describe('successfuly calculate the amount needed to fund', async () => {
             it('should return calculated value in wei for final calculation', async () => {
-                const amount = await sdk.calculateWeiToFund(recurringPullPayment.pullPaymentID, bank, token.address, masterPullPayment.address);
+                const amount = await sdk.calculateWeiToFund(recurringPullPayment.pullPaymentID, bank, token.address, pumaPayPullPayment.address);
                 expect(amount).to.be.greaterThan(0);
             });
         });
@@ -211,7 +211,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         describe('successfuly funding the beneficiary address', async () => {
             it('should transfer calculated ETH to the beneficiary', async () => {
                 const oldBeneficiaryBalance = await web3API.eth.getBalance(beneficiary);
-                await sdk.fundETH(bank, beneficiary, recurringPullPayment.pullPaymentID, null, token.address, masterPullPayment.address);
+                await sdk.fundETH(bank, beneficiary, recurringPullPayment.pullPaymentID, null, token.address, pumaPayPullPayment.address);
                 const newBeneficiaryBalance = await web3API.eth.getBalance(beneficiary);
                 Number(newBeneficiaryBalance).should.be.greaterThan(Number(oldBeneficiaryBalance));
             });
