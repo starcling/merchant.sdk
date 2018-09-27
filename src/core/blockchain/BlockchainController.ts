@@ -1,92 +1,99 @@
 import { DefaultConfig } from '../../config/default.config';
 import { Globals } from '../../utils/globals';
-import { SmartContractReader } from './SmartContractReader';
-import { BlockchainHelper } from './BlockchainHelper';
-import { RawTransactionSerializer } from './signatureHelper/RawTransactionSerializer';
+import { SmartContractReader } from './utils/SmartContractReader';
+import { BlockchainHelper } from './utils/BlockchainHelper';
+import { RawTransactionSerializer } from './utils/RawTransactionSerializer';
 import { Scheduler } from '../scheduler/Scheduler';
 import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
-import { BlockchainTxReceiptHandler } from './BlockchainTxReceiptHandler';
+import { BlockchainTxReceiptHandler } from './utils/BlockchainTxReceiptHandler';
 import { TransactionController } from '../database/TransactionController';
-import { PaymentContractController } from '../database/PaymentContractController';
-import { ITransactionUpdate, IPaymentContractView, ITransactionGet, ITransactionInsert } from '../database/models';
+import { PullPaymentController } from '../database/PullPaymentController';
+import { ITransactionUpdate, IPullPaymentView, ITransactionGet, ITransactionInsert } from '../database/models';
+import { FundingController } from './FundingController';
+import { CashOutController } from './CashOutController';
 
 export class BlockchainController {
-    private transactionDbController: TransactionController;
-    private contractDbController: PaymentContractController;
+    private transactionController: TransactionController;
+    private paymentController: PullPaymentController;
 
     public constructor() {
-        this.transactionDbController = new TransactionController();
-        this.contractDbController = new PaymentContractController();
+        this.transactionController = new TransactionController();
+        this.paymentController = new PullPaymentController();
     }
 
     /**
     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
     * to create a scheduler that will execute the pull payment
     * @param {string} txHash: Hash of the transaction that needs to be monitored
-    * @param {string} contractID: ID of the contract registration which status is to be updated
+    * @param {string} pullPaymentID: ID of the contract registration which status is to be updated
     * @returns {boolean} success/fail response
     */
-    protected async monitorRegistrationTransaction(txHash: string, contractID: string) {
-        try {
-            const sub = setInterval(async () => {
-                const bcHelper = new BlockchainHelper();
-                const receipt = await bcHelper.getProvider().getTransactionReceipt(txHash);
-                if (receipt) {
-                    clearInterval(sub);
-                    const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
+    protected async monitorRegistrationTransaction(txHash: string, pullPaymentID: string) {
+        return new Promise((resolve, reject) => {
+            try {
+                const sub = setInterval(async () => {
+                    const bcHelper = new BlockchainHelper();
+                    const receipt = await bcHelper.getProvider().getTransactionReceipt(txHash);
+                    if (receipt) {
+                        clearInterval(sub);
+                        const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
 
-                    const contractResponse = await this.transactionDbController.updateTransaction(<ITransactionUpdate>{
-                        hash: receipt.transactionHash,
-                        statusID: status
-                    })
-                    const contract: IPaymentContractView = (await this.contractDbController.getContract(contractID)).data;
-                    const payment = contractResponse.data[0];
-                    
-                    if (receipt.status && bcHelper.isValidRegisterTx(receipt, contractID)) {
-                        if (contract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
-                            contract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
-                            this.executePullPayment(contractID);
+                        await this.transactionController.updateTransaction(<ITransactionUpdate>{
+                            hash: receipt.transactionHash,
+                            statusID: status
+                        });
+                        const pullPayment: IPullPaymentView = (await this.paymentController.getPullPayment(pullPaymentID)).data[0];
+                        if (receipt.status) {
+                            const bankAddress = (await DefaultConfig.settings.bankAddress()).bankAddress;
+                            await new FundingController().fundETH(bankAddress, pullPayment.merchantAddress, pullPayment.id);
                         }
 
-                        if (payment.type !== Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull]) {
-                            new Scheduler(contractID, async () => {
-                                this.executePullPayment(contractID);
-                            }).start();
+                        if (receipt.status && bcHelper.isValidRegisterTx(receipt, pullPaymentID)) {
+                            if (pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull] ||
+                                pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
+                                this.executePullPayment(pullPaymentID);
+                            }
+
+                            if (pullPayment.type !== Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().singlePull]) {
+                                new Scheduler(pullPaymentID, async () => {
+                                    this.executePullPayment(pullPaymentID);
+                                }).start();
+                            }
+                        } else {
+                            return false;
                         }
-                    } else {
-                        return false;
+                        resolve(receipt);
                     }
-                    
-                }
-            }, DefaultConfig.settings.txStatusInterval);
+                }, DefaultConfig.settings.txStatusInterval);
 
-            return true;
-        } catch (error) {
-            return false;
-        }
+            } catch (error) {
+                reject(error);
+            }
+        });
+
     }
 
     /**
     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
     * to stop the scheduler that executes the pull payment
     * @param {string} txHash: Hash of the transaction that needs to be monitored
-    * @param {string} contractID: ID of the payment which cancellation status is to be updated
+    * @param {string} pullPaymentID: ID of the payment which cancellation status is to be updated
     * @returns {boolean} success/fail response
     */
-    protected async monitorCancellationTransaction(txHash: string, contractID: string) {
+    protected async monitorCancellationTransaction(txHash: string, pullPaymentID: string) {
         try {
             const sub = setInterval(async () => {
                 const receipt = await new BlockchainHelper().getProvider().getTransactionReceipt(txHash);
                 if (receipt) {
                     clearInterval(sub);
                     const status = receipt.status ? Globals.GET_TRANSACTION_STATUS_ENUM().success : Globals.GET_TRANSACTION_STATUS_ENUM().failed;
-                    await this.transactionDbController.updateTransaction(<ITransactionUpdate>{
+                    await this.transactionController.updateTransaction(<ITransactionUpdate>{
                         hash: receipt.transactionHash,
                         statusID: status
                     });
                     if (receipt.status) {
-                        const contract = (await this.contractDbController.getContract(contractID)).data[0];
-                        Scheduler.stop(contract.id);
+                        const pullPayment = (await this.paymentController.getPullPayment(pullPaymentID)).data[0];
+                        Scheduler.stop(pullPayment.id);
                     }
                 }
             }, DefaultConfig.settings.txStatusInterval);
@@ -101,61 +108,76 @@ export class BlockchainController {
     * @description Method for actual execution of pull payment
     * @returns {object} null
     */
-    public async executePullPayment(contractID?: string): Promise<void> {
-        const transactionDbController = new TransactionController();
-        const contractDbController = new PaymentContractController();
-        const paymentContract: IPaymentContractView = (await contractDbController.getContract(contractID)).data[0];
-        ErrorHandler.validatePullPaymentExecution(paymentContract);
+    public async executePullPayment(pullPaymentID?: string): Promise<void> {
+        const transactionController = new TransactionController();
+        const pullPaymentController = new PullPaymentController();
+        const pullPayment: IPullPaymentView = (await pullPaymentController.getPullPayment(pullPaymentID)).data[0];
+        ErrorHandler.validatePullPaymentExecution(pullPayment);
 
-        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(paymentContract.pullPaymentAddress);
+        const contract: any = await new SmartContractReader(Globals.GET_PULL_PAYMENT_CONTRACT_NAME()).readContract(pullPayment.pullPaymentAddress);
         const blockchainHelper: BlockchainHelper = new BlockchainHelper();
-        const txCount: number = await blockchainHelper.getTxCount(paymentContract.merchantAddress);
-        const data: string = contract.methods.executePullPayment(paymentContract.customerAddress, paymentContract.id).encodeABI();
-        let privateKey: string = (await DefaultConfig.settings.getPrivateKey(paymentContract.merchantAddress)).data[0]['@accountKey'];
-        const serializedTx: string = await new RawTransactionSerializer(data, paymentContract.pullPaymentAddress, txCount, privateKey).getSerializedTx();
+        const txCount: number = await blockchainHelper.getTxCount(pullPayment.merchantAddress);
+        const data: string = contract.methods.executePullPayment(pullPayment.customerAddress, pullPayment.id).encodeABI();
+        let privateKey: string = (await DefaultConfig.settings.getPrivateKey(pullPayment.merchantAddress)).data[0]['@accountKey'];
+        const gasLimit = await new FundingController().calculateMaxExecutionFee(pullPayment.pullPaymentAddress);
+        const serializedTx: string = await new RawTransactionSerializer(data, pullPayment.pullPaymentAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
         privateKey = null;
 
+        let txHash;
         await blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', async (hash) => {
-
+            txHash = hash;
             let typeID = Globals.GET_TRANSACTION_TYPE_ENUM().execute;
-            if (paymentContract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
+            if (pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
 
                 try {
-                    await transactionDbController.getTransactions(<ITransactionGet>{
-                        contractID: paymentContract.id,
+                    await transactionController.getTransactions(<ITransactionGet>{
+                        paymentID: pullPayment.id,
                         typeID: Globals.GET_TRANSACTION_TYPE_ENUM().initial
                     });
                 } catch (err) {
                     typeID = Globals.GET_TRANSACTION_TYPE_ENUM().initial;
                     console.debug('Disregard the DB error. TODO: To be fixed');
                 }
-            } 
-            await transactionDbController.createTransaction(<ITransactionInsert>{
+            }
+            await transactionController.createTransaction(<ITransactionInsert>{
                 hash: hash,
                 typeID: typeID,
-                contractID: paymentContract.id,
+                paymentID: pullPayment.id,
                 timestamp: Math.floor(new Date().getTime() / 1000)
             });
         }).on('receipt', async (receipt) => {
-            // TODO: Add the rest of the payments with initial amount.
-            if (paymentContract.type == Globals.GET_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
+            if (pullPayment.type == Globals.GET_PULL_PAYMENT_TYPE_ENUM_NAMES()[Globals.GET_PAYMENT_TYPE_ENUM().recurringWithInitial]) {
                 try {
-                    await transactionDbController.getTransactions(<ITransactionGet>{
-                        contractID: paymentContract.id,
+                    await transactionController.getTransactions(<ITransactionGet>{
+                        paymentID: pullPayment.id,
                         typeID: Globals.GET_TRANSACTION_TYPE_ENUM().initial,
                         statusID: Globals.GET_TRANSACTION_STATUS_ENUM().success
                     });
-                    await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(paymentContract, receipt.transactionHash, receipt);
+                    await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(pullPayment, receipt.transactionHash, receipt);
                 } catch (err) {
-                    await new BlockchainTxReceiptHandler().handleRecurringPaymentWithInitialReceipt(paymentContract, receipt.transactionHash, receipt);
-                    console.debug('Disregard the DB error. TODO: To be fixed');
-                }   
+                    await new BlockchainTxReceiptHandler().handleRecurringPaymentWithInitialReceipt(pullPayment, receipt.transactionHash, receipt);
+                }
             } else {
-                await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(paymentContract, receipt.transactionHash, receipt);
+                await new BlockchainTxReceiptHandler().handleRecurringPaymentReceipt(pullPayment, receipt.transactionHash, receipt);
             }
-        }).catch((err) => {
-            // TODO: Proper error handling 
-            console.debug(err);
+
+            if (pullPayment.automatedCashOut && receipt.status) {
+                await new CashOutController().cashOutPMA(pullPaymentID);
+            }
+
+        }).catch(async (err) => {
+            if(err.toString().indexOf('Error: Transaction has been reverted by the EVM:')) {
+                const error = JSON.parse((err.toString().replace('Error: Transaction has been reverted by the EVM:', '')));
+                await transactionController.updateTransaction(<ITransactionUpdate>{
+                    hash: error.transactionHash,
+                    statusID: Globals.GET_TRANSACTION_STATUS_ENUM().failed
+                });
+            } else {
+                await transactionController.updateTransaction(<ITransactionUpdate>{
+                    hash: txHash,
+                    statusID: Globals.GET_TRANSACTION_STATUS_ENUM().failed
+                });
+            }
         });
     }
 }

@@ -10,12 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const DataService_1 = require("../../utils/datasource/DataService");
 class TestDbConnector {
-    createContract(insertDetails) {
+    createPullPayment(insertDetails) {
         const sqlQuery = {
-            text: 'SELECT * FROM fc_create_payment_contract($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+            text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9)',
             values: [
                 insertDetails.hdWalletIndex,
-                insertDetails.paymentID,
+                insertDetails.pullPaymentID,
                 insertDetails.numberOfPayments,
                 insertDetails.nextPaymentDate,
                 insertDetails.startTimestamp,
@@ -27,10 +27,10 @@ class TestDbConnector {
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery, true);
     }
-    updateContract(updateDetails) {
+    updatePullPayment(updateDetails) {
         return __awaiter(this, void 0, void 0, function* () {
             const sqlQuery = {
-                text: 'SELECT * FROM fc_update_payment_contract($1, $2, $3, $4, $5, $6, $7, $8)',
+                text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9)',
                 values: [
                     updateDetails.id,
                     updateDetails.hdWalletIndex,
@@ -38,6 +38,7 @@ class TestDbConnector {
                     updateDetails.nextPaymentDate,
                     updateDetails.lastPaymentDate,
                     updateDetails.startTimestamp,
+                    updateDetails.merchantAddress,
                     updateDetails.statusID,
                     updateDetails.userID
                 ]
@@ -51,34 +52,20 @@ class TestDbConnector {
             return response;
         });
     }
-    getContract(contractID) {
+    getPullPayment(pullPaymentID) {
         const sqlQuery = {
-            text: 'SELECT * FROM public.fc_get_payment_contract($1);',
-            values: [contractID]
+            text: 'SELECT * FROM public.fc_get_payment_by_id($1);',
+            values: [pullPaymentID]
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
     }
-    getAllContracts() {
+    createPullPaymentModel(insertDetails) {
         const sqlQuery = {
-            text: 'SELECT * FROM public.fc_get_payment_contracts();'
-        };
-        return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
-    }
-    deleteContract(contractID) {
-        const sqlQuery = {
-            text: 'SELECT * FROM public.fc_delete_payment_contract($1);',
-            values: [contractID]
-        };
-        return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
-    }
-    createPayment(insertDetails) {
-        const sqlQuery = {
-            text: 'SELECT * FROM fc_create_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+            text: 'SELECT * FROM fc_create_payment_model($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
             values: [
                 insertDetails.merchantID,
                 insertDetails.title,
                 insertDetails.description,
-                insertDetails.promo,
                 insertDetails.amount,
                 insertDetails.initialPaymentAmount,
                 insertDetails.trialPeriod,
@@ -86,20 +73,21 @@ class TestDbConnector {
                 insertDetails.numberOfPayments,
                 insertDetails.frequency,
                 insertDetails.typeID,
-                insertDetails.networkID
+                insertDetails.networkID,
+                insertDetails.automatedCashOut,
+                insertDetails.cashOutFrequency
             ]
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery, true);
     }
-    updatePayment(updateDetails) {
+    updatePullPaymentModel(updateDetails) {
         return __awaiter(this, void 0, void 0, function* () {
             const sqlQuery = {
-                text: 'SELECT * FROM fc_update_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+                text: 'SELECT * FROM fc_update_payment_model($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
                 values: [
                     updateDetails.id,
                     updateDetails.title,
                     updateDetails.description,
-                    updateDetails.promo,
                     updateDetails.amount,
                     updateDetails.initialPaymentAmount,
                     updateDetails.trialPeriod,
@@ -107,7 +95,9 @@ class TestDbConnector {
                     updateDetails.numberOfPayments,
                     updateDetails.frequency,
                     updateDetails.typeID,
-                    updateDetails.networkID
+                    updateDetails.networkID,
+                    updateDetails.automatedCashOut,
+                    updateDetails.cashOutFrequency
                 ]
             };
             const response = yield new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
@@ -119,17 +109,17 @@ class TestDbConnector {
             return response;
         });
     }
-    getPayment(paymentID) {
+    getPullPaymentModel(pullPaymentID) {
         const sqlQuery = {
             text: 'SELECT * FROM public.fc_get_payment_details($1);',
-            values: [paymentID]
+            values: [pullPaymentID]
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
     }
-    deletePayment(paymentId) {
+    deletePullPaymentModel(pullPaymentID) {
         const sqlQuery = {
-            text: 'SELECT * FROM public.fc_delete_payment($1);',
-            values: [paymentId]
+            text: 'SELECT * FROM public.fc_delete_payment_model($1);',
+            values: [pullPaymentID]
         };
         return new DataService_1.DataService().executeQueryAsPromise(sqlQuery);
     }
@@ -139,7 +129,7 @@ class TestDbConnector {
             values: [
                 transaction.hash,
                 transaction.typeID,
-                transaction.contractID,
+                transaction.paymentID,
                 transaction.timestamp
             ]
         };
@@ -177,7 +167,7 @@ class TestDbConnector {
         const sqlQuery = {
             text: 'SELECT * FROM public.fc_get_transactions_by_contract_id($1, $2, $3);',
             values: [
-                transaction.contractID,
+                transaction.paymentID,
                 transaction.statusID,
                 transaction.typeID
             ]

@@ -19,11 +19,11 @@ class Globals {
     static GET_QR_API_URL() {
         return '/qr/url/';
     }
-    static GET_PAYMENT_URL() {
-        return '/payments';
+    static GET_PULL_PAYMENT_MODEL_URL() {
+        return '/pull-payment-models';
     }
-    static GET_CONTRACT_URL() {
-        return '/contracts';
+    static GET_PAYMENT_URL() {
+        return '/pull-payments';
     }
     static GET_TRANSACTION_URL() {
         return '/transactions';
@@ -40,11 +40,15 @@ class Globals {
     static GET_START_SCHEDULER_TIME_WINDOW() {
         return 300;
     }
-    static GET_DEFAULT_REDIS_HOST() {
-        return 'localhost';
+    static GET_DEFAULT_VALUE_DECIMALS() {
+        return 13;
     }
-    static GET_DEFAULT_REDIS_PORT() {
-        return '6379';
+    static GET_DEFAULT_REDIS_CLIENT() {
+        return {
+            sadd: (key, value) => { },
+            srem: (key, value) => { },
+            smembers: (name, cb) => { }
+        };
     }
     static GET_DEFAULT_PG_HOST() {
         return 'localhost';
@@ -82,13 +86,50 @@ class Globals {
     static GET_TX_STATUS_INTERVAL() {
         return 2000;
     }
+    static GET_SMART_CONTRACT_ADDRESSES(networkID) {
+        switch (networkID) {
+            case (1):
+                return {
+                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
+                    masterPullPayment: '0xd996f8a7298d822eeb71868c93eceb106401a5fe'
+                };
+            case (3):
+                return {
+                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
+                    masterPullPayment: '0xd996f8a7298d822eeb71868c93eceb106401a5fe'
+                };
+        }
+    }
+    static GET_PULL_PAYMENT_TOPICS(networkID) {
+        switch (networkID) {
+            case (1):
+                return {
+                    execute: ['0x13492443fb72a9a7d56cc1aa2e262bcf2442d4b084def464b7934b3485114e59']
+                };
+            case (3):
+                return {
+                    execute: ['0x13492443fb72a9a7d56cc1aa2e262bcf2442d4b084def464b7934b3485114e59']
+                };
+        }
+    }
+    static GET_PMA_ESTIMATE_ADDRESS(networkID) {
+        switch (networkID) {
+            case (1):
+                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+            case (3):
+                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+        }
+    }
     static GET_SOLIDITY_FILE() {
         return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
+    }
+    static GET_CRYPTOCOMPARE_URL() {
+        return 'https://min-api.cryptocompare.com/';
     }
     static GET_TRANSACTION_STATUS_ENUM() {
         return TransactionStatusEnum;
     }
-    static GET_PAYMENT_STATUS_ENUM() {
+    static GET_PULL_PAYMENT_STATUS_ENUM() {
         return PaymentStatusEnum;
     }
     static GET_PAYMENT_TYPE_ENUM() {
@@ -105,7 +146,7 @@ class Globals {
             'success'
         ];
     }
-    static GET_CONTRACT_STATUS_ENUM_NAMES() {
+    static GET_PULL_PAYMENT_STATUS_ENUM_NAMES() {
         return [
             '',
             'initial',
@@ -115,7 +156,7 @@ class Globals {
             'done',
         ];
     }
-    static GET_PAYMENT_TYPE_ENUM_NAMES() {
+    static GET_PULL_PAYMENT_TYPE_ENUM_NAMES() {
         return [
             '',
             'push',
@@ -132,6 +173,12 @@ class Globals {
             'execute',
             'cancel'
         ];
+    }
+    static GET_MAX_GAS_FEE() {
+        return 90000;
+    }
+    static GET_TOKEN_CONTRACT_NAME() {
+        return 'PumaPayToken';
     }
     static GET_PULL_PAYMENT_CONTRACT_NAME() {
         return 'PumaPayPullPayment';

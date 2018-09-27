@@ -9,7 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const solc = __importStar(require("solc"));
 const fs = require("fs");
-const globals_1 = require("../../utils/globals");
+const globals_1 = require("../../../utils/globals");
 const BlockchainHelper_1 = require("./BlockchainHelper");
 class SmartContractReader {
     constructor(smartContractName) {

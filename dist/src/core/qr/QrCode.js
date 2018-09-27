@@ -2,13 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const default_config_1 = require("../../config/default.config");
 class QrCode {
-    generateURL(callUrl, paymentID) {
-        return `${default_config_1.DefaultConfig.settings.merchantApiUrl}${callUrl}/${paymentID}`;
+    generateURL(callUrl, pullPaymentModelID) {
+        return `${default_config_1.DefaultConfig.settings.merchantApiUrl}${callUrl}/${pullPaymentModelID}`;
     }
-    generateQRCode(paymentID) {
+    generateQRCode(paymentModelID) {
         return {
-            paymentURL: this.generateURL(default_config_1.DefaultConfig.settings.paymentsURL, paymentID),
-            contractURL: this.generateURL(default_config_1.DefaultConfig.settings.contractURL, ''),
+            pullPaymentModelURL: this.generateURL(default_config_1.DefaultConfig.settings.pullPaymentModelURL, paymentModelID),
+            pullPaymentURL: this.generateURL(default_config_1.DefaultConfig.settings.pullPaymentURL, ''),
             transactionURL: this.generateURL(default_config_1.DefaultConfig.settings.transactionURL, '')
         };
     }

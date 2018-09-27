@@ -11,7 +11,7 @@ const TX = require('ethereumjs-tx');
 export class RawTransactionSerializer {
     private privateKey: Buffer;
 
-    public constructor(private data: any, private contractAddress: string, private txCount: number, privateKey: string) {
+    public constructor(private data: any, private contractAddress: string, private txCount: number, privateKey: string, private limit: number = 500000) {
         this.privateKey = Buffer.from(privateKey, 'hex');
     }
 
@@ -22,7 +22,7 @@ export class RawTransactionSerializer {
     public getSerializedTx(): string {
         const rawTx = {
             gasPrice: DefaultConfig.settings.web3.utils.toHex(DefaultConfig.settings.web3.utils.toWei('10', 'Gwei')),
-            gasLimit: DefaultConfig.settings.web3.utils.toHex(4000000),
+            gasLimit: DefaultConfig.settings.web3.utils.toHex(this.limit),
             to: this.contractAddress,
             value: '0x00',
             data: this.data,
@@ -30,6 +30,7 @@ export class RawTransactionSerializer {
         };
         const tx = new TX(rawTx);
         tx.sign(this.privateKey);
+        this.privateKey = null;
         
         return '0x' + tx.serialize().toString('hex');
     }

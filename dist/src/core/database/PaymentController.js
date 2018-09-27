@@ -10,29 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const default_config_1 = require("../../config/default.config");
 class PaymentController {
-    createPayment(payment) {
+    getPayment(contractID) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield default_config_1.DefaultConfig.settings.createPayment(payment);
+            return yield default_config_1.DefaultConfig.settings.getPayment(contractID);
         });
     }
-    getPayment(paymentID) {
+    updatePayment(contract) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield default_config_1.DefaultConfig.settings.getPayment(paymentID);
-        });
-    }
-    deletePayment(paymentID) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield default_config_1.DefaultConfig.settings.deletePayment(paymentID);
-        });
-    }
-    getAllPayments() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield default_config_1.DefaultConfig.settings.getAllPayments();
-        });
-    }
-    updatePayment(payment) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield default_config_1.DefaultConfig.settings.updatePayment(payment);
+            return yield default_config_1.DefaultConfig.settings.updatePayment(contract);
         });
     }
 }

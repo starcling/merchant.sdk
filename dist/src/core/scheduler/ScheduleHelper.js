@@ -9,27 +9,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const globals_1 = require("../../utils/globals");
-const PaymentContractController_1 = require("../database/PaymentContractController");
+const PullPaymentController_1 = require("../database/PullPaymentController");
 class ScheduleHelper {
-    static adjustStartTime(contract) {
+    static adjustStartTime(pullPayment) {
         return __awaiter(this, void 0, void 0, function* () {
             const currentTime = Number(new Date().getTime() / 1000);
-            if (Number(contract.startTimestamp) <= currentTime && Number(contract.startTimestamp) + globals_1.Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
-                contract.startTimestamp = Math.floor(Number(currentTime + 1));
-                yield new PaymentContractController_1.PaymentContractController().updateContract(contract);
+            if (Number(pullPayment.startTimestamp) <= currentTime && Number(pullPayment.startTimestamp) + globals_1.Globals.GET_START_SCHEDULER_TIME_WINDOW() >= currentTime) {
+                pullPayment.startTimestamp = Math.floor(Number(currentTime + 1));
+                yield new PullPaymentController_1.PullPaymentController().updatePullPayment(pullPayment);
             }
         });
     }
-    static updateContractStatus(contract, status) {
+    static updatePaymentStatus(pullPayment, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            contract.statusID = status;
-            yield new PaymentContractController_1.PaymentContractController().updateContract(contract);
+            pullPayment.statusID = status;
+            yield new PullPaymentController_1.PullPaymentController().updatePullPayment(pullPayment);
         });
     }
-    static getContract(contractID) {
+    static getPullPayment(pullPaymentID) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return (yield new PaymentContractController_1.PaymentContractController().getContract(contractID).catch((err) => { console.log(err); })).data[0];
+                return (yield new PullPaymentController_1.PullPaymentController().getPullPayment(pullPaymentID).catch((err) => { console.log(err); })).data[0];
             }
             catch (err) {
                 return null;

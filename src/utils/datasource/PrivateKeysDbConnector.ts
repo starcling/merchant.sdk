@@ -18,4 +18,13 @@ export class PrivateKeysDbConnector {
 
         return new DataServiceEncrypted().executeQueryAsPromise(sqlQuery);
     }
+
+    public addKeyName(): Promise<any> {
+        const sqlQuery: ISqlQuery = {
+            text: 'CALL add_table_keys(?)',
+            values: ['merchantBackendEncrKey']
+        };
+
+        return new DataServiceEncrypted().executeQueryAsPromise(sqlQuery);
+    }
 }

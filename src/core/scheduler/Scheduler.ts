@@ -16,27 +16,27 @@ export class Scheduler {
     private _schedule = null;
     private _restarting = false;
 
-    public constructor(private _contractID: string, private _callback: any) {
+    public constructor(private _pullPaymentID: string, private _callback: any) {
 
     }
 
     public async start(reinitialized: boolean = false) {
-        const paymentContract = await ScheduleHelper.getContract(this._contractID);
-        if (!reinitialized) await ScheduleHelper.adjustStartTime(paymentContract);
+        const pullpayment = await ScheduleHelper.getPullPayment(this._pullPaymentID);
+        if (!reinitialized) await ScheduleHelper.adjustStartTime(pullpayment);
         this._schedule = await this.scheduleJob();
 
-        return SchedulerBuffer.set(this._contractID, this);
+        return SchedulerBuffer.set(this._pullPaymentID, this);
     }
 
     /**
      * @description Stops the scheduler
-     * @param contractID ID of the paymentContract and the scheduler aswell
+     * @param pullPaymentID ID of the paymentContract and the scheduler aswell
      * @returns {object} ID of scheduler if it is stopped, null if scheduler was not found.
      */
-    public static async stop(contractID: string) {
-        const paymentContract = await ScheduleHelper.getContract(contractID);
-        const scheduler = SchedulerBuffer.get(contractID);
-        if (scheduler && paymentContract) {
+    public static async stop(pullPaymentID: string) {
+        const payment = await ScheduleHelper.getPullPayment(pullPaymentID);
+        const scheduler = SchedulerBuffer.get(pullPaymentID);
+        if (scheduler && payment) {
             if (scheduler._schedule) {
                 scheduler._schedule.cancel();
             }
@@ -46,9 +46,9 @@ export class Scheduler {
                 scheduler._interval = null;
             }
 
-            await ScheduleHelper.updateContractStatus(paymentContract, Globals.GET_PAYMENT_STATUS_ENUM().stopped);
+            await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PULL_PAYMENT_STATUS_ENUM().stopped);
 
-            return contractID;
+            return pullPaymentID;
         }
 
         return null;
@@ -56,34 +56,34 @@ export class Scheduler {
 
     /**
      * @description Restarts the stopped scheduler
-     * @param contractID ID of the paymentContract and the scheduler aswell
+     * @param pullPaymentID ID of the paymentContract and the scheduler aswell
      * @returns {object} ID of scheduler if it is restarted, null if scheduler was not found or is already running or done.
      */
-    public static async restart(contractID: string) {
-        const scheduler = SchedulerBuffer.get(contractID);
-        const paymentContract = await ScheduleHelper.getContract(contractID);
+    public static async restart(pullPaymentID: string) {
+        const scheduler = SchedulerBuffer.get(pullPaymentID);
+        const pullPayment = await ScheduleHelper.getPullPayment(pullPaymentID);
 
-        if (scheduler && paymentContract && paymentContract.status == Globals.GET_CONTRACT_STATUS_ENUM_NAMES()[Globals.GET_PAYMENT_STATUS_ENUM().stopped] && !scheduler._restarting) {
+        if (scheduler && pullPayment && pullPayment.status == Globals.GET_PULL_PAYMENT_STATUS_ENUM_NAMES()[Globals.GET_PULL_PAYMENT_STATUS_ENUM().stopped] && !scheduler._restarting) {
             scheduler._restarting = true;
-            await ScheduleHelper.updateContractStatus(paymentContract, Globals.GET_PAYMENT_STATUS_ENUM().initial);
+            await ScheduleHelper.updatePaymentStatus(pullPayment, Globals.GET_PULL_PAYMENT_STATUS_ENUM().initial);
 
             const currentDate = Math.floor((new Date().getTime() / 1000));
-            let nextPayment = Math.floor(Number(paymentContract.nextPaymentDate));
-            let numberOfPayments = Math.floor(Number(paymentContract.numberOfPayments));
+            let nextPayment = Math.floor(Number(pullPayment.nextPaymentDate));
+            let numberOfPayments = Math.floor(Number(pullPayment.numberOfPayments));
 
             while (nextPayment <= currentDate && numberOfPayments > 0) {
                 numberOfPayments--;
-                nextPayment = nextPayment + paymentContract.frequency;
-                ScheduleQueue.instance().queue(contractID);
+                nextPayment = nextPayment + pullPayment.frequency;
+                ScheduleQueue.instance().queue(pullPaymentID);
             }
 
             if (numberOfPayments > 0) {
-                await ScheduleHelper.updateContractStatus(paymentContract, Globals.GET_PAYMENT_STATUS_ENUM().running);
+                await ScheduleHelper.updatePaymentStatus(pullPayment, Globals.GET_PULL_PAYMENT_STATUS_ENUM().running);
                 scheduler._schedule = await scheduler.scheduleJob(nextPayment);
             }
             scheduler._restarting = false;
 
-            return contractID;
+            return pullPaymentID;
         }
 
         return null;
@@ -98,18 +98,18 @@ export class Scheduler {
     }
 
     private async scheduleJob(startTime: number = null): Promise<any> {
-        const paymentContract = await ScheduleHelper.getContract(this._contractID);
-        startTime = startTime ? startTime : paymentContract.startTimestamp;
+        const payment = await ScheduleHelper.getPullPayment(this._pullPaymentID);
+        startTime = startTime ? startTime : payment.startTimestamp;
 
-        return schedule.scheduleJob(paymentContract.id, new Date(Number(startTime) * 1000), async () => {
-            const paymentContract = await ScheduleHelper.getContract(this._contractID);
-            await ScheduleHelper.updateContractStatus(paymentContract, Globals.GET_PAYMENT_STATUS_ENUM().running);
+        return schedule.scheduleJob(payment.id, new Date(Number(startTime) * 1000), async () => {
+            const payment = await ScheduleHelper.getPullPayment(this._pullPaymentID);
+            await ScheduleHelper.updatePaymentStatus(payment, Globals.GET_PULL_PAYMENT_STATUS_ENUM().running);
             await this.executeCallback();
-            this._interval = this.startInterval(paymentContract.frequency);
-            const scheduler = SchedulerBuffer.get(paymentContract.id);
+            this._interval = this.startInterval(payment.frequency);
+            const scheduler = SchedulerBuffer.get(payment.id);
             if (scheduler) {
                 scheduler._interval = this._interval;
-                SchedulerBuffer.set(paymentContract.id, scheduler);
+                SchedulerBuffer.set(payment.id, scheduler);
             }
 
         });
@@ -122,15 +122,15 @@ export class Scheduler {
     }
 
     public async executeCallback() {
-        let paymentContract = await ScheduleHelper.getContract(this._contractID);
-        if (paymentContract && (paymentContract.numberOfPayments > 0 && (Number(paymentContract.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000)))) {
+        let pullPayment = await ScheduleHelper.getPullPayment(this._pullPaymentID);
+        if (pullPayment && (pullPayment.numberOfPayments > 0 && (Number(pullPayment.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000)))) {
             await this._callback();
-            paymentContract = await ScheduleHelper.getContract(this._contractID);
+            pullPayment = await ScheduleHelper.getPullPayment(this._pullPaymentID);
 
-            if (paymentContract.numberOfPayments == 0) {
-                Scheduler.stop(this._contractID);
-                SchedulerBuffer.delete(this._contractID);
-                await ScheduleHelper.updateContractStatus(paymentContract, Globals.GET_PAYMENT_STATUS_ENUM().done);
+            if (pullPayment.numberOfPayments == 0) {
+                Scheduler.stop(this._pullPaymentID);
+                SchedulerBuffer.delete(this._pullPaymentID);
+                await ScheduleHelper.updatePaymentStatus(pullPayment, Globals.GET_PULL_PAYMENT_STATUS_ENUM().done);
             }
         }
     }

@@ -10,9 +10,11 @@ const MultipleInheritance_1 = require("./utils/MultipleInheritance/MultipleInher
 const ErrorHandler_1 = require("./utils/handlers/ErrorHandler");
 const Scheduler_1 = require("./core/scheduler/Scheduler");
 const ScheduleBuffer_1 = require("./core/scheduler/ScheduleBuffer");
-const PaymentContractController_1 = require("./core/database/PaymentContractController");
+const PullPaymentController_1 = require("./core/database/PullPaymentController");
 const TransactionController_1 = require("./core/database/TransactionController");
-class MerchantSDK extends MultipleInheritance_1.MultipleInheritance(BlockchainController_1.BlockchainController, HTTPHelper_1.HTTPHelper, QrCode_1.QrCode, AuthenticationController_1.AuthenticationController, PaymentContractController_1.PaymentContractController, TransactionController_1.TransactionController) {
+const FundingController_1 = require("./core/blockchain/FundingController");
+const CashOutController_1 = require("./core/blockchain/CashOutController");
+class MerchantSDK extends MultipleInheritance_1.MultipleInheritance(BlockchainController_1.BlockchainController, HTTPHelper_1.HTTPHelper, QrCode_1.QrCode, AuthenticationController_1.AuthenticationController, PullPaymentController_1.PullPaymentController, TransactionController_1.TransactionController, FundingController_1.FundingController, CashOutController_1.CashOutController) {
     constructor() {
         super();
     }
@@ -24,10 +26,6 @@ class MerchantSDK extends MultipleInheritance_1.MultipleInheritance(BlockchainCo
     }
     get Scheduler() {
         return Scheduler_1.Scheduler;
-    }
-    disconnectRedis() {
-        ScheduleBuffer_1.SchedulerBuffer.closeConnection();
-        return true;
     }
 }
 exports.MerchantSDK = MerchantSDK;

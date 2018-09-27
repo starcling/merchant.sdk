@@ -8,10 +8,12 @@ import { MultipleInheritance } from './utils/MultipleInheritance/MultipleInherit
 import { ErrorHandler } from './utils/handlers/ErrorHandler';
 import { Scheduler } from './core/scheduler/Scheduler';
 import { SchedulerBuffer } from './core/scheduler/ScheduleBuffer';
-import { PaymentContractController } from './core/database/PaymentContractController';
+import { PullPaymentController } from './core/database/PullPaymentController';
 import { TransactionController } from './core/database/TransactionController';
+import { FundingController } from './core/blockchain/FundingController';
+import { CashOutController } from './core/blockchain/CashOutController';
 
-export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PaymentContractController, TransactionController) {
+export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PullPaymentController, TransactionController, FundingController, CashOutController) {
 
     public constructor() {
         super();
@@ -38,13 +40,4 @@ export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPH
         return Scheduler;
     }
 
-    /**
-     * @description Method to close the connection to redis
-     * @returns {boolean} always true, this cannot fail
-     */
-    public disconnectRedis() {
-        SchedulerBuffer.closeConnection();
-        
-        return true;
-    }
 }

@@ -9,17 +9,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const default_config_1 = require("../../config/default.config");
-class PaymentContractController {
-    getPayment(contractID) {
+class PullPaymentController {
+    getPullPayment(pullPaymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield default_config_1.DefaultConfig.settings.getPayment(contractID);
+            return yield default_config_1.DefaultConfig.settings.getPullPayment(pullPaymentID);
         });
     }
-    updatePayment(contract) {
+    updatePullPayment(pullPayment) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield default_config_1.DefaultConfig.settings.updatePayment(contract);
+            return yield default_config_1.DefaultConfig.settings.updatePullPayment(pullPayment);
         });
     }
 }
-exports.PaymentContractController = PaymentContractController;
-//# sourceMappingURL=PaymentContractController.js.map
+exports.PullPaymentController = PullPaymentController;
+//# sourceMappingURL=PullPaymentController.js.map

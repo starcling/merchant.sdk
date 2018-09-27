@@ -14,8 +14,8 @@ const ScheduleHelper_1 = require("./ScheduleHelper");
 const ScheduleQueue_1 = require("./ScheduleQueue");
 const schedule = require('node-schedule');
 class Scheduler {
-    constructor(_contractID, _callback) {
-        this._contractID = _contractID;
+    constructor(_pullPaymentID, _callback) {
+        this._pullPaymentID = _pullPaymentID;
         this._callback = _callback;
         this._interval = null;
         this._schedule = null;
@@ -23,18 +23,18 @@ class Scheduler {
     }
     start(reinitialized = false) {
         return __awaiter(this, void 0, void 0, function* () {
-            const paymentContract = yield ScheduleHelper_1.ScheduleHelper.getContract(this._contractID);
+            const pullpayment = yield ScheduleHelper_1.ScheduleHelper.getPullPayment(this._pullPaymentID);
             if (!reinitialized)
-                yield ScheduleHelper_1.ScheduleHelper.adjustStartTime(paymentContract);
+                yield ScheduleHelper_1.ScheduleHelper.adjustStartTime(pullpayment);
             this._schedule = yield this.scheduleJob();
-            return ScheduleBuffer_1.SchedulerBuffer.set(this._contractID, this);
+            return ScheduleBuffer_1.SchedulerBuffer.set(this._pullPaymentID, this);
         });
     }
-    static stop(contractID) {
+    static stop(pullPaymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            const paymentContract = yield ScheduleHelper_1.ScheduleHelper.getContract(contractID);
-            const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(contractID);
-            if (scheduler && paymentContract) {
+            const payment = yield ScheduleHelper_1.ScheduleHelper.getPullPayment(pullPaymentID);
+            const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(pullPaymentID);
+            if (scheduler && payment) {
                 if (scheduler._schedule) {
                     scheduler._schedule.cancel();
                 }
@@ -42,33 +42,33 @@ class Scheduler {
                     clearInterval(scheduler._interval);
                     scheduler._interval = null;
                 }
-                yield ScheduleHelper_1.ScheduleHelper.updateContractStatus(paymentContract, globals_1.Globals.GET_PAYMENT_STATUS_ENUM().stopped);
-                return contractID;
+                yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(payment, globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().stopped);
+                return pullPaymentID;
             }
             return null;
         });
     }
-    static restart(contractID) {
+    static restart(pullPaymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(contractID);
-            const paymentContract = yield ScheduleHelper_1.ScheduleHelper.getContract(contractID);
-            if (scheduler && paymentContract && paymentContract.status == globals_1.Globals.GET_CONTRACT_STATUS_ENUM_NAMES()[globals_1.Globals.GET_PAYMENT_STATUS_ENUM().stopped] && !scheduler._restarting) {
+            const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(pullPaymentID);
+            const pullPayment = yield ScheduleHelper_1.ScheduleHelper.getPullPayment(pullPaymentID);
+            if (scheduler && pullPayment && pullPayment.status == globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM_NAMES()[globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().stopped] && !scheduler._restarting) {
                 scheduler._restarting = true;
-                yield ScheduleHelper_1.ScheduleHelper.updateContractStatus(paymentContract, globals_1.Globals.GET_PAYMENT_STATUS_ENUM().initial);
+                yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(pullPayment, globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().initial);
                 const currentDate = Math.floor((new Date().getTime() / 1000));
-                let nextPayment = Math.floor(Number(paymentContract.nextPaymentDate));
-                let numberOfPayments = Math.floor(Number(paymentContract.numberOfPayments));
+                let nextPayment = Math.floor(Number(pullPayment.nextPaymentDate));
+                let numberOfPayments = Math.floor(Number(pullPayment.numberOfPayments));
                 while (nextPayment <= currentDate && numberOfPayments > 0) {
                     numberOfPayments--;
-                    nextPayment = nextPayment + paymentContract.frequency;
-                    ScheduleQueue_1.ScheduleQueue.instance().queue(contractID);
+                    nextPayment = nextPayment + pullPayment.frequency;
+                    ScheduleQueue_1.ScheduleQueue.instance().queue(pullPaymentID);
                 }
                 if (numberOfPayments > 0) {
-                    yield ScheduleHelper_1.ScheduleHelper.updateContractStatus(paymentContract, globals_1.Globals.GET_PAYMENT_STATUS_ENUM().running);
+                    yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(pullPayment, globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().running);
                     scheduler._schedule = yield scheduler.scheduleJob(nextPayment);
                 }
                 scheduler._restarting = false;
-                return contractID;
+                return pullPaymentID;
             }
             return null;
         });
@@ -81,17 +81,17 @@ class Scheduler {
     }
     scheduleJob(startTime = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const paymentContract = yield ScheduleHelper_1.ScheduleHelper.getContract(this._contractID);
-            startTime = startTime ? startTime : paymentContract.startTimestamp;
-            return schedule.scheduleJob(paymentContract.id, new Date(Number(startTime) * 1000), () => __awaiter(this, void 0, void 0, function* () {
-                const paymentContract = yield ScheduleHelper_1.ScheduleHelper.getContract(this._contractID);
-                yield ScheduleHelper_1.ScheduleHelper.updateContractStatus(paymentContract, globals_1.Globals.GET_PAYMENT_STATUS_ENUM().running);
+            const payment = yield ScheduleHelper_1.ScheduleHelper.getPullPayment(this._pullPaymentID);
+            startTime = startTime ? startTime : payment.startTimestamp;
+            return schedule.scheduleJob(payment.id, new Date(Number(startTime) * 1000), () => __awaiter(this, void 0, void 0, function* () {
+                const payment = yield ScheduleHelper_1.ScheduleHelper.getPullPayment(this._pullPaymentID);
+                yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(payment, globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().running);
                 yield this.executeCallback();
-                this._interval = this.startInterval(paymentContract.frequency);
-                const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(paymentContract.id);
+                this._interval = this.startInterval(payment.frequency);
+                const scheduler = ScheduleBuffer_1.SchedulerBuffer.get(payment.id);
                 if (scheduler) {
                     scheduler._interval = this._interval;
-                    ScheduleBuffer_1.SchedulerBuffer.set(paymentContract.id, scheduler);
+                    ScheduleBuffer_1.SchedulerBuffer.set(payment.id, scheduler);
                 }
             }));
         });
@@ -103,14 +103,14 @@ class Scheduler {
     }
     executeCallback() {
         return __awaiter(this, void 0, void 0, function* () {
-            let paymentContract = yield ScheduleHelper_1.ScheduleHelper.getContract(this._contractID);
-            if (paymentContract && (paymentContract.numberOfPayments > 0 && (Number(paymentContract.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000)))) {
+            let pullPayment = yield ScheduleHelper_1.ScheduleHelper.getPullPayment(this._pullPaymentID);
+            if (pullPayment && (pullPayment.numberOfPayments > 0 && (Number(pullPayment.nextPaymentDate) <= Math.floor(new Date().getTime() / 1000)))) {
                 yield this._callback();
-                paymentContract = yield ScheduleHelper_1.ScheduleHelper.getContract(this._contractID);
-                if (paymentContract.numberOfPayments == 0) {
-                    Scheduler.stop(this._contractID);
-                    ScheduleBuffer_1.SchedulerBuffer.delete(this._contractID);
-                    yield ScheduleHelper_1.ScheduleHelper.updateContractStatus(paymentContract, globals_1.Globals.GET_PAYMENT_STATUS_ENUM().done);
+                pullPayment = yield ScheduleHelper_1.ScheduleHelper.getPullPayment(this._pullPaymentID);
+                if (pullPayment.numberOfPayments == 0) {
+                    Scheduler.stop(this._pullPaymentID);
+                    ScheduleBuffer_1.SchedulerBuffer.delete(this._pullPaymentID);
+                    yield ScheduleHelper_1.ScheduleHelper.updatePaymentStatus(pullPayment, globals_1.Globals.GET_PULL_PAYMENT_STATUS_ENUM().done);
                 }
             }
         });

@@ -1,37 +1,36 @@
 {
-    "payments": {
-        "insertTestPayment": {
+    "pullPaymentModels": {
+        "insertTestPullPaymentModel": {
             "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
             "title": "test payment",
             "description": "test description",
             "amount": "20",
             "initialPaymentAmount": "23",
             "trialPeriod": 23,
-            "currency": "PMA",
+            "currency": "EUR",
             "numberOfPayments": 5,
             "frequency": 3,
             "typeID": 1,
             "networkID": 3
         },
-        "updateTestPayment": {
+        "updateTestPullPaymentModel": {
             "id": "",
             "title": "changes title",
             "description": "another description",
-            "promo": "testing",
             "amount": "20",
             "initialPaymentAmount": "23",
             "trialPeriod": 23,
-            "currency": "CVC",
+            "currency": "EUR",
             "numberOfPayments": 5,
             "typeID": 2,
             "frequency": 3,
             "networkID": 3
         }
     },
-    "contracts": {
-        "insertTestContract": {
+    "pullPayments": {
+        "insertTestPullPayment": {
             "hdWalletIndex": 0,
-            "paymentID": "needed to be injected",
+            "pullPaymentModelID": "needed to be injected",
             "numberOfPayments": 4,
             "nextPaymentDate": 10,
             "startTimestamp": 100,
@@ -40,7 +39,7 @@
             "pullPaymentAddress": "24234234",
             "userID": "2342934"
         },
-        "updateTestContract": {
+        "updateTestPullPayment": {
             "id": "",
             "hdWalletIndex": 0,
             "numberOfPayments": 5,

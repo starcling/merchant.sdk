@@ -29,16 +29,16 @@ export class Globals {
      * @description Method for getting payment api url 
      * @returns {string} url
      */
-    public static GET_PAYMENT_URL(): string {
-        return '/payments';
+    public static GET_PULL_PAYMENT_MODEL_URL(): string {
+        return '/pull-payment-models';
     }
 
     /**
      * @description Method for getting payment api url 
      * @returns {string} url
      */
-    public static GET_CONTRACT_URL(): string {
-        return '/contracts';
+    public static GET_PAYMENT_URL(): string {
+        return '/pull-payments';
     }
 
     /**
@@ -48,7 +48,7 @@ export class Globals {
     public static GET_TRANSACTION_URL(): string {
         return '/transactions';
     }
-    
+
     /**
      * @description Method for getting login api url 
      * @returns {string} url
@@ -82,14 +82,22 @@ export class Globals {
         return 300;
     }
 
-    public static GET_DEFAULT_REDIS_HOST(): string {
-        return 'localhost';
+    /**
+     * @description Method for getting decimals for parsing units
+     * @returns {number} time in seconds
+     */
+    public static GET_DEFAULT_VALUE_DECIMALS(): number {
+        return 13;
     }
 
-    public static GET_DEFAULT_REDIS_PORT(): string {
-        return '6379';
+    public static GET_DEFAULT_REDIS_CLIENT(): any {
+        return {
+            sadd: (key, value) => {},
+            srem: (key, value) => {},
+            smembers: (name, cb) => {}
+        };
     }
-    
+
     public static GET_DEFAULT_PG_HOST(): string {
         return 'localhost';
     }
@@ -146,15 +154,61 @@ export class Globals {
         return 2000;
     }
 
+    public static GET_SMART_CONTRACT_ADDRESSES(networkID: number): ISmartContracts {
+        switch (networkID) {
+            // TODO: Update once deploy to ETH MAINNET
+            case (1):
+                return {
+                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
+                    masterPullPayment: '0xd996f8a7298d822eeb71868c93eceb106401a5fe'
+                };
+            case (3):
+                return {
+                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
+                    masterPullPayment: '0xd996f8a7298d822eeb71868c93eceb106401a5fe'
+                };
+        }
+    }
+
+    public static GET_PULL_PAYMENT_TOPICS(networkID: number): IPullPaymentContract {
+        switch (networkID) {
+            // TODO: Update once deploy to ETH MAINNET
+            case (1):
+                return {
+                    execute: ['0x13492443fb72a9a7d56cc1aa2e262bcf2442d4b084def464b7934b3485114e59']
+                };
+            case (3):
+                return {
+                    execute: ['0x13492443fb72a9a7d56cc1aa2e262bcf2442d4b084def464b7934b3485114e59']
+                };
+        }
+
+    }
+
+    public static GET_PMA_ESTIMATE_ADDRESS(networkID: number): string {
+        switch (networkID) {
+            // TODO: Update once deploy to ETH MAINNET
+            case (1):
+                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+            case (3):
+                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+        }
+
+    }
+
     public static GET_SOLIDITY_FILE(): string {
         return `${__dirname.substring(0, __dirname.length - 15)}/contracts/contracts.sol`;
+    }
+
+    public static GET_CRYPTOCOMPARE_URL(): string {
+        return 'https://min-api.cryptocompare.com/';
     }
 
     public static GET_TRANSACTION_STATUS_ENUM(): any {
         return TransactionStatusEnum;
     }
 
-    public static GET_PAYMENT_STATUS_ENUM(): any {
+    public static GET_PULL_PAYMENT_STATUS_ENUM(): any {
         return PaymentStatusEnum;
     }
 
@@ -175,7 +229,7 @@ export class Globals {
         ];
     }
 
-    public static GET_CONTRACT_STATUS_ENUM_NAMES(): any {
+    public static GET_PULL_PAYMENT_STATUS_ENUM_NAMES(): any {
         return [
             '',
             'initial',
@@ -186,7 +240,7 @@ export class Globals {
         ];
     }
 
-    public static GET_PAYMENT_TYPE_ENUM_NAMES(): any {
+    public static GET_PULL_PAYMENT_TYPE_ENUM_NAMES(): any {
         return [
             '',
             'push',
@@ -204,6 +258,14 @@ export class Globals {
             'execute',
             'cancel'
         ];
+    }
+
+    public static GET_MAX_GAS_FEE(): number {
+        return 90000;
+    }
+
+    public static GET_TOKEN_CONTRACT_NAME(): string {
+        return 'PumaPayToken';
     }
 
     public static GET_PULL_PAYMENT_CONTRACT_NAME(): string {
@@ -250,4 +312,13 @@ enum PaymentTypeEnum {
     singlePull = 2,
     recurringPull = 3,
     recurringWithInitial = 4
+}
+
+interface ISmartContracts {
+    token: string;
+    masterPullPayment: string;
+}
+
+interface IPullPaymentContract {
+    execute: string[];
 }
