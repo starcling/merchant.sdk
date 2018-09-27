@@ -10,14 +10,13 @@ class MerchantSDKBuild {
         this.pgPort = buildParams.pgPort ? buildParams.pgPort : null;
         this.pgDatabase = buildParams.pgDatabase ? buildParams.pgDatabase : null;
         this.pgPassword = buildParams.pgPassword ? buildParams.pgPassword : null;
-        this.redisHost = buildParams.redisHost ? buildParams.redisHost : null;
-        this.redisPort = buildParams.redisPort ? buildParams.redisPort : null;
         this.keyDbUser = buildParams.keyDbUser ? buildParams.keyDbUser : null;
         this.keyDbHost = buildParams.keyDbHost ? buildParams.keyDbHost : null;
         this.keyDb = buildParams.keyDb ? buildParams.keyDb : null;
         this.keyDbPass = buildParams.keyDbPass ? buildParams.keyDbPass : null;
         this.keyDbPort = buildParams.keyDbPort ? buildParams.keyDbPort : null;
         this.queueLimit = buildParams.queueLimit ? buildParams.queueLimit : null;
+        this.redisClient = buildParams.redisClient ? buildParams.redisClient : null;
         this.getEnums = buildParams.getEnums;
         this.getPullPayment = buildParams.getPullPayment;
         this.updatePullPayment = buildParams.updatePullPayment;

@@ -27,10 +27,6 @@ class MerchantSDK extends MultipleInheritance_1.MultipleInheritance(BlockchainCo
     get Scheduler() {
         return Scheduler_1.Scheduler;
     }
-    disconnectRedis() {
-        ScheduleBuffer_1.SchedulerBuffer.closeConnection();
-        return true;
-    }
 }
 exports.MerchantSDK = MerchantSDK;
 //# sourceMappingURL=MerchantSDKClass.js.map

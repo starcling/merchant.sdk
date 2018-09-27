@@ -2,8 +2,7 @@ import { Scheduler } from './Scheduler';
 import { DefaultConfig } from '../../config/default.config';
 import { Globals } from '../../utils/globals';
 import { PullPaymentController } from '../database/PullPaymentController';
-const redis = require('redis');
-let rclient = null;
+const rclient = DefaultConfig.settings.redisClient;
 
 export class SchedulerBuffer {
     private static bufferName = 'scheduler_keys';
@@ -37,8 +36,6 @@ export class SchedulerBuffer {
     }
 
     public static async sync(executePullPayment: any) {
-
-        await this.reconnectToRedis();
 
         rclient.smembers(SchedulerBuffer.bufferName, async (err, ids) => {
             if (!err) {
@@ -95,41 +92,5 @@ export class SchedulerBuffer {
         pullPayment.status = pullPayment.numberOfPayments === 0 ? Globals.GET_PULL_PAYMENT_STATUS_ENUM().done : Globals.GET_PULL_PAYMENT_STATUS_ENUM()[pullPayment.status],
             await pullPaymentDbConnector.updatePullPayment(pullPayment);
     }
-
-    public static reconnectToRedis() {
-        if (!rclient) {
-            rclient = redis.createClient({
-                port: DefaultConfig.settings.redisPort,
-                host: DefaultConfig.settings.redisHost
-            });
-
-            rclient.on('error', (err) => {
-                console.log({
-                    server: 'Warning! Redis server not started. ',
-                    error: JSON.parse(JSON.stringify(err)),
-                    message: `You won't be able to persist the schedulers`,
-                    usedPort: DefaultConfig.settings.redisPort,
-                    usedHost: DefaultConfig.settings.redisHost
-                });
-                rclient.quit();
-                rclient = null;
-            });
-
-            rclient.on('connect', () => {
-                console.log(`Redis client connected to: ${DefaultConfig.settings.redisHost}:${DefaultConfig.settings.redisPort}`);
-            });
-        } else {
-            rclient.quit();
-            rclient = null;
-            SchedulerBuffer.reconnectToRedis();
-        }
-    };
-
-    public static closeConnection() {
-        if (rclient) {
-            rclient.quit();
-            rclient = null;
-        }
-    };
 
 }

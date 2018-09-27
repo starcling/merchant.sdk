@@ -90,12 +90,12 @@ export class Globals {
         return 13;
     }
 
-    public static GET_DEFAULT_REDIS_HOST(): string {
-        return 'localhost';
-    }
-
-    public static GET_DEFAULT_REDIS_PORT(): string {
-        return '6379';
+    public static GET_DEFAULT_REDIS_CLIENT(): any {
+        return {
+            sadd: (key, value) => {},
+            srem: (key, value) => {},
+            smembers: (name, cb) => {}
+        };
     }
 
     public static GET_DEFAULT_PG_HOST(): string {

@@ -43,11 +43,12 @@ class Globals {
     static GET_DEFAULT_VALUE_DECIMALS() {
         return 13;
     }
-    static GET_DEFAULT_REDIS_HOST() {
-        return 'localhost';
-    }
-    static GET_DEFAULT_REDIS_PORT() {
-        return '6379';
+    static GET_DEFAULT_REDIS_CLIENT() {
+        return {
+            sadd: (key, value) => { },
+            srem: (key, value) => { },
+            smembers: (name, cb) => { }
+        };
     }
     static GET_DEFAULT_PG_HOST() {
         return 'localhost';

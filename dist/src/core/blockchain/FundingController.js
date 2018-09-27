@@ -15,8 +15,6 @@ const BlockchainHelper_1 = require("./utils/BlockchainHelper");
 const default_config_1 = require("../../config/default.config");
 const HTTPHelper_1 = require("../../utils/web/HTTPHelper");
 const RawTransactionSerializer_1 = require("./utils/RawTransactionSerializer");
-const redis = require('redis');
-const bluebird = require('bluebird');
 const Tx = require('ethereumjs-tx');
 class FundingController {
     constructor() {
@@ -113,8 +111,7 @@ class FundingController {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : globals_1.Globals.GET_SMART_CONTRACT_ADDRESSES(default_config_1.DefaultConfig.settings.networkID).masterPullPayment;
-                const rclient = redis.createClient(Number(default_config_1.DefaultConfig.settings.redisPort), default_config_1.DefaultConfig.settings.redisHost);
-                bluebird.promisifyAll(redis);
+                const rclient = default_config_1.DefaultConfig.settings.redisClient;
                 const bcHelper = new BlockchainHelper_1.BlockchainHelper();
                 let max = Number(yield rclient.getAsync(this.maxGasFeeName));
                 let fromBlock = Number(yield rclient.getAsync(this.lastBlock));
@@ -144,7 +141,6 @@ class FundingController {
                     rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
                     yield rclient.setAsync(this.maxGasFeeName, Number(max));
                     resolve(Number(yield rclient.getAsync(this.maxGasFeeName)));
-                    rclient.quit();
                 }));
             }));
         });

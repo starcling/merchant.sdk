@@ -53,8 +53,6 @@ describe('A Scheduler', () => {
     });
 
     after('Disconnect redis', async () => {
-        sdk.disconnectRedis();
-        SchedulerBuffer.closeConnection();
         await clearTestPullPayment();
     });
 

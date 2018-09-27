@@ -7,6 +7,15 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
+import * as redis from 'redis';
+import * as bluebird from 'bluebird';
+
+const rclient = redis.createClient({
+    port: 6379,
+    host: 'localhost'
+});
+bluebird.promisifyAll(redis);
+
 const testDbConnector = new TestDbConnector();
 const privateKeysDbConnector = new PrivateKeysDbConnector();
 const dataServiceEncrypted = new DataServiceEncrypted();
@@ -59,7 +68,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     const bank = accounts[9];
 
     const bankAddressMock = async () => {
-        return {bankAddress: bank}
+        return { bankAddress: bank }
     };
 
     const settings = {
@@ -70,7 +79,8 @@ contract('Master Pull Payment Contract', async (accounts) => {
         createTransaction: testDbConnector.createTransaction,
         updateTransaction: testDbConnector.updateTransaction,
         getPrivateKey: privateKeysDbConnector.getPrivateKey,
-        bankAddress: bankAddressMock
+        bankAddress: bankAddressMock,
+        redisClient: rclient
     };
 
     let recurringPullPayment;
@@ -82,14 +92,14 @@ contract('Master Pull Payment Contract', async (accounts) => {
         "description": "test description",
         "amount": "1",
         "initialPaymentAmount": "0",
+        "trialPeriod": "0",
         "currency": "PMA",
         "numberOfPayments": 5,
-        "trialPeriod": 0,
         "frequency": 3,
         "typeID": 1,
         "networkID": 3,
         "automatedCashOut": false,
-        "cashOutFrequency": 1
+        "cashOutFrequency": 0
     };
     let testPullPayment = {
         "hdWalletIndex": 0,
@@ -118,7 +128,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
         sdk = new MerchantSDK().build(settings);
     });
     after('disconnect redis', async () => {
-        sdk.disconnectRedis();
+        rclient.quit();
     });
     afterEach('clear test pull payment model', async () => {
         await clearTestPullPaymentModel();

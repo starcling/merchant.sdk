@@ -7,8 +7,6 @@ import { DefaultConfig } from "../../config/default.config";
 import { HTTPHelper } from "../../utils/web/HTTPHelper";
 import { RawTransactionSerializer } from "./utils/RawTransactionSerializer";
 import {BlockType} from "web3/types";
-const redis = require('redis');
-const bluebird = require('bluebird');
 const Tx = require('ethereumjs-tx');
 
 export class FundingController {
@@ -126,11 +124,7 @@ export class FundingController {
         return new Promise<number>(async (resolve, reject) => {
             pullPaymentAddress = pullPaymentAddress ? pullPaymentAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).masterPullPayment;
 
-            const rclient = redis.createClient(
-                Number(DefaultConfig.settings.redisPort),
-                DefaultConfig.settings.redisHost
-            );
-            bluebird.promisifyAll(redis);
+            const rclient = DefaultConfig.settings.redisClient;
             const bcHelper = new BlockchainHelper();
 
             let max = Number(await rclient.getAsync(this.maxGasFeeName));
@@ -164,7 +158,6 @@ export class FundingController {
                 rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
                 await rclient.setAsync(this.maxGasFeeName, Number(max));
                 resolve(Number(await rclient.getAsync(this.maxGasFeeName)));
-                rclient.quit();
             });
         });
     }

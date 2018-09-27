@@ -12,8 +12,7 @@ const Scheduler_1 = require("./Scheduler");
 const default_config_1 = require("../../config/default.config");
 const globals_1 = require("../../utils/globals");
 const PullPaymentController_1 = require("../database/PullPaymentController");
-const redis = require('redis');
-let rclient = null;
+const rclient = default_config_1.DefaultConfig.settings.redisClient;
 class SchedulerBuffer {
     static set(pullPaymentID, scheduler) {
         SchedulerBuffer.SCHEDULER_BUFFER[pullPaymentID] = scheduler;
@@ -39,7 +38,6 @@ class SchedulerBuffer {
     }
     static sync(executePullPayment) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.reconnectToRedis();
             rclient.smembers(SchedulerBuffer.bufferName, (err, ids) => __awaiter(this, void 0, void 0, function* () {
                 if (!err) {
                     for (let i = 0; i < ids.length; i++) {
@@ -89,41 +87,6 @@ class SchedulerBuffer {
                 yield pullPaymentDbConnector.updatePullPayment(pullPayment);
         });
     }
-    static reconnectToRedis() {
-        if (!rclient) {
-            rclient = redis.createClient({
-                port: default_config_1.DefaultConfig.settings.redisPort,
-                host: default_config_1.DefaultConfig.settings.redisHost
-            });
-            rclient.on('error', (err) => {
-                console.log({
-                    server: 'Warning! Redis server not started. ',
-                    error: JSON.parse(JSON.stringify(err)),
-                    message: `You won't be able to persist the schedulers`,
-                    usedPort: default_config_1.DefaultConfig.settings.redisPort,
-                    usedHost: default_config_1.DefaultConfig.settings.redisHost
-                });
-                rclient.quit();
-                rclient = null;
-            });
-            rclient.on('connect', () => {
-                console.log(`Redis client connected to: ${default_config_1.DefaultConfig.settings.redisHost}:${default_config_1.DefaultConfig.settings.redisPort}`);
-            });
-        }
-        else {
-            rclient.quit();
-            rclient = null;
-            SchedulerBuffer.reconnectToRedis();
-        }
-    }
-    ;
-    static closeConnection() {
-        if (rclient) {
-            rclient.quit();
-            rclient = null;
-        }
-    }
-    ;
 }
 SchedulerBuffer.bufferName = 'scheduler_keys';
 SchedulerBuffer.SCHEDULER_BUFFER = [];
