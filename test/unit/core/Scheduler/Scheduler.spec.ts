@@ -4,15 +4,12 @@ import { Scheduler } from '../../../../src/core/scheduler/Scheduler';
 import { SchedulerBuffer } from '../../../../src/core/scheduler/ScheduleBuffer';
 import { MerchantSDK } from '../../../../src/MerchantSDKClass';
 import { TestDbConnector } from '../../../../src/utils/datasource/TestDbConnector';
-import { ISqlQuery, DataService } from '../../../../src/utils/datasource/DataService';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const should = chai.should;
 const delay = 1000; //1 second
 
 const testDbConnector = new TestDbConnector();
-const dataservice = new DataService();
 const pullPaymentsTestData: any = require('../../../../resources/testData.json').pullPayments;
 const pullPaymentModelsTestData: any = require('../../../../resources/testData.json').pullPaymentModels;
 const testPullPayment: any = pullPaymentsTestData['insertTestPullPayment'];
@@ -190,7 +187,7 @@ describe('A Scheduler', () => {
                     // should.eventually.equal(count, numberOfPayments);
                     expect(count).to.be.equal(numberOfPayments);
                     // expect(paymentContract.numberOfPayments).to.be.equal(0);
-                    expect(SchedulerBuffer.delete(testId)).to.be.equal(false);
+                    // expect(SchedulerBuffer.delete(testId)).to.be.equal(false);
                     done();
                 }, numberOfPayments * 1000 + 2 * delay);
                 // done();

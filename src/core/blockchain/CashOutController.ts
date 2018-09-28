@@ -16,10 +16,10 @@ export class CashOutController {
         this.paymentController = new PullPaymentController();
     }
 
-    public async cashOutPMA(paymentID: string, tokenAddress: string = null) {
+    public async cashOutPMA(paymentID: string, tokenAddress: string = null, forceCashOut: boolean = false) {
         const payment: IPullPaymentView = (await this.paymentController.getPullPayment(paymentID)).data[0];
 
-        if (!((payment.initialNumberOfPayments - payment.numberOfPayments) % payment.cashOutFrequency)) {
+        if ((!((payment.initialNumberOfPayments - payment.numberOfPayments) % payment.cashOutFrequency)) || forceCashOut) {
             const balance = await this.getBalance(payment.merchantAddress, tokenAddress);
             const bankAddress = (await DefaultConfig.settings.bankAddress()).bankAddress;
             await new FundingController().fundPMA(payment.merchantAddress, bankAddress, balance, tokenAddress);

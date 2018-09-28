@@ -20,7 +20,7 @@ class FundingController {
     constructor() {
         this.maxGasFeeName = "k_max_gas_fee";
         this.lastBlock = "k_last_block";
-        this.multiplier = 1.5;
+        this.multiplier = 1.8;
     }
     fundETH(fromAddress, toAddress, paymentID, value = null, tokenAddress = null, pullPaymentAddress = null) {
         return __awaiter(this, void 0, void 0, function* () {
