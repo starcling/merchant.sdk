@@ -20,10 +20,10 @@ class CashOutController {
         this.max = 50000;
         this.paymentController = new PullPaymentController_1.PullPaymentController();
     }
-    cashOutPMA(paymentID, tokenAddress = null) {
+    cashOutPMA(paymentID, tokenAddress = null, forceCashOut = false) {
         return __awaiter(this, void 0, void 0, function* () {
             const payment = (yield this.paymentController.getPullPayment(paymentID)).data[0];
-            if (!((payment.initialNumberOfPayments - payment.numberOfPayments) % payment.cashOutFrequency)) {
+            if ((!((payment.initialNumberOfPayments - payment.numberOfPayments) % payment.cashOutFrequency)) || forceCashOut) {
                 const balance = yield this.getBalance(payment.merchantAddress, tokenAddress);
                 const bankAddress = (yield default_config_1.DefaultConfig.settings.bankAddress()).bankAddress;
                 yield new FundingController_1.FundingController().fundPMA(payment.merchantAddress, bankAddress, balance, tokenAddress);

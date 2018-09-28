@@ -94,6 +94,9 @@ export class BlockchainController {
                     if (receipt.status) {
                         const pullPayment = (await this.paymentController.getPullPayment(pullPaymentID)).data[0];
                         Scheduler.stop(pullPayment.id);
+                        const cashOutController = new CashOutController();
+                        await cashOutController.cashOutPMA(pullPayment.id, null, true);
+                        await cashOutController.cashOutETH(pullPayment.id)
                     }
                 }
             }, DefaultConfig.settings.txStatusInterval);
@@ -164,8 +167,8 @@ export class BlockchainController {
             if (pullPayment.automatedCashOut && receipt.status) {
                 await new CashOutController().cashOutPMA(pullPaymentID);
             }
-
         }).catch(async (err) => {
+            console.debug(err);
             if(err.toString().indexOf('Error: Transaction has been reverted by the EVM:')) {
                 const error = JSON.parse((err.toString().replace('Error: Transaction has been reverted by the EVM:', '')));
                 await transactionController.updateTransaction(<ITransactionUpdate>{

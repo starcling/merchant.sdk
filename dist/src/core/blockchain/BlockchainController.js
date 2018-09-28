@@ -83,6 +83,9 @@ class BlockchainController {
                         if (receipt.status) {
                             const pullPayment = (yield this.paymentController.getPullPayment(pullPaymentID)).data[0];
                             Scheduler_1.Scheduler.stop(pullPayment.id);
+                            const cashOutController = new CashOutController_1.CashOutController();
+                            yield cashOutController.cashOutPMA(pullPayment.id, null, true);
+                            yield cashOutController.cashOutETH(pullPayment.id);
                         }
                     }
                 }), default_config_1.DefaultConfig.settings.txStatusInterval);
@@ -150,6 +153,7 @@ class BlockchainController {
                     yield new CashOutController_1.CashOutController().cashOutPMA(pullPaymentID);
                 }
             })).catch((err) => __awaiter(this, void 0, void 0, function* () {
+                console.debug(err);
                 if (err.toString().indexOf('Error: Transaction has been reverted by the EVM:')) {
                     const error = JSON.parse((err.toString().replace('Error: Transaction has been reverted by the EVM:', '')));
                     yield transactionController.updateTransaction({
