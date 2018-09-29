@@ -42,15 +42,17 @@ Now you can use the sdk, and all its funcionalities.
 ## Basic methods
 
 ```
-sdk.monitorRegistrationTransaction(transactionHash, paymentID);
-sdk.monitorCancellationTransaction(transactionHash, paymentID);
-sdk.executePullPayment(paymentID);
-sdk.cashOutPMA(paymentID);
-sdk.cashOutETH(paymentID);
-sdk.fundETH(fromAddress, toAddress, [, paymentID, value]);
-sdk.fundPMA(fromAddress, toAddress, value);
-sdk.calculateWeiToFund(paymentID, bankAddress);
-sdk.generateQRCode(paymentID);
+sdk.monitorRegistrationTransaction(txHash, pullPaymentID);
+sdk.monitorCancellationTransaction(txHash, pullPaymentID);
+sdk.executePullPayment(pullPaymentID);
+sdk.cashOutPMA(paymentID, [,tokenAddress]);
+sdk.cashOutETH(paymentID, [,tokenAddress]);
+sdk.getBalance(address, [,tokenAddress]);
+sdk.fundETH(fromAddress, toAddress, paymentID, [, value, tokenAddress, pullPaymentAddress]);
+sdk.fundPMA(fromAddress, toAddress, value, [,tokenAddress]);
+sdk.calculateWeiToFund(paymentID, bankAddress, [,tokenAddress, pullPaymentAddress]);
+sdk.calculateTransferFee(fromAddress, toAddress, value, [,tokenAddress]);
+sdk.generateQRCode(paymentModelID);
 sdk.Scheduler.stop(paymentID);
 sdk.Scheduler.restart(paymentID);
 ```
