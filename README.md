@@ -52,6 +52,7 @@ sdk.fundETH(fromAddress, toAddress, paymentID, [, value, tokenAddress, pullPayme
 sdk.fundPMA(fromAddress, toAddress, value, [,tokenAddress]);
 sdk.calculateWeiToFund(paymentID, bankAddress, [,tokenAddress, pullPaymentAddress]);
 sdk.calculateTransferFee(fromAddress, toAddress, value, [,tokenAddress]);
+calculateMaxExecutionFee([pullPaymentAddress])
 sdk.generateQRCode(paymentModelID);
 sdk.Scheduler.stop(paymentID);
 sdk.Scheduler.restart(paymentID);
