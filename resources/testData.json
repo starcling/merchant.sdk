@@ -1,0 +1,53 @@
+{
+    "pullPaymentModels": {
+        "insertTestPullPaymentModel": {
+            "merchantID": "63c684fe-8a97-11e8-b99f-9f38301a1e03",
+            "title": "test payment",
+            "description": "test description",
+            "amount": "20",
+            "initialPaymentAmount": "23",
+            "trialPeriod": 23,
+            "currency": "EUR",
+            "numberOfPayments": 5,
+            "frequency": 3,
+            "typeID": 1,
+            "networkID": 3
+        },
+        "updateTestPullPaymentModel": {
+            "id": "",
+            "title": "changes title",
+            "description": "another description",
+            "amount": "20",
+            "initialPaymentAmount": "23",
+            "trialPeriod": 23,
+            "currency": "EUR",
+            "numberOfPayments": 5,
+            "typeID": 2,
+            "frequency": 3,
+            "networkID": 3
+        }
+    },
+    "pullPayments": {
+        "insertTestPullPayment": {
+            "hdWalletIndex": 0,
+            "pullPaymentModelID": "needed to be injected",
+            "numberOfPayments": 4,
+            "nextPaymentDate": 10,
+            "startTimestamp": 100,
+            "customerAddress": "243423",
+            "merchantAddress": "merchantadddr",
+            "pullPaymentAddress": "24234234",
+            "userID": "2342934"
+        },
+        "updateTestPullPayment": {
+            "id": "",
+            "hdWalletIndex": 0,
+            "numberOfPayments": 5,
+            "nextPaymentDate": 10,
+            "lastPaymentDate": 20,
+            "startTimestamp": 100,
+            "statusID": 1,
+            "userID": "2342934"
+        }
+    }
+}
