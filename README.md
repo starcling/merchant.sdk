@@ -25,8 +25,8 @@ of pull payments.
 
 ## V2.0 Notes
 The merchant has in their possession a set of addresses through their HD wallet.
-Each pull payment is assigned to a different address from the HD wallet to eliminate the risk of assigning the same pull pa
-The address at index 0 is being used as the bank account which need to holds ETH t
+Each pull payment is assigned to a different address (executor address) from the HD wallet.
+The address at index 0 is being used as the bank account which need to holds ETH that will be used for funding the executor addresses.
 
 ## Dependencies
 <!--More details regarding the dependencies and the PumaPay ecosystem can be found in our [wiki](https://github.com/pumapayio/wiki)-->
