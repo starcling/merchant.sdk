@@ -71,8 +71,7 @@ class MerchantSDK {
     private constructor() {}
 
     /**
-     * @description Returns the sdk object instantiated with given params
-     * @param {any} [params] Required only the first time. Parameters for merchant SDK for now its apiURL {string}, apiKey {string}
+     * @description Returns the instantiated sdk object
      */
     public static GET_SDK() {
         if (this.sdk) {
@@ -103,7 +102,7 @@ const settings: SDKBuildSettings = {
     createTransaction: createTransactionCallback,           // callback for creating transactions from DB
     updateTransaction: updateTransactionCallback,           // callback for updating transactions from DB
     getPrivateKey: getPrivateKey                            // callback for getting private key based on hd wallet address
-    bankAddress: 0x12312asda....                            // ethereum address to be used as a bank address
+    bankAddress: getBankAddress                             // callback for getting ethereum address to be used as a bank address from the HD wallet
 }
 ```
 See [below](#merchant-sdk-api-reference) for detailed explanation.
@@ -150,7 +149,7 @@ sdk.build({
     createTransaction: createTransactionCallback,           // callback for creating transactions from DB
     updateTransaction: updateTransactionCallback,           // callback for updating transactions from DB
     getPrivateKey: getPrivateKey                            // callback for getting private key based on hd wallet address
-    bankAddress: 0x12312asda....                            // ethereum address to be used as a bank address
+    bankAddress: getBankAddress                             // callback for getting ethereum address to be used as a bank address from the HD wallet
 })
 ```
 ***
