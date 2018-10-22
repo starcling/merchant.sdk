@@ -1,8 +1,8 @@
-import { DefaultConfig } from "../config/default.config";
+import {DefaultConfig} from "../config/default.config";
 
 export class Globals {
     /**
-     * @description Method for getting core backend api url 
+     * @description Method for getting core backend api url
      * @returns {string} url
      */
     public static GET_DEFAULT_CORE_API_URL(): string {
@@ -10,7 +10,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting merchant backend api url 
+     * @description Method for getting merchant backend api url
      * @returns {string} url
      */
     public static GET_DEFAULT_MERCHANT_API_URL(): string {
@@ -18,7 +18,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting generate qr api url 
+     * @description Method for getting generate qr api url
      * @returns {string} url
      */
     public static GET_QR_API_URL(): string {
@@ -26,7 +26,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting payment api url 
+     * @description Method for getting payment api url
      * @returns {string} url
      */
     public static GET_PULL_PAYMENT_MODEL_URL(): string {
@@ -34,7 +34,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting payment api url 
+     * @description Method for getting payment api url
      * @returns {string} url
      */
     public static GET_PAYMENT_URL(): string {
@@ -42,7 +42,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting payment api url 
+     * @description Method for getting payment api url
      * @returns {string} url
      */
     public static GET_TRANSACTION_URL(): string {
@@ -50,7 +50,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting login api url 
+     * @description Method for getting login api url
      * @returns {string} url
      */
     public static GET_LOGIN_URL(): string {
@@ -58,7 +58,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting generate api key url 
+     * @description Method for getting generate api key url
      * @returns {string} url
      */
     public static GET_API_KEY_URL(): string {
@@ -66,7 +66,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting access token url 
+     * @description Method for getting access token url
      * @returns {string} url
      */
     public static GET_ACCESS_TOKEN_URL(): string {
@@ -74,12 +74,12 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting time for which it is allowed the start timestamp of the scheduler 
+     * @description Method for getting time for which it is allowed the start timestamp of the scheduler
      * of the recurring payment to be in the past
      * @returns {number} time in seconds
      */
     public static GET_START_SCHEDULER_TIME_WINDOW(): number {
-        return 300;
+        return 1800;
     }
 
     /**
@@ -92,9 +92,12 @@ export class Globals {
 
     public static GET_DEFAULT_REDIS_CLIENT(): any {
         return {
-            sadd: (key, value) => {},
-            srem: (key, value) => {},
-            smembers: (name, cb) => {}
+            sadd: (key, value) => {
+            },
+            srem: (key, value) => {
+            },
+            smembers: (name, cb) => {
+            }
         };
     }
 
