@@ -326,6 +326,97 @@ sdk.Scheduler.stop('2400005a-0000-0000-0000-f28000009fd1')
 ```
 ***
 
+#### sdk.generateQRCode
+```ts
+sdk.generateQRCode(paymentModelID)
+```
+This function is being used to generate the QR code object. It can be called after a new pull payment model is created by passing as a parameter the ID of the model.
+
+Parameters
+
+1. `string` - ID of the pull payment model for which you want to generate QR code
+
+Returns
+```
+{
+   pullPaymentModelURL: `https://merchant_example_url.com/payment-model/${paymentModelID}`,
+   pullPaymentURL: `https://merchant_example_url.com/payment/`,
+   transactionURL: `https://merchant_example_url.com/transaction/`
+}
+```
+
+<!--`undefined`-->
+
+
+Example
+```ts
+sdk.generateQRCode('2400005a-0000-0000-0000-f28000009fd1')
+```
+***
+
+#### sdk.generateEthPushQRCode
+```ts
+sdk.generateEthPushQRCode(address, value, gas)
+```
+This function is being used to generate the QR code object for Ethereum push transaction.
+
+Parameters
+
+1. `string` - Address of the Ethereum wallet that is to receive ethers sent
+2. `string` - Big number value of the amount to be transfered
+3. `integer` - Transaction gas limit that is to be used
+
+Returns
+```
+{
+   to: `${address}`,
+   value: `${value}`,
+   gas: `${gas}`,
+   data: null
+}
+```
+
+<!--`undefined`-->
+
+
+Example
+```ts
+sdk.generateEthPushQRCode('0x3ae8205c4258888ee976e05a8ed50645e0100000', '10000000000', 21000)
+```
+***
+
+#### sdk.generateErc20PushQRCode
+```ts
+sdk.generateErc20PushQRCode(tokenAddress, address, value, gas)
+```
+This asynchronous function is being used to generate the QR code object for any ERC20 push transaction. Address of the token contract needs to be provided. Transfer method for ERC20Basic tokens is encoded using address and value and passed in the data payload.
+
+Parameters
+
+1. `string` - Address of the token contract
+1. `string` - Address of the Ethereum wallet that is to receive tokens
+2. `string` - Big number value of the amount to be transfered
+3. `integer` - Transaction gas limit that is to be used
+
+Returns
+```
+{
+   to: `${tokenAddress}`,
+   value: `0x00`,
+   gas: `${gas}`,
+   data: '0xa9059cbb000000000000000000000000c5b42db793cb60b4ff9e4c1bd0c2c633af90acfb000000000000000000000000000000000000000000000000000000000000000a'
+}
+```
+
+<!--`undefined`-->
+
+
+Example
+```ts
+sdk.generateErc20PushQRCode('0x5a48205c6258888ee976e05a8ed50645e0111111', '0x3ae8205c4258888ee976e05a8ed50645e0100000', '10000000000', 21000)
+```
+***
+
 #### sdk.fundETH
 ```ts
 sdk.fundETH(fromAddress, toAddress, pullPaymentID, value? = null, tokenAddress? = null, pullPaymentAddress? = null)
