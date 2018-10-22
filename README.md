@@ -155,6 +155,220 @@ sdk.build({
     bankAddress: getBankAddress                             // callback for getting ethereum address to be used as a bank address from the HD wallet
 })
 ```
+
+Callbacks:
+
+1) getPullPayment(paymentID)
+
+Parameters
+
+1. `string` - pull payment ID
+
+Returns
+
+```
+Promise - {
+    success: true //boolean
+    status: 200 //integer
+    message: '' //string
+    data: [
+        {
+            id: '2400005a-0000-0000-0000-f28000009fd1',
+            ...
+        }
+    ]
+}
+```
+
+Example
+```ts
+await updatePullPayment('2400005a-0000-0000-0000-f28000009fd1')
+```
+
+2) updatePullPayment(updateDetails)
+
+Parameters
+
+1. `object` - Payment update details 
+```
+{
+    id: string;
+    hdWalletIndex: number;
+    numberOfPayments: number;
+    nextPaymentDate: number;
+    lastPaymentDate: number;
+    startTimestamp: number;
+    merchantAddress: string;
+    statusID: number;
+    userID: string;
+    networkID: number;
+}
+```
+
+Returns
+
+```
+Promise - {
+    success: true //boolean
+    status: 200 //integer
+    message: '' //string
+    data: [
+        {
+            id: '2400005a-0000-0000-0000-f28000009fd1',
+            ...
+        }
+    ]
+}
+```
+
+Example
+```ts
+await updatePullPayment({...})
+```
+
+3) getTransactions(transactionDetails)
+
+Parameters
+
+1. `object` - Transaction details 
+```
+{
+    paymentID: string;
+    statusID: number;
+    typeID: number;
+}
+```
+
+Returns
+
+```
+Promise - {
+    success: true //boolean
+    status: 200 //integer
+    message: '' //string
+    data: [
+        {
+            id: '2400005a-0000-0000-0000-f28000009fd1',
+            ...
+        }
+    ]
+}
+```
+
+Example
+```ts
+await getTransactions({...})
+```
+
+4) createTransaction(transactionDetails)
+
+Parameters
+
+1. `object` - Transaction details 
+```
+{
+    hash: string;
+    paymentID: string;
+    statusID: number;
+    typeID: number;
+}
+```
+
+Returns
+
+```
+Promise - {
+    success: true //boolean
+    status: 200 //integer
+    message: '' //string
+    data: [
+        {
+            id: '2400005a-0000-0000-0000-f28000009fd1',
+            ...
+        }
+    ]
+}
+```
+
+Example
+```ts
+await createTransaction({...})
+```
+
+5) updateTransaction(transactionDetails)
+
+Parameters
+
+1. `object` - Transaction details 
+```
+{
+    statusID: number;
+    typeID: number;
+}
+```
+
+Returns
+
+```
+Promise - {
+    success: true //boolean
+    status: 200 //integer
+    message: '' //string
+    data: [
+        {
+            id: '2400005a-0000-0000-0000-f28000009fd1',
+            ...
+        }
+    ]
+}
+```
+
+Example
+```ts
+await updateTransaction({...})
+```
+
+6) getPrivateKey(address)
+
+Parameters
+
+1. `string` - Address of the wallet which is executing pull payment
+
+Returns
+
+```
+Promise - {
+    success: true //boolean
+    status: 200 //integer
+    message: '' //string
+    data: [
+        {
+            @accountKey: 'private_key',
+        }
+    ]
+}
+```
+
+Example
+```ts
+await getPrivateKey('0x3ae8205c4258888ee976e05a8ed50645e0100000')
+```
+
+7) getBankAddress()
+
+Returns
+
+```
+Promise - {
+    bankAddress: '0x8574205c4258888ee976e05a8ed50645e0100000'
+}
+```
+
+Example
+```ts
+await getBankAddress()
+```
+
 ***
 
 #### sdk.executePullPayment
