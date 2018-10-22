@@ -182,7 +182,7 @@ Promise - {
 
 Example
 ```ts
-await updatePullPayment('2400005a-0000-0000-0000-f28000009fd1')
+await getPullPayment('2400005a-0000-0000-0000-f28000009fd1')
 ```
 
 2) updatePullPayment(updateDetails)
