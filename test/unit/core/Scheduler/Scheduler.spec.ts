@@ -1,9 +1,10 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { Scheduler } from '../../../../src/core/scheduler/Scheduler';
-import { SchedulerBuffer } from '../../../../src/core/scheduler/ScheduleBuffer';
-import { MerchantSDK } from '../../../../src/MerchantSDKClass';
-import { TestDbConnector } from '../../../../src/utils/datasource/TestDbConnector';
+import {Scheduler} from '../../../../src/core/scheduler/Scheduler';
+import {SchedulerBuffer} from '../../../../src/core/scheduler/ScheduleBuffer';
+import {MerchantSDK} from '../../../../src/MerchantSDKClass';
+import {TestDbConnector} from '../../../../src/utils/datasource/TestDbConnector';
+import {Globals} from "../../../../src/utils/globals";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -75,7 +76,8 @@ describe('A Scheduler', () => {
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => {
+                        }));
                     }).start();
 
                     setTimeout(() => {
@@ -99,7 +101,8 @@ describe('A Scheduler', () => {
 
                     new Scheduler(paymentContract.id, async () => {
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => {
+                        }));
                     }).start();
 
                     setTimeout(() => {
@@ -126,7 +129,8 @@ describe('A Scheduler', () => {
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => {
+                        }));
                     }).start();
 
                     setTimeout(async () => {
@@ -166,7 +170,8 @@ describe('A Scheduler', () => {
                     tempContract.numberOfPayments = tempContract.numberOfPayments - 1;
                     tempContract.nextPaymentDate = tempContract.numberOfPayments === 0
                         ? tempContract.nextPaymentDate : Number(tempContract.nextPaymentDate) + testPullPaymentModel.frequency;
-                    await (new TestDbConnector().updatePullPayment(tempContract).catch(() => { }));
+                    await (new TestDbConnector().updatePullPayment(tempContract).catch(() => {
+                    }));
                 }).start();
 
             })
@@ -211,7 +216,8 @@ describe('A Scheduler', () => {
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
                         paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0
                             ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPullPaymentModel.frequency;
-                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => {
+                        }));
                     }).start();
 
                     Scheduler.stop(paymentContract.id);
@@ -248,7 +254,8 @@ describe('A Scheduler', () => {
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
                         paymentContract.nextPaymentDate = paymentContract.numberOfPayments === 0
                             ? paymentContract.nextPaymentDate : Number(paymentContract.nextPaymentDate) + testPullPaymentModel.frequency;
-                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => {
+                        }));
                     }).start();
 
                     setTimeout(() => {
@@ -287,7 +294,8 @@ describe('A Scheduler', () => {
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => {
+                        }));
                     }).start();
 
                     setTimeout(async () => {
@@ -365,7 +373,8 @@ describe('A Scheduler', () => {
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => {
+                        }));
                     }).start();
 
                     setTimeout(() => {
@@ -385,15 +394,15 @@ describe('A Scheduler', () => {
             testId = result.data[0].id;
         });
 
-        it('should not be able to start if start timestamp is out of the 5min window below current time', (done) => {
+        it('should not be able to start if start timestamp is out of the 30min window below current time', (done) => {
             const c = 0;
             let count = c;
             const numberOfPayments = 3; //Run scheduler for 3 seconds
-            const timeWindow = 301000; // Time window of 5 min and 1 second
+            const timeWindow = Globals.GET_START_SCHEDULER_TIME_WINDOW() + 5; // Time window and 5 seconds
 
             testDbConnector.getPullPayment(testId).then(res => {
                 const tempContract = res.data[0];
-                tempContract.startTimestamp = Math.floor(new Date(Date.now() - timeWindow).getTime() / 1000);
+                tempContract.startTimestamp = Math.floor(new Date(((Date.now() / 1000) - timeWindow) * 1000).getTime() / 1000);
                 tempContract.numberOfPayments = numberOfPayments;
 
                 testDbConnector.updatePullPayment(tempContract).then(response => {
@@ -402,7 +411,8 @@ describe('A Scheduler', () => {
                     new Scheduler(paymentContract.id, async () => {
                         count++;
                         paymentContract.numberOfPayments = paymentContract.numberOfPayments - 1;
-                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => { }));
+                        await (new TestDbConnector().updatePullPayment(paymentContract).catch(() => {
+                        }));
                     }).start();
 
                     setTimeout(() => {
