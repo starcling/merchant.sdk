@@ -163,7 +163,7 @@ export class Globals {
             case (1):
                 return {
                     token: '0x846c66cf71c43f80403b51fe3906b3599d63336f',
-                    masterPullPayment: '0x69284c1084a9388AE3E40e82d3c900822aD5e62B'
+                    masterPullPayment: '0xeb417d2e61c13C693f7c62257F347283e0a23b49'
                 };
             case (3):
                 return {
