@@ -249,7 +249,9 @@ export class Globals {
             'push',
             'singlePull',
             'recurringPull',
-            'recurringWithInitial'
+            'recurringWithInitial',
+            'recurringWithTrial',
+            'recurringWithTrialAndInitial'
         ];
     }
 
@@ -314,7 +316,9 @@ enum PaymentTypeEnum {
     push = 1,
     singlePull = 2,
     recurringPull = 3,
-    recurringWithInitial = 4
+    recurringWithInitial = 4,
+    recurringWithTrial = 5,
+    recurringWithTrialAndInitial = 6
 }
 
 interface ISmartContracts {
