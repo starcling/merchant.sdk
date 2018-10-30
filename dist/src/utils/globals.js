@@ -165,7 +165,9 @@ class Globals {
             'push',
             'singlePull',
             'recurringPull',
-            'recurringWithInitial'
+            'recurringWithInitial',
+            'recurringWithTrial',
+            'recurringWithTrialAndInitial'
         ];
     }
     static GET_TRANSACTION_TYPE_ENUM_NAMES() {
@@ -226,5 +228,7 @@ var PaymentTypeEnum;
     PaymentTypeEnum[PaymentTypeEnum["singlePull"] = 2] = "singlePull";
     PaymentTypeEnum[PaymentTypeEnum["recurringPull"] = 3] = "recurringPull";
     PaymentTypeEnum[PaymentTypeEnum["recurringWithInitial"] = 4] = "recurringWithInitial";
+    PaymentTypeEnum[PaymentTypeEnum["recurringWithTrial"] = 5] = "recurringWithTrial";
+    PaymentTypeEnum[PaymentTypeEnum["recurringWithTrialAndInitial"] = 6] = "recurringWithTrialAndInitial";
 })(PaymentTypeEnum || (PaymentTypeEnum = {}));
 //# sourceMappingURL=globals.js.map

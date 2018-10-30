@@ -81,11 +81,10 @@ class BlockchainController {
                             statusID: status
                         });
                         if (receipt.status) {
-                            const pullPayment = (yield this.paymentController.getPullPayment(pullPaymentID)).data[0];
-                            Scheduler_1.Scheduler.stop(pullPayment.id);
+                            Scheduler_1.Scheduler.stop(pullPaymentID);
                             const cashOutController = new CashOutController_1.CashOutController();
-                            yield cashOutController.cashOutPMA(pullPayment.id, null, true);
-                            yield cashOutController.cashOutETH(pullPayment.id);
+                            yield cashOutController.cashOutPMA(pullPaymentID, null, true);
+                            yield cashOutController.cashOutETH(pullPaymentID);
                         }
                     }
                 }), default_config_1.DefaultConfig.settings.txStatusInterval);

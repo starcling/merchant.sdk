@@ -1,12 +1,13 @@
-import { Globals } from "../../utils/globals";
-import { PullPaymentController } from "../database/PullPaymentController";
-import { IPullPaymentView } from "../database/models";
-import { SmartContractReader } from "./utils/SmartContractReader";
-import { BlockchainHelper } from "./utils/BlockchainHelper";
-import { DefaultConfig } from "../../config/default.config";
-import { HTTPHelper } from "../../utils/web/HTTPHelper";
-import { RawTransactionSerializer } from "./utils/RawTransactionSerializer";
+import {Globals} from "../../utils/globals";
+import {PullPaymentController} from "../database/PullPaymentController";
+import {IPullPaymentView} from "../database/models";
+import {SmartContractReader} from "./utils/SmartContractReader";
+import {BlockchainHelper} from "./utils/BlockchainHelper";
+import {DefaultConfig} from "../../config/default.config";
+import {HTTPHelper} from "../../utils/web/HTTPHelper";
+import {RawTransactionSerializer} from "./utils/RawTransactionSerializer";
 import {BlockType} from "web3/types";
+
 const Tx = require('ethereumjs-tx');
 
 export class FundingController {
@@ -138,27 +139,33 @@ export class FundingController {
             await rclient.setAsync(this.maxGasFeeName, max);
             const latestBlock = Number(await bcHelper.getProvider().getBlockNumber());
 
-            bcHelper.getProvider().getPastLogs({
-                fromBlock: DefaultConfig.settings.web3.utils.toHex(fromBlock) as BlockType,
-                toBlock: (latestBlock ? DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest') as BlockType,
-                address: pullPaymentAddress,
-                topics: Globals.GET_PULL_PAYMENT_TOPICS(DefaultConfig.settings.networkID).execute
-            }, async (err, res) => {
-                if (err) {
-                    reject(err);
-                }
-
-                for (const log of res) {
-                    const receipt = await bcHelper.getProvider().getTransactionReceipt(log.transactionHash);
-                    if (receipt) {
-                        if (receipt.gasUsed > max) max = receipt.gasUsed;
+            try {
+                bcHelper.getProvider().getPastLogs({
+                    fromBlock: DefaultConfig.settings.web3.utils.toHex(fromBlock) as BlockType,
+                    toBlock: (latestBlock ? DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest') as BlockType,
+                    address: pullPaymentAddress,
+                    topics: Globals.GET_PULL_PAYMENT_TOPICS(DefaultConfig.settings.networkID).execute
+                }, async (err, res) => {
+                    if (err) {
+                        resolve(Number(Globals.GET_MAX_GAS_FEE()));
                     }
-                }
 
-                rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
-                await rclient.setAsync(this.maxGasFeeName, Number(max));
-                resolve(Number(await rclient.getAsync(this.maxGasFeeName)));
-            });
+                    for (const log of res) {
+                        const receipt = await bcHelper.getProvider().getTransactionReceipt(log.transactionHash);
+                        if (receipt) {
+                            if (receipt.gasUsed > max) max = receipt.gasUsed;
+                        }
+                    }
+
+                    rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
+                    await rclient.setAsync(this.maxGasFeeName, Number(max));
+                    resolve(Number(max));
+                });
+            } catch (error) {
+                console.log(error);
+                resolve(Number(Globals.GET_MAX_GAS_FEE()));
+            }
+
         });
     }
 }
