@@ -22,7 +22,7 @@ export class BlockchainController {
     }
 
     /**
-    * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
+    * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt
     * to create a scheduler that will execute the pull payment
     * @param {string} txHash: Hash of the transaction that needs to be monitored
     * @param {string} pullPaymentID: ID of the contract registration which status is to be updated
@@ -74,7 +74,7 @@ export class BlockchainController {
     }
 
     /**
-    * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
+    * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt
     * to stop the scheduler that executes the pull payment
     * @param {string} txHash: Hash of the transaction that needs to be monitored
     * @param {string} pullPaymentID: ID of the payment which cancellation status is to be updated
@@ -92,11 +92,10 @@ export class BlockchainController {
                         statusID: status
                     });
                     if (receipt.status) {
-                        const pullPayment = (await this.paymentController.getPullPayment(pullPaymentID)).data[0];
-                        Scheduler.stop(pullPayment.id);
+                        Scheduler.stop(pullPaymentID);
                         const cashOutController = new CashOutController();
-                        await cashOutController.cashOutPMA(pullPayment.id, null, true);
-                        await cashOutController.cashOutETH(pullPayment.id)
+                        await cashOutController.cashOutPMA(pullPaymentID, null, true);
+                        await cashOutController.cashOutETH(pullPaymentID)
                     }
                 }
             }, DefaultConfig.settings.txStatusInterval);
