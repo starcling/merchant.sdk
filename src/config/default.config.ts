@@ -60,9 +60,9 @@ export class DefaultConfig {
 
     private static getNetworkID(network: string) {
         switch(network) {
-            case('ropsten'):
-                return 1;
             case('mainnet'):
+                return 1;
+            case('ropsten'):
                 return 3;
         }
     }

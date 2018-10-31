@@ -39,8 +39,8 @@ class CashOutController {
             const gasFee = default_config_1.DefaultConfig.settings.web3.utils.toWei('10', 'Gwei') * 21000;
             const fundETH = (gasFee) => __awaiter(this, void 0, void 0, function* () {
                 const bankAddress = (yield default_config_1.DefaultConfig.settings.bankAddress()).bankAddress;
-                yield fundingController.fundETH(payment.merchantAddress, bankAddress, null, balance - gasFee, tokenAddress).catch((err) => __awaiter(this, void 0, void 0, function* () {
-                    yield fundETH(gasFee + gasFee / 5);
+                yield fundingController.fundETH(payment.merchantAddress, bankAddress, null, balance - gasFee, tokenAddress, null, 21000).catch((err) => __awaiter(this, void 0, void 0, function* () {
+                    yield fundETH(gasFee + gasFee / 50);
                 }));
             });
             yield fundETH(gasFee + initalFee);

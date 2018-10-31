@@ -24,7 +24,7 @@ export class FundingController {
      * @param tokenAddress (optional) Address of the token contract
      * @param pullPaymentAddress (optional) Address of the master pull payment contract
      */
-    public async fundETH(fromAddress: string, toAddress: string, paymentID: string, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
+    public async fundETH(fromAddress: string, toAddress: string, paymentID: string, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null, gasLimit: number = 300000) {
         const bcHelper = new BlockchainHelper();
         if (!value) {
             value = await this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
@@ -36,7 +36,7 @@ export class FundingController {
         const rawTx = {
             nonce: nonce,
             gasPrice: bcHelper.utils().toHex(bcHelper.utils().toWei('10', 'Gwei')),
-            gasLimit: bcHelper.utils().toHex(300000),
+            gasLimit: bcHelper.utils().toHex(gasLimit),
             to: toAddress,
             from: fromAddress,
             value: value
