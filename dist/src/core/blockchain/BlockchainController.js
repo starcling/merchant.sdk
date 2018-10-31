@@ -107,7 +107,7 @@ class BlockchainController {
             const data = contract.methods.executePullPayment(pullPayment.customerAddress, pullPayment.id).encodeABI();
             let privateKey = (yield default_config_1.DefaultConfig.settings.getPrivateKey(pullPayment.merchantAddress)).data[0]['@accountKey'];
             const gasLimit = yield new FundingController_1.FundingController().calculateMaxExecutionFee(pullPayment.pullPaymentAddress);
-            const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, pullPayment.pullPaymentAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
+            const serializedTx = yield new RawTransactionSerializer_1.RawTransactionSerializer(data, pullPayment.pullPaymentAddress, txCount, privateKey, Math.ceil(gasLimit * 1.3)).getSerializedTx();
             privateKey = null;
             let txHash;
             yield blockchainHelper.executeSignedTransaction(serializedTx).on('transactionHash', (hash) => __awaiter(this, void 0, void 0, function* () {

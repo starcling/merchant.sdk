@@ -122,26 +122,32 @@ class FundingController {
                 max = max ? max : globals_1.Globals.GET_MAX_GAS_FEE();
                 yield rclient.setAsync(this.maxGasFeeName, max);
                 const latestBlock = Number(yield bcHelper.getProvider().getBlockNumber());
-                bcHelper.getProvider().getPastLogs({
-                    fromBlock: default_config_1.DefaultConfig.settings.web3.utils.toHex(fromBlock),
-                    toBlock: (latestBlock ? default_config_1.DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest'),
-                    address: pullPaymentAddress,
-                    topics: globals_1.Globals.GET_PULL_PAYMENT_TOPICS(default_config_1.DefaultConfig.settings.networkID).execute
-                }, (err, res) => __awaiter(this, void 0, void 0, function* () {
-                    if (err) {
-                        reject(err);
-                    }
-                    for (const log of res) {
-                        const receipt = yield bcHelper.getProvider().getTransactionReceipt(log.transactionHash);
-                        if (receipt) {
-                            if (receipt.gasUsed > max)
-                                max = receipt.gasUsed;
+                try {
+                    bcHelper.getProvider().getPastLogs({
+                        fromBlock: default_config_1.DefaultConfig.settings.web3.utils.toHex(fromBlock),
+                        toBlock: (latestBlock ? default_config_1.DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest'),
+                        address: pullPaymentAddress,
+                        topics: globals_1.Globals.GET_PULL_PAYMENT_TOPICS(default_config_1.DefaultConfig.settings.networkID).execute
+                    }, (err, res) => __awaiter(this, void 0, void 0, function* () {
+                        if (err) {
+                            resolve(Number(globals_1.Globals.GET_MAX_GAS_FEE()));
                         }
-                    }
-                    rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
-                    yield rclient.setAsync(this.maxGasFeeName, Number(max));
-                    resolve(Number(yield rclient.getAsync(this.maxGasFeeName)));
-                }));
+                        for (const log of res) {
+                            const receipt = yield bcHelper.getProvider().getTransactionReceipt(log.transactionHash);
+                            if (receipt) {
+                                if (receipt.gasUsed > max)
+                                    max = receipt.gasUsed;
+                            }
+                        }
+                        rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
+                        yield rclient.setAsync(this.maxGasFeeName, Number(max));
+                        resolve(Number(max));
+                    }));
+                }
+                catch (error) {
+                    console.log(error);
+                    resolve(Number(globals_1.Globals.GET_MAX_GAS_FEE()));
+                }
             }));
         });
     }
