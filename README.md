@@ -2,7 +2,6 @@
 
 ## Table of content
 - [Intro](#intro)
-- [V2.0 Notes](#v20-notes)
 - [Dependencies](#dependencies)
 - [Get started](#get-started)
 - [Merchant SDK API Reference](#merchant-sdk-api-reference)
@@ -20,33 +19,26 @@
     - [sdk.fundETH](#sdkfundeth)
     - [sdk.cashOutETH](#sdkcashouteth)
     - [sdk.cashOutPMA](#sdkcashoutpma)
+    
 ## Intro
-Decentralized vision has developed a payment protocol that allows recurring payment to occur
-over the Ethereum Blockchain.
-This SDK module provides the core functionality to any third party integrator to allow execution
-of pull payments.
+Decentralized vision has developed a payment protocol that allows recurring payment to occur over the Ethereum Blockchain.
+This SDK module provides the core functionality to any third party integrator to allow execution of PullPayments.
 
-## V2.0 Notes
-The merchant has in their possession a set of addresses through their HD wallet.
-Each pull payment is assigned to a different address (executor address) from the HD wallet.
-The address at index 0 is being used as the bank account which need to holds ETH that will be used for funding the executor addresses.
+More details regarding the PumaPay PullPayment Protocol and the PumaPay ecosystem can be found in our [wiki](https://github.com/pumapayio/wiki)
 
 ## Dependencies
-<!--More details regarding the dependencies and the PumaPay ecosystem can be found in our [wiki](https://github.com/pumapayio/wiki)-->
 #### PostgreSQL Database
-The merchant SDK needs to communicate with PostgreSQL database (referenced as Pull Payment DB from now on)
-which stores everything around pull payments, i.e pull payment models, pull payments and Ethereum transactions related with pull payments.
+The merchant SDK needs to communicate with PostgreSQL database (referenced as Pull Payment DB from now on) which stores the billing models, the PullPayments and the Ethereum transactions.
+
+More details in our [wiki](https://github.com/pumapayio/wiki/blob/master/README.md#postgresql-database)
 
 #### MySQL Database
-In addition a MySQL encrypted db (referenced as Wallet Encrypted DB from now on) is necessary
-which stores the hd mnemonic phrase of the merchant wallet addresses that will be used for
-executing pull payment, for funding the executor addresses with ETH to pay for gas and cashing
-out PMA and ETH to an Ethereum "bank account" on their end.
-<!--More details on the "Bank Account" can be found [here](https://github.com/pumapayio/wiki/).-->
+MySQL database is an encrypted database used for encrypting the HD wallet with the Ethereum addresses that the merchant uses on their end for executing PullPayments on the blockchain, for funding the PullPayment account addresses with ETH to pay for gas and cashing out PMA and ETH to a treasury account on their end.
+
+Check our wiki for more details on the [HD Wallet](https://github.com/pumapayio/wiki/blob/master/README.md#hd-wallet) and the [treasury account](https://github.com/pumapayio/wiki/blob/master/README.md#hd-wallet).
 
 #### Redis
-Redis in-memory data structure store is used for storing information related with which executor address will be
-the executor of the pull payment and for storing the maximum gas used for a pull payment transaction.
+Redis in-memory data structure store is used for storing information related to the PullPayment account address that will be executing the PullPayment and for storing the maximum gas used for a PullPayment transaction.
 
 ## Get Started
 #### Step 1
@@ -116,7 +108,6 @@ Build the sdk using provided parameters.
 ```
 
 **NOTE:** The merchant SDK is encapsulated in a NodeJS server which will be referred to as Merchant Core Server from now on.
-<!--For more details refer to our [wiki](https://github.com/pumapayio/wiki/).-->
 
 ## Merchant SDK API Reference
 #### sdk.build
@@ -146,9 +137,9 @@ sdk.build({
     pgPassword: db_password,                                // PostgreSQL db password
     redisClient: redis_client                               // Redis client e.g. redis.createClient(redis_port, redis_host)
     getEnums: enumerables,                                  // method for getting enumerables
-    getPullPayment: getPullPaymentCallback,                 // callback for getting pull payment by ID from DB
-    updatePullPayment: updatePullPaymentCallback,           // callback for updating a pull payment in DB
-    getTransactions: getTransactionsByPullPaymentCallback,  // callback for getting transactions for a specific pull payment from DB
+    getPullPayment: getPullPaymentCallback,                 // callback for getting PullPayment by ID from DB
+    updatePullPayment: updatePullPaymentCallback,           // callback for updating a PullPayment in DB
+    getTransactions: getTransactionsByPullPaymentCallback,  // callback for getting transactions for a specific PullPayment from DB
     createTransaction: createTransactionCallback,           // callback for creating transactions from DB
     updateTransaction: updateTransactionCallback,           // callback for updating transactions from DB
     getPrivateKey: getPrivateKey                            // callback for getting private key based on hd wallet address
@@ -375,18 +366,20 @@ await getBankAddress()
 ```ts
 sdk.executePullPayment(pullPaymentID)
 ```
-Executes a pull payment stored in the DB on the Ethereum network.
+Executes a PullPayment stored in the DB on the Ethereum network.
 
-For the execution of the pull payment, the pull payment needs to be retrieved from the Pull Payment DB which contains details about the wallet address that can execute
-the pull payment. The blockchain transaction is signed by the wallet address linked with the pull payment and is transmitted to the Ethereum network.
-Once the transaction hash is obtained by the Ethereum network a new blockchain transaction with the `txHash` linked to the pull payment  is inserted in the
-Pull Payment DB with status `pending`. If the transaction receipt is retrieved from the blockchain with status `true` the status in the db changes to `success`
-otherwise is set to `failed`.
+For the execution of the PullPayment, the PullPayment needs to be retrieved from the Pull Payment DB which contains details about the wallet address that can execute the PullPayment. 
+
+The blockchain transaction is signed by the wallet address linked with the PullPayment and is transmitted to the Ethereum network.
+
+Once the transaction hash is obtained by the Ethereum network a new blockchain transaction with the `txHash` linked to the PullPayment  is inserted in the Pull Payment DB with status `pending`. 
+
+If the transaction receipt is retrieved from the blockchain with status `true` the status in the db changes to `success` otherwise is set to `failed`.
 
 
 Parameters
 
-1. `string` - pull payment ID that needs to be executed on Ethereum blockchain
+1. `string` - PullPayment ID that needs to be executed on Ethereum blockchain
 
 Returns
 
@@ -403,17 +396,20 @@ sdk.executePullPayment('2400005a-0000-0000-0000-f28000009fd1')
 ```ts
 sdk.monitorRegistrationTransaction(txHash, pullPaymentID)
 ```
-Monitors a pull payment registration transaction on the blockchain.
+Monitors a PullPayment registration transaction on the blockchain.
 
-The pull payment registration is submitted to the Ethereum network by the PumaPay Core after the pull payment was signed in the PumaPay Wallet. Once the transaction receipt is retrieved in the
-PumaPay core, it is sent to the PumaPay Merchant server and stored in the Pull Payment DB as a registration transaction for the specified `pullPaymentID` with status `pending`.
-The blockchain transaction is monitored on the merchant side and updated once the blockchain transaction receipt is retrieved. If the transaction receipt is retrieved
-from the blockchain with status `true` the status in the db changes to `success` otherwise is set to `failed`.
+The PullPayment registration is submitted to the Ethereum network by the PumaPay Core after the PullPayment was signed in the PumaPay Wallet. 
+
+Once the transaction receipt is retrieved in the PumaPay core, it is sent to the PumaPay Merchant server and stored in the Pull Payment DB as a registration transaction for the specified `pullPaymentID` with status `pending`.
+
+The blockchain transaction is monitored on the merchant side and updated once the blockchain transaction receipt is retrieved. 
+
+If the transaction receipt is retrieved from the blockchain with status `true` the status in the db changes to `success` otherwise is set to `failed`.
 
 Parameters
 
 1. `string` - txHash of the registration transaction as retrieved by the blockchain
-2. `pullPaymentID` - pull payment ID that was registered on Ethereum blockchain
+2. `pullPaymentID` - PullPayment ID that was registered on Ethereum blockchain
 
 Returns
 
@@ -430,17 +426,20 @@ sdk.monitorRegistrationTransaction('0xaeed582d5a8165f9130e15b10a480400126b67fb21
 ```ts
 sdk.monitorCancellationTransaction(txHash, pullPaymentID)
 ```
-Monitors a pull payment cancellation transaction on the blockchain.
+Monitors a PullPayment cancellation transaction on the blockchain.
 
-The pull payment cancellation is submitted to the Ethereum network by the PumaPay Core after the pull payment was signed in the PumaPay Wallet. Once the transaction receipt is retrieved in the
-PumaPay core, it is sent to the PumaPay Merchant server and stored in the Pull Payment DB as a registration transaction for the specified `pullPaymentID` with status `pending`.
-The blockchain transaction is monitored on the merchant side and updated once the blockchain transaction receipt is retrieved. If the transaction receipt is retrieved
-from the blockchain with status `true` the status in the db changes to `success` otherwise is set to `failed`.
+The PullPayment cancellation is submitted to the Ethereum network by the PumaPay Core after the PullPayment was signed in the PumaPay Wallet. 
+
+Once the transaction receipt is retrieved in the PumaPay core, it is sent to the PumaPay Merchant server and stored in the Pull Payment DB as a registration transaction for the specified `pullPaymentID` with status `pending`.
+
+The blockchain transaction is monitored on the merchant side and updated once the blockchain transaction receipt is retrieved. 
+
+If the transaction receipt is retrieved from the blockchain with status `true` the status in the db changes to `success` otherwise is set to `failed`.
 
 Parameters
 
 1. `string` - txHash of the cancellation transaction as retrieved by the blockchain
-2. `pullPaymentID` - pull payment ID that was cancelled on Ethereum blockchain
+2. `pullPaymentID` - PullPayment ID that was cancelled on Ethereum blockchain
 
 Returns
 
@@ -457,11 +456,11 @@ sdk.monitorCancellationTransaction('0xaeed582d5a8165f9130e15b10a480400126b67fb21
 ```ts
 new sdk.Scheduler(pullPaymentID, callback)
 ```
-The Scheduler class is starting / stopping / restarting the scheduler which is executing a pull payment.
+The Scheduler class is starting / stopping / restarting the scheduler which is executing a PullPayment.
 
 Parameters
 
-1. `string` - pull payment ID that needs to be executed on Ethereum blockchain
+1. `string` - PullPayment ID that needs to be executed on Ethereum blockchain
 2. `function` - callback function
 
 Returns
@@ -480,9 +479,9 @@ new sdk.Scheduler('2400005a-0000-0000-0000-f28000009fd1', sdk.executePullPayment
 ```ts
 new sdk.Scheduler(pullPaymentID, callback).start(reinitialized? = false)
 ```
-Starts the scheduler based on a pull payment ID and a callback.
+Starts the scheduler based on a PullPayment ID and a callback.
 
-The scheduler is used for executing a pull payment on the blockchain i.e. pull PMA from the customer account. This function is being called on `sdk.monitorRegistrationTransaction`
+The scheduler is used for executing a PullPayment on the blockchain i.e. pull PMA from the customer account. This function is being called on `sdk.monitorRegistrationTransaction`
 and when the transaction receipt is successful, the scheduler starts with `sdk.executePullPayment(pullPaymentID)` as the callback function.
 
 
@@ -505,11 +504,11 @@ sdk.Scheduler('2400005a-0000-0000-0000-f28000009fd1', sdk.executePullPayment).st
 ```ts
 sdk.Scheduler.restart(pullPaymentID)
 ```
-Restarts the scheduler based on a pull payment ID. The scheduler can be restarted only if it is stopped.
+Restarts the scheduler based on a PullPayment ID. The scheduler can be restarted only if it is stopped.
 
 Parameters
 
-1. `string` - pull payment ID
+1. `string` - PullPayment ID
 
 Returns
 
@@ -526,11 +525,11 @@ sdk.Scheduler.restart('2400005a-0000-0000-0000-f28000009fd1')
 ```ts
 sdk.Scheduler.stop(pullPaymentID)
 ```
-Stops a running scheduler based on a pull payment ID.
+Stops a running scheduler based on a PullPayment ID.
 
 Parameters
 
-1. `string` - pull payment ID
+1. `string` - PullPayment ID
 
 Returns
 
@@ -638,17 +637,17 @@ sdk.generateErc20PushQRCode('0x5a48205c6258888ee976e05a8ed50645e0111111', '0x3ae
 ```ts
 sdk.fundETH(fromAddress, toAddress, pullPaymentID, value? = null, tokenAddress? = null, pullPaymentAddress? = null)
 ```
-This function is being used to transfer ETH from one address to another one. It is called when a new pull payment is registered to transfer ETH from the bank account to the
-executor account that will be used for gas throughout the lifecycle of a pull payment.
+This function is being used to transfer ETH from one address to another one. It is called when a new PullPayment is registered to transfer ETH from the treasury account to the
+executor account that will be used for gas throughout the lifecycle of a PullPayment.
 
 Parameters
 
 1. `string` - from which address to transfer the ETH
 2. `string` - to which address to transfer the ETH
-3. `string` - pull payment ID related with this funding
+3. `string` - PullPayment ID related with this funding
 4. `number` - (optional) value of ETH to be transferred - if not provided will be calculated
 5. `string` - (optional) token address of the PMA token that is used for calculating the gas fee for transferring PMA - if the value is not provided
-6. `string` - (optional) pull payment address that is used for calculating the gas fee for transferring PMA - if the value is not provided
+6. `string` - (optional) PullPayment address that is used for calculating the gas fee for transferring PMA - if the value is not provided
 
 <!--Returns-->
 
@@ -667,12 +666,12 @@ sdk.fundETH('0x3ae8205c4258888ee976e05a8ed50645e0100000', '0x3ae8205c4258888ee97
 ```ts
 sdk.cashOutETH(pullPaymentID, tokenAddress? = null)
 ```
-This function is being used to cashing out ETH for a pull payment based on the ID one address to another one.
-The cash-out of ETH happens at the end of the pull payment lifecycle so that all the remaining ETH that were not used for gas are transferred back to the bank account.
+This function is being used to cashing out ETH for a PullPayment based on the ID one address to another one.
+The cash-out of ETH happens at the end of the PullPayment lifecycle so that all the remaining ETH that were not used for gas are transferred back to the treasury account.
 
 Parameters
 
-1. `string` - pull payment ID
+1. `string` - PullPayment ID
 2. `string` - (optional) token address of the PMA token that is used for calculating the gas fee for transferring ETH - if the value is not provided
 
 <!--Returns-->
@@ -690,13 +689,13 @@ sdk.cashOutETH('2400005a-0000-0000-0000-f28000009fd1')
 ```ts
 sdk.cashOutPMA(pullPaymentID, tokenAddress?= null, forceCashOut? = false)
 ```
-This function is being used to cashing out PMA for a pull payment based on the ID one address to another one.
-The automated cash-out of PMA is specified on the creation of the pull payment model by the merchant by setting `automatedCashOut` to `true` along with the
+This function is being used to cashing out PMA for a PullPayment based on the ID one address to another one.
+The automated cash-out of PMA is specified on the creation of the PullPayment model by the merchant by setting `automatedCashOut` to `true` along with the
 `cashOutFrequency` which represents the number of executions after which an automated cashout will take place.
 
 Parameters
 
-1. `string` - pull payment ID
+1. `string` - PullPayment ID
 2. `string` - (optional) token address of the PMA token that is used for calculating the gas fee for transferring ETH - if the value is not provided
 3. `boolean` - (optional) default `false` - if `true` the cashout will be executed without checking the `cashOutFrequency`
 
