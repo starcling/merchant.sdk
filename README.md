@@ -26,6 +26,7 @@ More details regarding the PumaPay PullPayment Protocol and the PumaPay ecosyste
 ## Dependencies
 #### PostgreSQL Database
 The merchant SDK needs to communicate with PostgreSQL database (referenced as Pull Payment DB from now on) which stores the billing models, the PullPayments and the Ethereum transactions.
+
 More details in our [wiki](https://github.com/pumapayio/wiki/blob/master/README.md#postgresql-database)
 
 #### MySQL Database
