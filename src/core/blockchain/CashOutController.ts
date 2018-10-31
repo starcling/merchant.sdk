@@ -1,10 +1,10 @@
-import { PullPaymentController } from "../database/PullPaymentController";
-import { IPullPaymentView } from "../database/models";
-import { FundingController } from "./FundingController";
-import { DefaultConfig } from "../../config/default.config";
-import { SmartContractReader } from "./utils/SmartContractReader";
-import { Globals } from "../../utils/globals";
-import { BlockchainHelper } from "./utils/BlockchainHelper";
+import {PullPaymentController} from "../database/PullPaymentController";
+import {IPullPaymentView} from "../database/models";
+import {FundingController} from "./FundingController";
+import {DefaultConfig} from "../../config/default.config";
+import {SmartContractReader} from "./utils/SmartContractReader";
+import {Globals} from "../../utils/globals";
+import {BlockchainHelper} from "./utils/BlockchainHelper";
 
 export class CashOutController {
 
@@ -12,6 +12,7 @@ export class CashOutController {
     private max = 50000;
 
     private paymentController: PullPaymentController;
+
     constructor() {
         this.paymentController = new PullPaymentController();
     }
@@ -36,8 +37,8 @@ export class CashOutController {
         const gasFee = DefaultConfig.settings.web3.utils.toWei('10', 'Gwei') * 21000;
         const fundETH = async (gasFee) => {
             const bankAddress = (await DefaultConfig.settings.bankAddress()).bankAddress;
-            await fundingController.fundETH(payment.merchantAddress, bankAddress, null, balance - gasFee, tokenAddress).catch(async err => {
-                await fundETH(gasFee + gasFee / 5);
+            await fundingController.fundETH(payment.merchantAddress, bankAddress, null, balance - gasFee, tokenAddress, null, 21000).catch(async err => {
+                await fundETH(gasFee + gasFee / 50);
             });
         };
 
@@ -48,7 +49,7 @@ export class CashOutController {
         tokenAddress = tokenAddress ? tokenAddress : Globals.GET_SMART_CONTRACT_ADDRESSES(DefaultConfig.settings.networkID).token;
         const contract: any = await new SmartContractReader(Globals.GET_TOKEN_CONTRACT_NAME()).readContract(tokenAddress);
 
-        return await contract.methods.balanceOf(address).call({ from: address });
+        return await contract.methods.balanceOf(address).call({from: address});
     }
 
 }
