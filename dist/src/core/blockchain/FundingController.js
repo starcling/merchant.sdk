@@ -22,7 +22,7 @@ class FundingController {
         this.lastBlock = "k_last_block";
         this.multiplier = 1.5;
     }
-    fundETH(fromAddress, toAddress, paymentID, value = null, tokenAddress = null, pullPaymentAddress = null) {
+    fundETH(fromAddress, toAddress, paymentID, value = null, tokenAddress = null, pullPaymentAddress = null, gasLimit = 300000) {
         return __awaiter(this, void 0, void 0, function* () {
             const bcHelper = new BlockchainHelper_1.BlockchainHelper();
             if (!value) {
@@ -34,7 +34,7 @@ class FundingController {
             const rawTx = {
                 nonce: nonce,
                 gasPrice: bcHelper.utils().toHex(bcHelper.utils().toWei('10', 'Gwei')),
-                gasLimit: bcHelper.utils().toHex(300000),
+                gasLimit: bcHelper.utils().toHex(gasLimit),
                 to: toAddress,
                 from: fromAddress,
                 value: value

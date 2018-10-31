@@ -38,7 +38,7 @@ export class CashOutController {
         const fundETH = async (gasFee) => {
             const bankAddress = (await DefaultConfig.settings.bankAddress()).bankAddress;
             await fundingController.fundETH(payment.merchantAddress, bankAddress, null, balance - gasFee, tokenAddress, null, 21000).catch(async err => {
-                await fundETH(gasFee + gasFee / 50);
+                await fundETH(gasFee + gasFee / 5);
             });
         };
 
