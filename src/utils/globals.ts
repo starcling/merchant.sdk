@@ -1,8 +1,8 @@
-import { DefaultConfig } from "../config/default.config";
+import {DefaultConfig} from "../config/default.config";
 
 export class Globals {
     /**
-     * @description Method for getting core backend api url 
+     * @description Method for getting core backend api url
      * @returns {string} url
      */
     public static GET_DEFAULT_CORE_API_URL(): string {
@@ -10,7 +10,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting merchant backend api url 
+     * @description Method for getting merchant backend api url
      * @returns {string} url
      */
     public static GET_DEFAULT_MERCHANT_API_URL(): string {
@@ -18,7 +18,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting generate qr api url 
+     * @description Method for getting generate qr api url
      * @returns {string} url
      */
     public static GET_QR_API_URL(): string {
@@ -26,7 +26,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting payment api url 
+     * @description Method for getting payment api url
      * @returns {string} url
      */
     public static GET_PULL_PAYMENT_MODEL_URL(): string {
@@ -34,7 +34,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting payment api url 
+     * @description Method for getting payment api url
      * @returns {string} url
      */
     public static GET_PAYMENT_URL(): string {
@@ -42,7 +42,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting payment api url 
+     * @description Method for getting payment api url
      * @returns {string} url
      */
     public static GET_TRANSACTION_URL(): string {
@@ -50,7 +50,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting login api url 
+     * @description Method for getting login api url
      * @returns {string} url
      */
     public static GET_LOGIN_URL(): string {
@@ -58,7 +58,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting generate api key url 
+     * @description Method for getting generate api key url
      * @returns {string} url
      */
     public static GET_API_KEY_URL(): string {
@@ -66,7 +66,7 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting access token url 
+     * @description Method for getting access token url
      * @returns {string} url
      */
     public static GET_ACCESS_TOKEN_URL(): string {
@@ -74,12 +74,12 @@ export class Globals {
     }
 
     /**
-     * @description Method for getting time for which it is allowed the start timestamp of the scheduler 
+     * @description Method for getting time for which it is allowed the start timestamp of the scheduler
      * of the recurring payment to be in the past
      * @returns {number} time in seconds
      */
     public static GET_START_SCHEDULER_TIME_WINDOW(): number {
-        return 300;
+        return 1800;
     }
 
     /**
@@ -92,9 +92,12 @@ export class Globals {
 
     public static GET_DEFAULT_REDIS_CLIENT(): any {
         return {
-            sadd: (key, value) => {},
-            srem: (key, value) => {},
-            smembers: (name, cb) => {}
+            sadd: (key, value) => {
+            },
+            srem: (key, value) => {
+            },
+            smembers: (name, cb) => {
+            }
         };
     }
 
@@ -159,8 +162,8 @@ export class Globals {
             // TODO: Update once deploy to ETH MAINNET
             case (1):
                 return {
-                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
-                    masterPullPayment: '0xd996f8a7298d822eeb71868c93eceb106401a5fe'
+                    token: '0x846c66cf71c43f80403b51fe3906b3599d63336f',
+                    masterPullPayment: '0xeb417d2e61c13C693f7c62257F347283e0a23b49'
                 };
             case (3):
                 return {
@@ -189,9 +192,9 @@ export class Globals {
         switch (networkID) {
             // TODO: Update once deploy to ETH MAINNET
             case (1):
-                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+                return '0x313fD04840832BA49e22611da8404990f3742b14';
             case (3):
-                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+                return '0x1b2C3974969a6f77f157C7479749753e79e97F5d';
         }
 
     }
@@ -246,7 +249,9 @@ export class Globals {
             'push',
             'singlePull',
             'recurringPull',
-            'recurringWithInitial'
+            'recurringWithInitial',
+            'recurringWithTrial',
+            'recurringWithTrialAndInitial'
         ];
     }
 
@@ -311,7 +316,9 @@ enum PaymentTypeEnum {
     push = 1,
     singlePull = 2,
     recurringPull = 3,
-    recurringWithInitial = 4
+    recurringWithInitial = 4,
+    recurringWithTrial = 5,
+    recurringWithTrialAndInitial = 6
 }
 
 interface ISmartContracts {

@@ -1,12 +1,13 @@
-import { Globals } from "../../utils/globals";
-import { PullPaymentController } from "../database/PullPaymentController";
-import { IPullPaymentView } from "../database/models";
-import { SmartContractReader } from "./utils/SmartContractReader";
-import { BlockchainHelper } from "./utils/BlockchainHelper";
-import { DefaultConfig } from "../../config/default.config";
-import { HTTPHelper } from "../../utils/web/HTTPHelper";
-import { RawTransactionSerializer } from "./utils/RawTransactionSerializer";
+import {Globals} from "../../utils/globals";
+import {PullPaymentController} from "../database/PullPaymentController";
+import {IPullPaymentView} from "../database/models";
+import {SmartContractReader} from "./utils/SmartContractReader";
+import {BlockchainHelper} from "./utils/BlockchainHelper";
+import {DefaultConfig} from "../../config/default.config";
+import {HTTPHelper} from "../../utils/web/HTTPHelper";
+import {RawTransactionSerializer} from "./utils/RawTransactionSerializer";
 import {BlockType} from "web3/types";
+
 const Tx = require('ethereumjs-tx');
 
 export class FundingController {
@@ -23,7 +24,7 @@ export class FundingController {
      * @param tokenAddress (optional) Address of the token contract
      * @param pullPaymentAddress (optional) Address of the master pull payment contract
      */
-    public async fundETH(fromAddress: string, toAddress: string, paymentID: string, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null) {
+    public async fundETH(fromAddress: string, toAddress: string, paymentID: string, value: any = null, tokenAddress: string = null, pullPaymentAddress: string = null, gasLimit: number = 300000) {
         const bcHelper = new BlockchainHelper();
         if (!value) {
             value = await this.calculateWeiToFund(paymentID, fromAddress, tokenAddress, pullPaymentAddress);
@@ -35,7 +36,7 @@ export class FundingController {
         const rawTx = {
             nonce: nonce,
             gasPrice: bcHelper.utils().toHex(bcHelper.utils().toWei('10', 'Gwei')),
-            gasLimit: bcHelper.utils().toHex(300000),
+            gasLimit: bcHelper.utils().toHex(gasLimit),
             to: toAddress,
             from: fromAddress,
             value: value
@@ -138,27 +139,33 @@ export class FundingController {
             await rclient.setAsync(this.maxGasFeeName, max);
             const latestBlock = Number(await bcHelper.getProvider().getBlockNumber());
 
-            bcHelper.getProvider().getPastLogs({
-                fromBlock: DefaultConfig.settings.web3.utils.toHex(fromBlock) as BlockType,
-                toBlock: (latestBlock ? DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest') as BlockType,
-                address: pullPaymentAddress,
-                topics: Globals.GET_PULL_PAYMENT_TOPICS(DefaultConfig.settings.networkID).execute
-            }, async (err, res) => {
-                if (err) {
-                    reject(err);
-                }
-
-                for (const log of res) {
-                    const receipt = await bcHelper.getProvider().getTransactionReceipt(log.transactionHash);
-                    if (receipt) {
-                        if (receipt.gasUsed > max) max = receipt.gasUsed;
+            try {
+                bcHelper.getProvider().getPastLogs({
+                    fromBlock: DefaultConfig.settings.web3.utils.toHex(fromBlock) as BlockType,
+                    toBlock: (latestBlock ? DefaultConfig.settings.web3.utils.toHex(latestBlock) : 'latest') as BlockType,
+                    address: pullPaymentAddress,
+                    topics: Globals.GET_PULL_PAYMENT_TOPICS(DefaultConfig.settings.networkID).execute
+                }, async (err, res) => {
+                    if (err) {
+                        resolve(Number(Globals.GET_MAX_GAS_FEE()));
                     }
-                }
 
-                rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
-                await rclient.setAsync(this.maxGasFeeName, Number(max));
-                resolve(Number(await rclient.getAsync(this.maxGasFeeName)));
-            });
+                    for (const log of res) {
+                        const receipt = await bcHelper.getProvider().getTransactionReceipt(log.transactionHash);
+                        if (receipt) {
+                            if (receipt.gasUsed > max) max = receipt.gasUsed;
+                        }
+                    }
+
+                    rclient.setAsync(this.lastBlock, latestBlock ? latestBlock : res[0].blockNumber);
+                    await rclient.setAsync(this.maxGasFeeName, Number(max));
+                    resolve(Number(max));
+                });
+            } catch (error) {
+                console.log(error);
+                resolve(Number(Globals.GET_MAX_GAS_FEE()));
+            }
+
         });
     }
 }

@@ -38,16 +38,19 @@ class Globals {
         return '/auth/token/generate';
     }
     static GET_START_SCHEDULER_TIME_WINDOW() {
-        return 300;
+        return 1800;
     }
     static GET_DEFAULT_VALUE_DECIMALS() {
         return 13;
     }
     static GET_DEFAULT_REDIS_CLIENT() {
         return {
-            sadd: (key, value) => { },
-            srem: (key, value) => { },
-            smembers: (name, cb) => { }
+            sadd: (key, value) => {
+            },
+            srem: (key, value) => {
+            },
+            smembers: (name, cb) => {
+            }
         };
     }
     static GET_DEFAULT_PG_HOST() {
@@ -90,8 +93,8 @@ class Globals {
         switch (networkID) {
             case (1):
                 return {
-                    token: '0x11c1e537801cc1c37ad6e1b7d0bdc0e00fcc6dc1',
-                    masterPullPayment: '0xd996f8a7298d822eeb71868c93eceb106401a5fe'
+                    token: '0x846c66cf71c43f80403b51fe3906b3599d63336f',
+                    masterPullPayment: '0xeb417d2e61c13C693f7c62257F347283e0a23b49'
                 };
             case (3):
                 return {
@@ -115,9 +118,9 @@ class Globals {
     static GET_PMA_ESTIMATE_ADDRESS(networkID) {
         switch (networkID) {
             case (1):
-                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+                return '0x313fD04840832BA49e22611da8404990f3742b14';
             case (3):
-                return '0xc5b42db793CB60B4fF9e4c1bD0c2c633Af90aCFb';
+                return '0x1b2C3974969a6f77f157C7479749753e79e97F5d';
         }
     }
     static GET_SOLIDITY_FILE() {
@@ -162,7 +165,9 @@ class Globals {
             'push',
             'singlePull',
             'recurringPull',
-            'recurringWithInitial'
+            'recurringWithInitial',
+            'recurringWithTrial',
+            'recurringWithTrialAndInitial'
         ];
     }
     static GET_TRANSACTION_TYPE_ENUM_NAMES() {
@@ -223,5 +228,7 @@ var PaymentTypeEnum;
     PaymentTypeEnum[PaymentTypeEnum["singlePull"] = 2] = "singlePull";
     PaymentTypeEnum[PaymentTypeEnum["recurringPull"] = 3] = "recurringPull";
     PaymentTypeEnum[PaymentTypeEnum["recurringWithInitial"] = 4] = "recurringWithInitial";
+    PaymentTypeEnum[PaymentTypeEnum["recurringWithTrial"] = 5] = "recurringWithTrial";
+    PaymentTypeEnum[PaymentTypeEnum["recurringWithTrialAndInitial"] = 6] = "recurringWithTrialAndInitial";
 })(PaymentTypeEnum || (PaymentTypeEnum = {}));
 //# sourceMappingURL=globals.js.map

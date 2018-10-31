@@ -1,16 +1,16 @@
-import { DefaultConfig } from '../../config/default.config';
-import { Globals } from '../../utils/globals';
-import { SmartContractReader } from './utils/SmartContractReader';
-import { BlockchainHelper } from './utils/BlockchainHelper';
-import { RawTransactionSerializer } from './utils/RawTransactionSerializer';
-import { Scheduler } from '../scheduler/Scheduler';
-import { ErrorHandler } from '../../utils/handlers/ErrorHandler';
-import { BlockchainTxReceiptHandler } from './utils/BlockchainTxReceiptHandler';
-import { TransactionController } from '../database/TransactionController';
-import { PullPaymentController } from '../database/PullPaymentController';
-import { ITransactionUpdate, IPullPaymentView, ITransactionGet, ITransactionInsert } from '../database/models';
-import { FundingController } from './FundingController';
-import { CashOutController } from './CashOutController';
+import {DefaultConfig} from '../../config/default.config';
+import {Globals} from '../../utils/globals';
+import {SmartContractReader} from './utils/SmartContractReader';
+import {BlockchainHelper} from './utils/BlockchainHelper';
+import {RawTransactionSerializer} from './utils/RawTransactionSerializer';
+import {Scheduler} from '../scheduler/Scheduler';
+import {ErrorHandler} from '../../utils/handlers/ErrorHandler';
+import {BlockchainTxReceiptHandler} from './utils/BlockchainTxReceiptHandler';
+import {TransactionController} from '../database/TransactionController';
+import {PullPaymentController} from '../database/PullPaymentController';
+import {ITransactionUpdate, IPullPaymentView, ITransactionGet, ITransactionInsert} from '../database/models';
+import {FundingController} from './FundingController';
+import {CashOutController} from './CashOutController';
 
 export class BlockchainController {
     private transactionController: TransactionController;
@@ -22,12 +22,12 @@ export class BlockchainController {
     }
 
     /**
-    * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
-    * to create a scheduler that will execute the pull payment
-    * @param {string} txHash: Hash of the transaction that needs to be monitored
-    * @param {string} pullPaymentID: ID of the contract registration which status is to be updated
-    * @returns {boolean} success/fail response
-    */
+     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt
+     * to create a scheduler that will execute the pull payment
+     * @param {string} txHash: Hash of the transaction that needs to be monitored
+     * @param {string} pullPaymentID: ID of the contract registration which status is to be updated
+     * @returns {boolean} success/fail response
+     */
     protected async monitorRegistrationTransaction(txHash: string, pullPaymentID: string) {
         return new Promise((resolve, reject) => {
             try {
@@ -74,12 +74,12 @@ export class BlockchainController {
     }
 
     /**
-    * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt 
-    * to stop the scheduler that executes the pull payment
-    * @param {string} txHash: Hash of the transaction that needs to be monitored
-    * @param {string} pullPaymentID: ID of the payment which cancellation status is to be updated
-    * @returns {boolean} success/fail response
-    */
+     * @description Method for registering an event for monitoring transaction on the blockchain and upon receiving receipt
+     * to stop the scheduler that executes the pull payment
+     * @param {string} txHash: Hash of the transaction that needs to be monitored
+     * @param {string} pullPaymentID: ID of the payment which cancellation status is to be updated
+     * @returns {boolean} success/fail response
+     */
     protected async monitorCancellationTransaction(txHash: string, pullPaymentID: string) {
         try {
             const sub = setInterval(async () => {
@@ -92,11 +92,10 @@ export class BlockchainController {
                         statusID: status
                     });
                     if (receipt.status) {
-                        const pullPayment = (await this.paymentController.getPullPayment(pullPaymentID)).data[0];
-                        Scheduler.stop(pullPayment.id);
+                        Scheduler.stop(pullPaymentID);
                         const cashOutController = new CashOutController();
-                        await cashOutController.cashOutPMA(pullPayment.id, null, true);
-                        await cashOutController.cashOutETH(pullPayment.id)
+                        await cashOutController.cashOutPMA(pullPaymentID, null, true);
+                        await cashOutController.cashOutETH(pullPaymentID)
                     }
                 }
             }, DefaultConfig.settings.txStatusInterval);
@@ -108,9 +107,9 @@ export class BlockchainController {
     }
 
     /**
-    * @description Method for actual execution of pull payment
-    * @returns {object} null
-    */
+     * @description Method for actual execution of pull payment
+     * @returns {object} null
+     */
     public async executePullPayment(pullPaymentID?: string): Promise<void> {
         const transactionController = new TransactionController();
         const pullPaymentController = new PullPaymentController();
@@ -123,7 +122,7 @@ export class BlockchainController {
         const data: string = contract.methods.executePullPayment(pullPayment.customerAddress, pullPayment.id).encodeABI();
         let privateKey: string = (await DefaultConfig.settings.getPrivateKey(pullPayment.merchantAddress)).data[0]['@accountKey'];
         const gasLimit = await new FundingController().calculateMaxExecutionFee(pullPayment.pullPaymentAddress);
-        const serializedTx: string = await new RawTransactionSerializer(data, pullPayment.pullPaymentAddress, txCount, privateKey, gasLimit * 3).getSerializedTx();
+        const serializedTx: string = await new RawTransactionSerializer(data, pullPayment.pullPaymentAddress, txCount, privateKey, Math.ceil(gasLimit * 1.3)).getSerializedTx();
         privateKey = null;
 
         let txHash;
@@ -169,7 +168,7 @@ export class BlockchainController {
             }
         }).catch(async (err) => {
             console.debug(err);
-            if(err.toString().indexOf('Error: Transaction has been reverted by the EVM:')) {
+            if (err.toString().indexOf('Error: Transaction has been reverted by the EVM:')) {
                 const error = JSON.parse((err.toString().replace('Error: Transaction has been reverted by the EVM:', '')));
                 await transactionController.updateTransaction(<ITransactionUpdate>{
                     hash: error.transactionHash,

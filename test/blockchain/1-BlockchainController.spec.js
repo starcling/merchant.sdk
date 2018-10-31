@@ -1,6 +1,6 @@
-import { MerchantSDK } from '../../dist/src/MerchantSDKClass';
-import { PrivateKeysDbConnector } from '../../dist/src/utils/datasource/PrivateKeysDbConnector';
-import { TestDbConnector } from '../../dist/src/utils/datasource/TestDbConnector';
+import {MerchantSDK} from '../../dist/src/MerchantSDKClass';
+import {PrivateKeysDbConnector} from '../../dist/src/utils/datasource/PrivateKeysDbConnector';
+import {TestDbConnector} from '../../dist/src/utils/datasource/TestDbConnector';
 import {
     calcSignedMessageForRegistration,
     getVRS
@@ -8,7 +8,7 @@ import {
 import {
     timeTravel
 } from '../helpers/timeHelper';
-import { DataServiceEncrypted } from '../../dist/src/utils/datasource/DataServiceEncrypted';
+import {DataServiceEncrypted} from '../../dist/src/utils/datasource/DataServiceEncrypted';
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -38,7 +38,6 @@ const clearTestPullPaymentModel = async () => {
 };
 
 const addKeys = async (address, key) => {
-    await privateKeysDbConnector.addKeyName();
     await privateKeysDbConnector.addAddress(address, key);
 }
 
@@ -76,7 +75,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     const bank = accounts[9];
 
     const bankAddressMock = async () => {
-        return { bankAddress: bank };
+        return {bankAddress: bank};
     };
 
     const settings = {

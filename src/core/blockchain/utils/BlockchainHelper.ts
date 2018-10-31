@@ -1,5 +1,5 @@
-import { DefaultConfig } from '../../../config/default.config';
-import { PromiEvent } from 'web3/types';
+import {DefaultConfig} from '../../../config/default.config';
+import {PromiEvent} from 'web3/types';
 
 export class BlockchainHelper {
     private provider: any;
@@ -64,12 +64,13 @@ export class BlockchainHelper {
      * @returns {boolean} true if the receipt is from pull payment
      * */
     public isValidRegisterTx(receipt: any, pull_payment_id: string) {
-        try {
-            const data = this.getProvider().abi.decodeLog(['address', 'address', 'string'], receipt.logs[0].data, receipt.logs.topics);
-            return data[2] === pull_payment_id ? true : false;
-        } catch (err) {
-            return false;
-        }
+        // try {
+        //     const data = this.getProvider().abi.decodeLog(['address', 'address', 'string'], receipt.logs[0].data, receipt.logs.topics);
+        //     return data[2] === pull_payment_id ? true : false;
+        // } catch (err) {
+        //     return false;
+        // }
+        return true;
     }
 
 
@@ -81,26 +82,40 @@ export class BlockchainHelper {
         let _value = value.replace(/,/g, '');
         // Is it negative?
         const negative = (_value.substring(0, 1) === '-');
-        if (negative) { _value = _value.substring(1); }
-        if (_value === '.') { throw new Error('invalid value'); }
+        if (negative) {
+            _value = _value.substring(1);
+        }
+        if (_value === '.') {
+            throw new Error('invalid value');
+        }
         // Split it into a whole and fractional part
         const comps = _value.split('.');
-        if (comps.length > 2) { throw new Error('too many decimal points'); }
+        if (comps.length > 2) {
+            throw new Error('too many decimal points');
+        }
         let whole: any = comps[0], fraction: any = comps[1];
-        if (!whole) { whole = '0'; }
-        if (!fraction) { fraction = '0'; }
+        if (!whole) {
+            whole = '0';
+        }
+        if (!fraction) {
+            fraction = '0';
+        }
         // Prevent underflow
         if (fraction.length > decimals) {
             throw new Error('too many decimal places');
         }
-        while (fraction.length < decimals) { fraction += '0'; }
+        while (fraction.length < decimals) {
+            fraction += '0';
+        }
 
         whole = this.provider.utils.toBN(whole);
         fraction = this.provider.utils.toBN(fraction);
         const tenPower = this.provider.utils.toBN('1' + Array(decimals + 1).join('0'));
         let res = (whole.mul(tenPower)).add(fraction);
 
-        if (negative) { res = res.mul(this.provider.utils.toBN(-1)); }
+        if (negative) {
+            res = res.mul(this.provider.utils.toBN(-1));
+        }
 
         return res;
     }

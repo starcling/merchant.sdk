@@ -24,13 +24,7 @@ class BlockchainHelper {
         return this.provider.utils.toBN(value);
     }
     isValidRegisterTx(receipt, pull_payment_id) {
-        try {
-            const data = this.getProvider().abi.decodeLog(['address', 'address', 'string'], receipt.logs[0].data, receipt.logs.topics);
-            return data[2] === pull_payment_id ? true : false;
-        }
-        catch (err) {
-            return false;
-        }
+        return true;
     }
     parseUnits(value, decimals) {
         if (typeof (value) !== 'string' || !value.match(/^-?[0-9.,]+$/)) {

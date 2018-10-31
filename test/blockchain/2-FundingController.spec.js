@@ -1,7 +1,7 @@
-import { MerchantSDK } from '../../dist/src/MerchantSDKClass';
-import { PrivateKeysDbConnector } from '../../dist/src/utils/datasource/PrivateKeysDbConnector';
-import { TestDbConnector } from '../../dist/src/utils/datasource/TestDbConnector';
-import { DataServiceEncrypted } from '../../dist/src/utils/datasource/DataServiceEncrypted';
+import {MerchantSDK} from '../../dist/src/MerchantSDKClass';
+import {PrivateKeysDbConnector} from '../../dist/src/utils/datasource/PrivateKeysDbConnector';
+import {TestDbConnector} from '../../dist/src/utils/datasource/TestDbConnector';
+import {DataServiceEncrypted} from '../../dist/src/utils/datasource/DataServiceEncrypted';
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -9,6 +9,8 @@ require('chai')
 
 import * as redis from 'redis';
 import * as bluebird from 'bluebird';
+import sinon from 'sinon';
+import {Globals} from "../../dist/src/utils/globals";
 
 const rclient = redis.createClient({
     port: 6379,
@@ -31,7 +33,6 @@ const clearTestPullPaymentModel = async () => {
 };
 
 const addKeys = async (address, key) => {
-    await privateKeysDbConnector.addKeyName();
     await privateKeysDbConnector.addAddress(address, key);
 };
 
@@ -68,7 +69,7 @@ contract('Master Pull Payment Contract', async (accounts) => {
     const bank = accounts[9];
 
     const bankAddressMock = async () => {
-        return { bankAddress: bank }
+        return {bankAddress: bank}
     };
 
     const settings = {
@@ -178,6 +179,9 @@ contract('Master Pull Payment Contract', async (accounts) => {
         await token.mint(client, tokens, {
             from: owner
         });
+        await token.mint(client2, tokens, {
+            from: owner
+        });
     });
     beforeEach('Issue tokens to the beneficiery', async () => {
         const tokens = MINTED_TOKENS / 100000000;
@@ -195,6 +199,16 @@ contract('Master Pull Payment Contract', async (accounts) => {
         await token.finishMinting({
             from: owner
         });
+    });
+
+    beforeEach('Stub methods', async () => {
+        sinon.stub(Globals, 'GET_PMA_ESTIMATE_ADDRESS').callsFake((networkID) => {
+            return client2;
+        });
+    });
+
+    afterEach('Stub restore', async () => {
+        sinon.restore();
     });
 
 
