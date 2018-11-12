@@ -33,7 +33,7 @@ export class EncryptionController {
             const key = new nodeRSA();
             key.importKey(publicKey, 'pkcs8-public');
 
-            return key.encrypt(JSON.stringify(data), 'utf8');
+            return key.encrypt(JSON.stringify(data), 'base64', 'utf8');
         } catch (e) {
             return null;
         }

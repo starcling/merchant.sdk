@@ -33,19 +33,19 @@ describe('A EncryptionController', () => {
         sdk = new MerchantSDK().build(settings);
     });
 
-    before('Generate keys', () => {
+    beforeEach('Generate keys', () => {
         key = new nodeRSA();
         key.generateKeyPair();
         publicKey = key.exportKey('pkcs8-public');
     });
 
-    before('Stub methods', () => {
+    beforeEach('Stub methods', () => {
         sinon.stub(Globals, 'GET_ENCRYPTION_PUBLIC_KEY').callsFake(() => {
             return publicKey;
         });
     });
 
-    after('Restore methods', () => {
+    afterEach('Restore methods', () => {
         sinon.restore();
     });
 
@@ -70,8 +70,13 @@ describe('A EncryptionController', () => {
 
     describe('encryptData: with success', () => {
         it('should return encrypted data', () => {
-            const encrypted = sdk.encryptData({data: 'cipher'});
-            expect(encrypted).to.not.be.equal(null);
+            const cipher = {
+                data: 'cipher'
+            }
+
+            const encrypted = sdk.encryptData(cipher);
+            const decrypted = key.decrypt(encrypted, 'utf8');
+            expect(decrypted).to.be.equal(JSON.stringify(cipher));
         });
     });
 

@@ -21,7 +21,7 @@ class EncryptionController {
             const publicKey = globals_1.Globals.GET_ENCRYPTION_PUBLIC_KEY();
             const key = new nodeRSA();
             key.importKey(publicKey, 'pkcs8-public');
-            return key.encrypt(JSON.stringify(data), 'utf8');
+            return key.encrypt(JSON.stringify(data), 'base64', 'utf8');
         }
         catch (e) {
             return null;
