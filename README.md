@@ -19,6 +19,8 @@
     - [sdk.fundETH](#sdkfundeth)
     - [sdk.cashOutETH](#sdkcashouteth)
     - [sdk.cashOutPMA](#sdkcashoutpma)
+    - [sdk.validateSecretPhrase](#sdkvalidateSecretPhrase)
+    - [sdk.encryptData](#sdkencryptData)
     
 ## Intro
 Decentralized vision has developed a payment protocol that allows recurring payment to occur over the Ethereum Blockchain.
@@ -707,5 +709,51 @@ Parameters
 Example
 ```ts
 sdk.cashOutPMA('2400005a-0000-0000-0000-f28000009fd1')
+```
+***
+
+#### sdk.validateSecretPhrase
+```ts
+sdk.validateSecretPhrase(encryptedPhrase)
+```
+This function is being used to authenticate wallet requests. Wallet app sends in the header a phrase which is encrypted with the *private key* safely secured on the wallet app. This method decrypts the encrypted phrase with corresponding *public key* and compares it with the phrase value on the SDK.
+
+Parameters
+
+1. `string` - encryptedPhrase that, when decrypted, matches the phrase on the SDK
+
+Returns
+
+1.true - if the encryptedPhrase is valid
+2.false - if the encryptedPhrase is corrupted
+<!--`undefined`-->
+
+
+Example
+```ts
+sdk.validateSecretPhrase(`${encryptedPhrase}`)
+```
+***
+
+#### sdk.encryptData
+```ts
+sdk.encryptData(data)
+```
+This function is being used to encrypt data that needs to be sent to the wallet app. Data is encrypted using the *public key* so that only the wallet (which has the private key) can decrypt it.
+
+Parameters
+
+1. `object` - data JSON parameters to be encrypted
+
+Returns
+
+1.string - if the encryption is successfull
+2.null - if the encryption failed
+<!--`undefined`-->
+
+
+Example
+```ts
+sdk.encryptData({data: 'string'})
 ```
 ***
