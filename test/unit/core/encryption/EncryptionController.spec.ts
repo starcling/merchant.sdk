@@ -27,7 +27,7 @@ let sdk;
 let key;
 let publicKey;
 
-describe('A EncryptionController: validateSecretPhrase', () => {
+describe('A EncryptionController', () => {
 
     before('Building the sdk', async () => {
         sdk = new MerchantSDK().build(settings);
@@ -49,7 +49,7 @@ describe('A EncryptionController: validateSecretPhrase', () => {
         sinon.restore();
     });
 
-    describe('with success', () => {
+    describe('validateSecretPhrase: with success', () => {
         it('should return true if phrase is encrypted with corresponding private key', () => {
             const secretPhrase = Globals.GET_ENCRYPTION_SECRET_PHRASE();
             const encrypted = key.encryptPrivate(secretPhrase, 'base64', 'utf8');
@@ -58,14 +58,21 @@ describe('A EncryptionController: validateSecretPhrase', () => {
         });
     });
 
-    describe('with failed', () => {
+    describe('validateSecretPhrase: with failed', () => {
         it('should return false if phrase is not encrypted with corresponding private key', () => {
-            const paymentID = 'id';
-            const data = sdk.generateQRCode(paymentID);
-
-            expect(data).to.have.property('pullPaymentModelURL');
-            expect(data).to.have.property('pullPaymentURL');
-            expect(data).to.have.property('transactionURL');
+            const secretPhrase = Globals.GET_ENCRYPTION_SECRET_PHRASE();
+            key.generateKeyPair();
+            const encrypted = key.encryptPrivate(secretPhrase, 'base64', 'utf8');
+            const valid = sdk.validateSecretPhrase(encrypted);
+            expect(valid).to.be.equal(false);
         });
     });
+
+    describe('encryptData: with success', () => {
+        it('should return encrypted data', () => {
+            const encrypted = sdk.encryptData({data: 'cipher'});
+            expect(encrypted).to.not.be.equal(null);
+        });
+    });
+
 });

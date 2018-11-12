@@ -16,6 +16,17 @@ class EncryptionController {
             return false;
         }
     }
+    encryptData(data) {
+        try {
+            const publicKey = globals_1.Globals.GET_ENCRYPTION_PUBLIC_KEY();
+            const key = new nodeRSA();
+            key.importKey(publicKey, 'pkcs8-public');
+            return key.encrypt(JSON.stringify(data), 'utf8');
+        }
+        catch (e) {
+            return null;
+        }
+    }
 }
 exports.EncryptionController = EncryptionController;
 //# sourceMappingURL=EncryptionController.js.map
