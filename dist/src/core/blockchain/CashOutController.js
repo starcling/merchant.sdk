@@ -40,7 +40,7 @@ class CashOutController {
             const fundETH = (gasFee) => __awaiter(this, void 0, void 0, function* () {
                 const bankAddress = (yield default_config_1.DefaultConfig.settings.bankAddress()).bankAddress;
                 yield fundingController.fundETH(payment.merchantAddress, bankAddress, null, balance - gasFee, tokenAddress, null, 21000).catch((err) => __awaiter(this, void 0, void 0, function* () {
-                    yield fundETH(gasFee + gasFee / 50);
+                    yield fundETH(gasFee + gasFee / 5);
                 }));
             });
             yield fundETH(gasFee + initalFee);

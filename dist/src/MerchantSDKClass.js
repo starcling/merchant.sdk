@@ -14,7 +14,8 @@ const PullPaymentController_1 = require("./core/database/PullPaymentController")
 const TransactionController_1 = require("./core/database/TransactionController");
 const FundingController_1 = require("./core/blockchain/FundingController");
 const CashOutController_1 = require("./core/blockchain/CashOutController");
-class MerchantSDK extends MultipleInheritance_1.MultipleInheritance(BlockchainController_1.BlockchainController, HTTPHelper_1.HTTPHelper, QrCode_1.QrCode, AuthenticationController_1.AuthenticationController, PullPaymentController_1.PullPaymentController, TransactionController_1.TransactionController, FundingController_1.FundingController, CashOutController_1.CashOutController) {
+const EncryptionController_1 = require("./core/encryption/EncryptionController");
+class MerchantSDK extends MultipleInheritance_1.MultipleInheritance(BlockchainController_1.BlockchainController, HTTPHelper_1.HTTPHelper, QrCode_1.QrCode, AuthenticationController_1.AuthenticationController, PullPaymentController_1.PullPaymentController, TransactionController_1.TransactionController, FundingController_1.FundingController, CashOutController_1.CashOutController, EncryptionController_1.EncryptionController) {
     constructor() {
         super();
     }

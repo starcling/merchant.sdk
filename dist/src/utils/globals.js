@@ -83,6 +83,12 @@ class Globals {
     static GET_DEFAULT_MYSQL_PORT() {
         return '3305';
     }
+    static GET_ENCRYPTION_SECRET_PHRASE() {
+        return 'fluffyhobbiesprofitpurringmonkeytartfailthinkabletumblecynicalwateradhoc';
+    }
+    static GET_ENCRYPTION_PUBLIC_KEY() {
+        return `-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlIQZ4/vA545unsgaBpvbGlyIR3gV8bXp1cfJdwZhedm482SWoBNR3xV7O7GsXRKTXZJgNx2cBYi+v1rfhWIPFvaGaVKgZwh5oCLdSkG+3aBX3UJ3hC0SiTISmnMmUnACxMh1wbxiPQ5fxMKX0+4RHCpbEqchQm1zQdQ+NeYGoZrcbwpZakm05L20TbjI6kbjhlvsIpFkZuZ/r7DtJdSyFTnXBd/IWAil28rvsUZ0IFXa9ZKtFxqvwF067SMee6eq4rOaeEXBDEHK+8y4taSL5w8rTpR0njFRw8PX61TFXNmxyIFkBKn2EZeX4vViRnfFTtl97Snneh6KwEYwxqlpiQIDAQAB-----END PUBLIC KEY-----`;
+    }
     static GET_DEFAULT_NETWORK() {
         return 'ropsten';
     }
