@@ -1,6 +1,6 @@
 {
     "name": "@pumapay/merchant_sdk",
-    "version": "2.0.1",
+    "version": "2.0.20",
     "private": false,
     "engines": {
         "npm": "~5.4.2",
