@@ -724,8 +724,8 @@ Parameters
 
 Returns
 
-1.true - if the encryptedPhrase is valid
-2.false - if the encryptedPhrase is corrupted
+1. true - if the encryptedPhrase is valid
+2. false - if the encryptedPhrase is corrupted
 <!--`undefined`-->
 
 
@@ -747,8 +747,8 @@ Parameters
 
 Returns
 
-1.string - if the encryption is successfull
-2.null - if the encryption failed
+1. string - if the encryption is successfull
+2. null - if the encryption failed
 <!--`undefined`-->
 
 
