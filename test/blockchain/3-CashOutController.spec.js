@@ -96,8 +96,6 @@ contract('Master Pull Payment Contract', async (accounts) => {
         "automatedCashOut": true,
         "cashOutFrequency": 1,
         "networkID": 3,
-        "automatedCashOut": false,
-        "cashOutFrequency": 0
     };
     let testPullPayment = {
         "hdWalletIndex": 0,

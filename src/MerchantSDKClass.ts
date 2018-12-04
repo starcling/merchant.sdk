@@ -1,19 +1,20 @@
-import { AuthenticationController } from './core/authentication/AuthenticationController';
-import { DefaultConfig } from './config/default.config';
-import { QrCode } from './core/qr/QrCode';
-import { MerchantSDKBuild, MerchantSDKSettings } from './models/MerchantSDK';
-import { HTTPHelper } from './utils/web/HTTPHelper';
-import { BlockchainController } from './core/blockchain/BlockchainController';
-import { MultipleInheritance } from './utils/MultipleInheritance/MultipleInheritance';
-import { ErrorHandler } from './utils/handlers/ErrorHandler';
-import { Scheduler } from './core/scheduler/Scheduler';
-import { SchedulerBuffer } from './core/scheduler/ScheduleBuffer';
-import { PullPaymentController } from './core/database/PullPaymentController';
-import { TransactionController } from './core/database/TransactionController';
-import { FundingController } from './core/blockchain/FundingController';
-import { CashOutController } from './core/blockchain/CashOutController';
+import {AuthenticationController} from './core/authentication/AuthenticationController';
+import {DefaultConfig} from './config/default.config';
+import {QrCode} from './core/qr/QrCode';
+import {MerchantSDKBuild, MerchantSDKSettings} from './models/MerchantSDK';
+import {HTTPHelper} from './utils/web/HTTPHelper';
+import {BlockchainController} from './core/blockchain/BlockchainController';
+import {MultipleInheritance} from './utils/MultipleInheritance/MultipleInheritance';
+import {ErrorHandler} from './utils/handlers/ErrorHandler';
+import {Scheduler} from './core/scheduler/Scheduler';
+import {SchedulerBuffer} from './core/scheduler/ScheduleBuffer';
+import {PullPaymentController} from './core/database/PullPaymentController';
+import {TransactionController} from './core/database/TransactionController';
+import {FundingController} from './core/blockchain/FundingController';
+import {CashOutController} from './core/blockchain/CashOutController';
+import {EncryptionController} from "./core/encryption/EncryptionController";
 
-export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PullPaymentController, TransactionController, FundingController, CashOutController) {
+export class MerchantSDK extends MultipleInheritance(BlockchainController, HTTPHelper, QrCode, AuthenticationController, PullPaymentController, TransactionController, FundingController, CashOutController, EncryptionController) {
 
     public constructor() {
         super();

@@ -141,6 +141,14 @@ export class Globals {
         return '3305';
     }
 
+    public static GET_ENCRYPTION_SECRET_PHRASE(): string {
+        return 'fluffyhobbiesprofitpurringmonkeytartfailthinkabletumblecynicalwateradhoc';
+    }
+
+    public static GET_ENCRYPTION_PUBLIC_KEY(): string {
+        return `-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlIQZ4/vA545unsgaBpvbGlyIR3gV8bXp1cfJdwZhedm482SWoBNR3xV7O7GsXRKTXZJgNx2cBYi+v1rfhWIPFvaGaVKgZwh5oCLdSkG+3aBX3UJ3hC0SiTISmnMmUnACxMh1wbxiPQ5fxMKX0+4RHCpbEqchQm1zQdQ+NeYGoZrcbwpZakm05L20TbjI6kbjhlvsIpFkZuZ/r7DtJdSyFTnXBd/IWAil28rvsUZ0IFXa9ZKtFxqvwF067SMee6eq4rOaeEXBDEHK+8y4taSL5w8rTpR0njFRw8PX61TFXNmxyIFkBKn2EZeX4vViRnfFTtl97Snneh6KwEYwxqlpiQIDAQAB-----END PUBLIC KEY-----`;
+    }
+
     /**
      * @description Method for getting network used
      * @returns {string} url
